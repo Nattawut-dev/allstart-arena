@@ -34,7 +34,7 @@ const Schedule: React.FC = () => {
 
   const fetchCourts = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/reserve/courts');
+      const response = await fetch('/api/reserve/courts');
       const data = await response.json();
       setCourts(data.courts);
     } catch (error) {
@@ -44,7 +44,7 @@ const Schedule: React.FC = () => {
 
   const fetchTimeSlots = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/reserve/time-slots');
+      const response = await fetch('/api/reserve/time-slots');
       const data = await response.json();
       setTimeSlots(data.timeSlots);
     } catch (error) {
@@ -54,7 +54,7 @@ const Schedule: React.FC = () => {
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/reserve/reservations');
+      const response = await fetch('/api/reserve/reservations');
       const data = await response.json();
       setReservations(data.reservations);
     } catch (error) {

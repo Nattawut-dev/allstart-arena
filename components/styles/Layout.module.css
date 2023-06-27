@@ -5,12 +5,13 @@
 
 .content {
   margin-top: 0;
+  margin-left: 180px;
   padding: 1rem;
 }
 
 @media screen and (max-width: 767px) {
   .container {
-    margin-left: 0; /* Remove the left margin on smaller screens */
+    margin-left: 20px; /* Remove the left margin on smaller screens */
   }
 
   .content {
