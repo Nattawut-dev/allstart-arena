@@ -1,0 +1,23 @@
+.div{
+   background-color: blanchedalmond;
+   width: 100%;
+}
+.container {
+   position: relative;
+   background-color: rgb(226, 210, 180);
+}
+.header {
+margin-top: 20px;
+color: rgb(151, 150, 149);
+width: 100%;
+border-bottom: 1px solid black;
+}
+.content {
+margin-top: 50px;
+margin-left: 5rem;
+font-size: larger;
+}
+.h3 {
+   color: rgb(65, 65, 138);
+
+}

@@ -1,0 +1,32 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .time-column {
+    text-align: center;
+  }
+  
+  .cell {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+    cursor: pointer;
+  }
+  
+  .reserved {
+    background-color: #ff7675;
+    color: white;
+  }
+  
+  .available {
+    background-color: #74b9ff;
+    color: white;
+  }
+.time {
+    text-align: center;
+}
+.tabelhead {
+    background-color: aliceblue;
+}
