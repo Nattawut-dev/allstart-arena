@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import styles from '@/styles/ReserveForm.module.css';
 
 export default function Page() {
   const router = useRouter();
@@ -46,9 +47,9 @@ export default function Page() {
 
   return (
     <main>
-      <h2>จองสนามแบดมินตันคอร์ท {id}</h2>
-      <h3>เวลา {startTime} - {endTime}</h3>
-      <div>
+      <div className={styles['reserve-form-container']}>
+        <h2>จองสนามแบดมินตันคอร์ท {id}</h2>
+        <h3>เวลา {startTime} - {endTime}</h3>
         <form onSubmit={handleSubmit}>
           <label>
             Name:

@@ -50,6 +50,8 @@ const Sidebar = () => {
              <Link href={'/'} className={styles.link}> <li className={styles['menu-item']}> หน้าแรก </li></Link>
              <Link href={'/Rules'} className={styles.link}> <li className={styles['menu-item']}> กฎการใช้สนามแบดมินตัน </li></Link>
              <Link href={'/Reserve'} className={styles.link}> <li className={styles['menu-item']}> จองสนามแบดมินตัน </li></Link>
+             <Link href={'/Reservations'} className={styles.link}> <li className={styles['menu-item']}> ข้อมูลการจองทั้งหมด </li></Link>
+
              <li
                className={`${styles['menu-item']} ${selectedSubMenu === 'menu-item-3' ? styles['menu-item-active'] : ''}`}
                onClick={() => toggleSubMenu('menu-item-3')}
@@ -84,6 +86,8 @@ const Sidebar = () => {
             <Link href={'/'} className={styles.link}> <li className={styles['menu-item']}> หน้าแรก </li></Link>
             <Link href={'/Rules'} className={styles.link}> <li className={styles['menu-item']}> กฎการใช้สนามแบดมินตัน </li></Link>
             <Link href={'/Reserve'} className={styles.link}> <li className={styles['menu-item']}> จองสนามแบดมินตัน </li></Link>
+            <Link href={'/Reservations'} className={styles.link}> <li className={styles['menu-item']}> ข้อมูลการจองทั้งหมด </li></Link>
+
             <li
               className={`${styles['menu-item']} ${selectedSubMenu === 'menu-item-3' ? styles['menu-item-active'] : ''}`}
               onClick={() => toggleSubMenu('menu-item-3')}
