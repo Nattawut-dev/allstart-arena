@@ -29,12 +29,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { name, phone, court_id, time_slot_id } = req.body;
         // 
         // Check if the data already exists
-        const checkQuery = 'SELECT COUNT(*) AS reservation_count FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
+        const checkQuery =
+          'SELECT COUNT(*) AS reservation_count FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
         const [existingData] = await connection.query<RowDataPacket[]>(checkQuery, [
           court_id,
           time_slot_id,
         ]);
-        console.log(existingData.length)
+
         if (existingData[0].reservation_count > 0) {
           res.status(400).json({ message: 'Duplicate data' });
         } else {
