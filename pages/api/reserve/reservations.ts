@@ -29,25 +29,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { name, phone, court_id, time_slot_id } = req.body;
         // 
         // Check if the data already exists
-        const checkQuery =
-          'SELECT court_id, time_slot_id, COUNT(*) FROM reserve WHERE court_id = ? AND time_slot_id = ? GROUP BY court_id, time_slot_id HAVING COUNT(*) > 0;';
+        const checkQuery = 'SELECT COUNT(*) AS reservation_count FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
         const [existingData] = await connection.query<RowDataPacket[]>(checkQuery, [
           court_id,
           time_slot_id,
         ]);
         console.log(existingData.length)
-        if (existingData.length > 0) {
+        if (existingData[0].reservation_count > 0) {
           res.status(400).json({ message: 'Duplicate data' });
-        }
-        else {
+        } else {
           // Insert the data into the database
           const insertQuery =
             'INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?)';
           await connection.query(insertQuery, [name, phone, court_id, time_slot_id]);
-
           res.status(200).json({ success: true, message: 'Data inserted successfully' });
         }
-
 
 
 
