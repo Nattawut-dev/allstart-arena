@@ -6,7 +6,7 @@
 .content {
   margin-top: 0;
   margin-left: 180px;
-  padding: 1rem;
+  right: 0;
 }
 
 @media screen and (max-width: 767px) {
