@@ -29,25 +29,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { name, phone, court_id, time_slot_id } = req.body;
         // 
         // Check if the data already exists
-        const checkQuery =
-          'SELECT COUNT(*) AS reservation_count FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
-        const [existingData] = await connection.query<RowDataPacket[]>(checkQuery, [
-          court_id,
-          time_slot_id,
-        ]);
-
-        if (existingData[0].reservation_count > 0) {
+        // const checkQuery =
+        //   'SELECT COUNT(*) AS reservation_count FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
+        // const [existingData] = await connection.query<RowDataPacket[]>(checkQuery, [
+        //   court_id,
+        //   time_slot_id,
+        // ]);
+        const checkQuery = 'SELECT CASE WHEN COUNT(*) > 0 THEN "true"  ELSE  "false" END AS is_duplicate FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
+        const [result] = await connection.query<RowDataPacket[]>(checkQuery, [court_id, time_slot_id]);
+        const isDuplicate = result[0].is_duplicate;
+        console.log(isDuplicate);  // ค่า "false" หรือ "true" จะถูกแสดงในคอนโซล
+        if (isDuplicate == "true") {
           res.status(400).json({ message: 'Duplicate data' });
         } else {
-          // Insert the data into the database
-          const insertQuery =
-            'INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?)';
+          const insertQuery = 'INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?)';
           await connection.query(insertQuery, [name, phone, court_id, time_slot_id]);
           res.status(200).json({ success: true, message: 'Data inserted successfully' });
         }
 
 
-
+          // Insert the data into the database
+          // const insertQuery = `INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE court_id=${court_id}, time_slot_id= ${time_slot_id};" `
 
 
 
