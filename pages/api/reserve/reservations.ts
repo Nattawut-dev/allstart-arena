@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // 
         // Check if the data already exists
         const checkQuery =
-          'SELECT court_id, time_slot_id, COUNT(*) FROM reserve WHERE court_id = ? AND time_slot_id = ? GROUP BY court_id, time_slot_id HAVING COUNT(*) > 1;';
+          'SELECT court_id, time_slot_id, COUNT(*) FROM reserve WHERE court_id = ? AND time_slot_id = ? GROUP BY court_id, time_slot_id HAVING COUNT(*) > 0;';
         const [existingData] = await connection.query<RowDataPacket[]>(checkQuery, [
           court_id,
           time_slot_id,
