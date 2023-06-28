@@ -8,7 +8,7 @@ const connection = mysql.createPool({
   database: process.env.DB_DATABASE,
   ssl: {
     rejectUnauthorized: true,
-    }
+  }
 });
 
 
@@ -27,26 +27,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
 
         const { name, phone, court_id, time_slot_id } = req.body;
-
+        // 
         // Check if the data already exists
         const checkQuery =
-        'SELECT * FROM reserve WHERE court_id = ? AND time_slot_id = ?';
-      const [existingData] = await connection.query<RowDataPacket[]>(checkQuery, [
-        court_id,
-        time_slot_id,
-      ]);
-      console.log(existingData.length)
-      if (existingData.length > 0) {
-        res.status(400).json({ message: 'Duplicate data' });
-        return;
-      }
+          'SELECT court_id, time_slot_id, COUNT(*) FROM reserve WHERE court_id = 6 AND time_slot_id = 1 GROUP BY court_id, time_slot_id HAVING COUNT(*) > 1;';
+        const [existingData] = await connection.query<RowDataPacket[]>(checkQuery, [
+          court_id,
+          time_slot_id,
+        ]);
+        console.log(existingData.length)
+        if (existingData.length > 0) {
+          res.status(400).json({ message: 'Duplicate data' });
+          return;
+        }
+        else {
+          // Insert the data into the database
+          const insertQuery =
+            'INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?)';
+          await connection.query(insertQuery, [name, phone, court_id, time_slot_id]);
 
-        // Insert the data into the database
-        const insertQuery =
-          'INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?)';
-        await connection.query(insertQuery, [name, phone, court_id, time_slot_id]);
+          res.status(200).json({ success: true, message: 'Data inserted successfully' });
+        }
 
-        res.status(200).json({ success: true, message: 'Data inserted successfully' });
+
 
 
 
