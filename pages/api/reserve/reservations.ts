@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import mysql, { RowDataPacket } from 'mysql2/promise';
+import mysql, { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 
 const connection = mysql.createPool({
   host: process.env.DB_HOST,
@@ -35,21 +35,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         //   court_id,
         //   time_slot_id,
         // ]);
-        const checkQuery = 'SELECT CASE WHEN COUNT(*) > 0 THEN "true"  ELSE  "false" END AS is_duplicate FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
-        const [result] = await connection.query<RowDataPacket[]>(checkQuery, [court_id, time_slot_id]);
-        const isDuplicate = result[0].is_duplicate;
-        console.log(isDuplicate);  // ค่า "false" หรือ "true" จะถูกแสดงในคอนโซล
-        if (isDuplicate == "true") {
-          res.status(400).json({ message: 'Duplicate data' });
-        } else {
-          const insertQuery = 'INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?)';
-          await connection.query(insertQuery, [name, phone, court_id, time_slot_id]);
-          res.status(200).json({ success: true, message: 'Data inserted successfully' });
-        }
+
+        const insertQuery = `INSERT INTO reserve (name, phone, court_id, time_slot_id)
+        SELECT ?, ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT * FROM reserve WHERE court_id = ? AND time_slot_id = ?
+        )`;
+        const params = [name, phone, court_id, time_slot_id, court_id, time_slot_id];
+        const [result] = await connection.query(insertQuery, params);
+
+        console.log((result as any).affectedRows)
+          if ((result as any).affectedRows === 1) {
+            res.status(200).json({ success: true, message: 'Data inserted successfully' });
+          } else {
+            res.status(400).json({ message: 'Duplicate data' });
+          }
 
 
-          // Insert the data into the database
-          // const insertQuery = `INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE court_id=${court_id}, time_slot_id= ${time_slot_id};" `
+
+
+
+
+        // const checkQuery = 'SELECT CASE WHEN COUNT(*) > 0 THEN "true"  ELSE  "false" END AS is_duplicate FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
+        // const [result] = await connection.query<RowDataPacket[]>(checkQuery, [court_id, time_slot_id]);
+        // const isDuplicate = result[0].is_duplicate;
+        // console.log(isDuplicate);  // ค่า "false" หรือ "true" จะถูกแสดงในคอนโซล
+        // if (isDuplicate == "true") {
+        //   res.status(400).json({ message: 'Duplicate data' });
+        // } else {
+        //   const insertQuery = 'INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?)';
+        //   await connection.query(insertQuery, [name, phone, court_id, time_slot_id]);
+        //   res.status(200).json({ success: true, message: 'Data inserted successfully' });
+        // }
+
+
 
 
 
