@@ -38,7 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(existingData.length)
         if (existingData.length > 0) {
           res.status(400).json({ message: 'Duplicate data' });
-          return;
         }
         else {
           // Insert the data into the database
