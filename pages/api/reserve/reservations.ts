@@ -1,24 +1,21 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import mysql, { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-
+import db from '@/db/db';
 const connection = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_DATABASE,
-  ssl: {
-    rejectUnauthorized: true,
-  }
+  // ssl : {rejectUnauthorized: true}
 });
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'GET') {
-      // Get reservations from the database
-      const query = 'SELECT * FROM reserve';
+      const query = 'SELECT id,name, court_id, time_slot_id,usedate ,start_time,end_time, price ,status FROM reserve';
       const [reservations] = await connection.query(query);
-      res.json({ reservations });
+      res.json(reservations);
 
 
 
@@ -26,51 +23,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     else if (req.method === 'POST') {
       try {
 
-        const { name, phone, court_id, time_slot_id } = req.body;
-        // 
-        // Check if the data already exists
-        // const checkQuery =
-        //   'SELECT COUNT(*) AS reservation_count FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
-        // const [existingData] = await connection.query<RowDataPacket[]>(checkQuery, [
-        //   court_id,
-        //   time_slot_id,
-        // ]);
-
-        const insertQuery = `INSERT INTO reserve (name, phone, court_id, time_slot_id)
-        SELECT ?, ?, ?, ?
-        WHERE NOT EXISTS (
-          SELECT * FROM reserve WHERE court_id = ? AND time_slot_id = ?
-        )`;
-        const params = [name, phone, court_id, time_slot_id, court_id, time_slot_id];
+        const { name, phone, court_id, time_slot_id, startvalue, endvalue, usedate, price } = req.body;
+        console.log(startvalue)
+        const insertQuery = `
+       INSERT INTO reserve (name, phone, court_id, time_slot_id, start_time, end_time, usedate, price)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?
+       WHERE NOT EXISTS (
+       SELECT *
+       FROM reserve
+       WHERE court_id = ? AND usedate = ? AND (
+      (CAST(start_time AS TIME) >= CAST(? AS TIME) AND CAST(end_time AS TIME) <= CAST(? AS TIME))
+    )
+  )
+`;
+        const params = [name, phone, court_id, time_slot_id, startvalue, endvalue, usedate, price, court_id, usedate, startvalue, endvalue
+        ];
         const [result] = await connection.query(insertQuery, params);
 
         console.log((result as any).affectedRows)
-          if ((result as any).affectedRows === 1) {
-            res.status(200).json({ success: true, message: 'Data inserted successfully' });
-          } else {
-            res.status(400).json({ message: 'Duplicate data' });
-          }
-
-
-
-
-
-
-        // const checkQuery = 'SELECT CASE WHEN COUNT(*) > 0 THEN "true"  ELSE  "false" END AS is_duplicate FROM reserve WHERE court_id = ? AND time_slot_id = ?;';
-        // const [result] = await connection.query<RowDataPacket[]>(checkQuery, [court_id, time_slot_id]);
-        // const isDuplicate = result[0].is_duplicate;
-        // console.log(isDuplicate);  // ค่า "false" หรือ "true" จะถูกแสดงในคอนโซล
-        // if (isDuplicate == "true") {
-        //   res.status(400).json({ message: 'Duplicate data' });
-        // } else {
-        //   const insertQuery = 'INSERT INTO reserve (name, phone, court_id, time_slot_id) VALUES (?, ?, ?, ?)';
-        //   await connection.query(insertQuery, [name, phone, court_id, time_slot_id]);
-        //   res.status(200).json({ success: true, message: 'Data inserted successfully' });
-        // }
-
-
-
-
+        if ((result as any).affectedRows === 1) {
+          res.status(200).json({ success: true, message: 'Data inserted successfully' });
+        } else {
+          res.status(400).json({ message: 'Duplicate data' });
+        }
 
       } catch (error) {
         console.error('Error:', error);

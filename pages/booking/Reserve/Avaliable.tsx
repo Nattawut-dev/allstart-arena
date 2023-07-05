@@ -7,7 +7,7 @@ function ReservationSuccess() {
     <div className={styles.container}>
       <h1 className={styles.heading}>การจองสำเร็จแล้ว</h1>
       <p className={styles.message}>ขอบคุณสำหรับการจองคอร์ท</p>
-      <Link href="/Reservations">
+      <Link href="/reservations/0">
         <button className={styles.button}>ดูรายละเอียดการจอง</button>
       </Link>
     </div>

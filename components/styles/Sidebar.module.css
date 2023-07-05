@@ -1,0 +1,79 @@
+.sidebar {
+  background-color: #ffffff;
+  color: #000000;
+  transform: translateX(-100%);
+  /* transition: transform 0.3s ease-in-out; */
+  position: fixed;
+  height: 100%;
+  overflow-y: auto;
+  font-family: 'Roboto', sans-serif;
+  z-index: 100;
+  width: 220px;
+  box-shadow: 1px 10px 6px   rgba(0, 0, 0, 0.2);
+  top: 60px; /* เพิ่มค่า top เพื่อให้ Sidebar ไม่ทับ Topbar */
+
+}
+
+.open {
+  transform: translateX(0);
+}
+
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.1s ease-in-out;
+
+}
+
+.menu-item:hover {
+  color: rgb(50, 85, 241);
+}
+
+.menu-item-active {
+  background-color: #bb3636;
+}
+
+.sub-menu {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.link {
+  text-decoration: none;
+  color: #000000;
+}
+
+.sub-menu-item {
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+.sub-menu-item:hover{
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  color: rgb(50, 85, 241);
+}
+
+.menu-item a {
+  text-decoration: none;
+}
+
+
+
+
+.activeMenuItem {
+  color: #2d6df7;
+}
+
+.activeSubMenu {
+  color: #2d6df7;
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import '../styles/globals.css'; // Import global styles here
 import Layout from '../components/Layout'; // Import your custom layout component
 import type { AppProps } from 'next/app';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

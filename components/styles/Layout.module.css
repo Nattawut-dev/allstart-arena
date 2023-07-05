@@ -1,20 +1,23 @@
-.container {
-  display: block;
-  width: 100%;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ใช้ min-height เพื่อให้ wrapper ขยายตามเนื้อหา */
+  background-color: #ffffff;
+}
+
+.contentWrapper {
+  flex: 1; /* ใช้ flex: 1 เพื่อให้ contentWrapper ขยายตามเนื้อหา */
+  display: flex;
 }
 
 .content {
-  margin-top: 0;
-  margin-left: 180px;
-  right: 0;
+  margin-top: 60px; /* ขยับเนื้อหาขึ้นไปข้างล่างของ Topbar */
+  width: calc(95%);
+  margin-left: 2.5%;
 }
 
-@media screen and (max-width: 767px) {
-  .container {
-    margin-left: 20px; /* Remove the left margin on smaller screens */
-  }
-
-  .content {
-    margin-left: 0; /* Remove the left margin on smaller screens */
-  }
+.open .content {
+  margin-left: calc(220px + 2.5%); /* ขยับเนื้อหาเมื่อเปิดเมนูด้านข้าง */
+  width: calc(95% - 220px);
 }

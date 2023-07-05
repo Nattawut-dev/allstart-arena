@@ -7,12 +7,12 @@ const connection = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_DATABASE,
-  ssl: {
-    rejectUnauthorized: true,
-    }
+  // ssl: {
+  //   rejectUnauthorized: true,
+  //   }
 });
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
     const query = 'SELECT * FROM cord';
 

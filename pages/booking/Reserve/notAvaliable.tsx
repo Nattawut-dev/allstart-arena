@@ -4,9 +4,9 @@ import Link from 'next/link';
 function NotAvailable() {
   return (
     <div className={styles.container}>
-      <h1 className={styles.heading}>คอร์ทนี้ถูกจองไปแล้ว</h1>
+      <h1 className={styles.heading}>คอร์ท/บางช่วงเวลาที่ท่านเลือก ถูกจองไปแล้ว/ไม่ว่าง</h1>
       <p className={styles.message}>ขออภัยสำหรับความไม่สะดวกที่เกิดขึ้น</p>
-      <Link href={'/Reserve'}><button className={styles.button}>กลับสู่หน้าหลัก</button></Link>
+      <Link href={'/booking/0'}><button className={styles.button}>กลับสู่หน้าหลัก</button></Link>
     </div>
   );
 }

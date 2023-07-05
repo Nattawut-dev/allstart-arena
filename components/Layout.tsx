@@ -1,21 +1,33 @@
-import React, { ReactNode } from 'react';
-import Sidebar from './Sidebar'; // Import your navigation component
-import Topbar from './Topbar'
-import styles from './styles/Layout.module.css'; // Import your CSS module
-
+import React, { ReactNode, useState } from 'react';
+import Sidebar from './Sidebar';
+import Topbar from './Topbar';
+import styles from './styles/Layout.module.css';
+import {isMobile} from 'react-device-detect';
 
 type LayoutProps = {
   children: ReactNode;
 };
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    
-    <div className={styles.container}>
-      <Topbar />
-      <Sidebar /> {/* Render your navigation component */}
-      <main className={styles.content}>{children}</main> {/* Render the content of each page */}
-      {/* Add footer, additional components, or styles here */}
+    <div className={styles.wrapper}>
+      <Topbar toggleSidebar={toggleSidebar} />
+      <div className={`${styles.contentWrapper} ${isSidebarOpen ? styles.open : ''}`}>
+        <Sidebar isOpen={isSidebarOpen} />
+        <div className={styles.content}>
+          {children}
+          {/* {React.Children.map(children, (child:any) =>
+            React.cloneElement(child, { isSidebarOpen: isSidebarOpen })
+          )} */}
+        </div>
+      </div>
     </div>
   );
 };

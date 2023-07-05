@@ -1,125 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import styles from './styles/Nav.module.css';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import styles from './styles/Sidebar.module.css';
+import { useRouter } from 'next/router';
 
-const Sidebar = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  const [selectedSubMenu, setSelectedSubMenu] = useState(null);
+interface SidebarProps {
+  isOpen: boolean;
+}
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
-    };
+const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+  const router = useRouter();
+  const path = router.pathname
+  const [selectedmainMenu, setSelectedmainMenu] = useState(null);
+  const [selectedSubMenu1, setSelectedSubMenu1] = useState(true);
+  const [selectedSubMenu2, setSelectedSubMenu2] = useState(true);
+  const [selectedSubMenu3, setSelectedSubMenu3] = useState(true);
 
-    handleResize();
 
-    window.addEventListener('resize', handleResize);
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-  };
-
-  const toggleSubMenu = (subMenu: any) => {
-    setSelectedSubMenu(selectedSubMenu === subMenu ? null : subMenu);
-  };
-
-  useEffect(() => {
-    if (isMobile) {
-      setIsSidebarVisible(true); // Show sidebar on mobile by default
-    }
-  }, [isMobile]);
 
   return (
-    <div className={styles.sidebar}>
-      {isMobile && (
-        <>
-          <button className={styles['toggle-button']} onClick={toggleSidebar}>
-          <FontAwesomeIcon icon={isSidebarVisible ? faTimes : faBars} />
-           
-          </button>
-          {isSidebarVisible && (
-             <ul className={styles['menu-list']}>
-             <Link href={'/'} className={styles.link}> <li className={styles['menu-item']}> หน้าแรก </li></Link>
-             <Link href={'/Rules'} className={styles.link}> <li className={styles['menu-item']}> กฎการใช้สนามแบดมินตัน </li></Link>
-             <Link href={'/Reserve'} className={styles.link}> <li className={styles['menu-item']}> จองสนามแบดมินตัน </li></Link>
-             <Link href={'/Reservations'} className={styles.link}> <li className={styles['menu-item']}> ข้อมูลการจองทั้งหมด </li></Link>
+    <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+      <div className={styles.menu}>
+        <ul className={styles['menu-list']}>
 
-             <li
-               className={`${styles['menu-item']} ${selectedSubMenu === 'menu-item-3' ? styles['menu-item-active'] : ''}`}
-               onClick={() => toggleSubMenu('menu-item-3')}
-             >
-               <a>สมัครเข้าร่วมการแข่งขัน</a>
-               {selectedSubMenu === 'menu-item-3' && (
-                 <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
-                   <Link href={'/Tournament/handN'} className={styles.link}>
-                     <li className={`${styles['sub-menu-item']} ${selectedSubMenu === 'submenu-item-1' ? styles['sub-menu-item-active'] : ''}`}> มือ N </li>
-                   </Link>
-                   <Link href={'/'} className={styles.link}>
-                     <li className={`${styles['sub-menu-item']} ${selectedSubMenu === 'submenu-item-1' ? styles['sub-menu-item-active'] : ''}`}> มือ S </li>
-                   </Link>
-                   <Link href={'/'} className={styles.link}>
-                     <li className={`${styles['sub-menu-item']} ${selectedSubMenu === 'submenu-item-1' ? styles['sub-menu-item-active'] : ''}`}> มือ P-/P </li>
-                   </Link>
-                   <Link href={'/'} className={styles.link}>
-                     <li className={`${styles['sub-menu-item']} ${selectedSubMenu === 'submenu-item-1' ? styles['sub-menu-item-active'] : ''}`}> มือ P+/C </li>
-                   </Link>
-                   
-                 </ul>
-               )}
-             </li>
-             <Link href={'/Tournament'} className={styles.link}> <li className={styles['menu-item']}> ตรวจสอบรายชื่อผู้สมัคร </li></Link>
-           </ul>
-          )}
-        </>
-      )}
-      {!isMobile && (
-        <>
-          <ul className={styles['menu-list']}>
-            <Link href={'/'} className={styles.link}> <li className={styles['menu-item']}> หน้าแรก </li></Link>
-            <Link href={'/Rules'} className={styles.link}> <li className={styles['menu-item']}> กฎการใช้สนามแบดมินตัน </li></Link>
-            <Link href={'/Reserve'} className={styles.link}> <li className={styles['menu-item']}> จองสนามแบดมินตัน </li></Link>
-            <Link href={'/Reservations'} className={styles.link}> <li className={styles['menu-item']}> ข้อมูลการจองทั้งหมด </li></Link>
+          <Link href="/Rules" className={styles.link} ><li className={`${styles['menu-item']} ${router.pathname === '/Rules' ? styles.activeMenuItem : ''}`}>กฎการใช้สนามแบดมินตัน</li></Link>
+          <li
+            className={`${styles['menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/reservations/[id]' || router.pathname === '/booking/Reserve/[id]'? styles.activeMenuItem : ''}`}
+            onClick={() => setSelectedSubMenu1(!selectedSubMenu1)}
+          >
+            <a>จองสนามแบดมินตัน</a>
+            {selectedSubMenu1 === true && (
+              <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
+                <Link href="/booking/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/booking/Reserve/[id]'? styles.activeSubMenu : ''}`} >จองสนามแบดมินตัน</li></Link>
+                <Link href="/reservations/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} >ข้อมูลการจองทั้งหมด</li></Link>
+              </ul>
+            )}
+          </li>
 
-            <li
-              className={`${styles['menu-item']} ${selectedSubMenu === 'menu-item-3' ? styles['menu-item-active'] : ''}`}
-              onClick={() => toggleSubMenu('menu-item-3')}
-            >
-              <a>สมัครเข้าร่วมการแข่งขัน</a>
-              {selectedSubMenu === 'menu-item-3' && (
-                <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
-                  <Link href={'/Tournament/HandN'} className={styles.link}>
-                    <li className={`${styles['sub-menu-item']} ${selectedSubMenu === 'submenu-item-1' ? styles['sub-menu-item-active'] : ''}`}> มือ N </li>
-                  </Link>
-                  <Link href={'/'} className={styles.link}>
-                    <li className={`${styles['sub-menu-item']} ${selectedSubMenu === 'submenu-item-1' ? styles['sub-menu-item-active'] : ''}`}> มือ S </li>
-                  </Link>
-                  <Link href={'/'} className={styles.link}>
-                    <li className={`${styles['sub-menu-item']} ${selectedSubMenu === 'submenu-item-1' ? styles['sub-menu-item-active'] : ''}`}> มือ P-/P </li>
-                  </Link>
-                  <Link href={'/'} className={styles.link}>
-                    <li className={`${styles['sub-menu-item']} ${selectedSubMenu === 'submenu-item-1' ? styles['sub-menu-item-active'] : ''}`}> มือ P+/C </li>
-                  </Link>
-                  
-                </ul>
-              )}
-            </li>
-            <Link href={'/Tournament'} className={styles.link}> <li className={styles['menu-item']}> ตรวจสอบรายชื่อผู้สมัคร </li></Link>
-          </ul>
-          {!isSidebarVisible && (
-            <button className={`${styles['toggle-button']} ${styles['show-sidebar-button']}`} onClick={toggleSidebar}>
-              Show Sidebar
-            </button>
-          )}
-        </>
-      )}
+          <li
+            className={`${styles['menu-item']} ${router.pathname === '/Reserve' || router.pathname === '/Reservetions' ? styles.activeMenuItem : ''}`}
+            onClick={() => setSelectedSubMenu2(!selectedSubMenu2)}
+          >
+            <a>สมัครเข้าร่วมการแข่งขัน</a>
+            {selectedSubMenu2 === true && (
+              <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
+                <Link href="/" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Reserve' ? styles.activeSubMenu : ''}`}>มือ N</li></Link>
+                <Link href="/" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Reserve' ? styles.activeSubMenu : ''}`}>มือ S</li></Link>
+                <Link href="/" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Reserve' ? styles.activeSubMenu : ''}`}>มือ P-/P</li></Link>
+                <Link href="/" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Reserve' ? styles.activeSubMenu : ''}`}>มือ P+/C</li></Link>
+              </ul>
+            )}
+          </li>
+          <li
+            className={`${styles['menu-item']} ${router.pathname === '/Reserve' || router.pathname === '/Reservetions' ? styles.activeMenuItem : ''}`}
+            onClick={() => setSelectedSubMenu3(!selectedSubMenu3)}
+          >
+            <a>ตรวจสอบรายชื่อผู้สมัคร</a>
+            {selectedSubMenu3 === true && (
+              <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
+                <Link href="/" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Reserve' ? styles.activeSubMenu : ''}`}>มือ N</li></Link>
+                <Link href="/" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Reserve' ? styles.activeSubMenu : ''}`}>มือ S</li></Link>
+                <Link href="/" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Reserve' ? styles.activeSubMenu : ''}`}>มือ P-/P</li></Link>
+                <Link href="/" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Reserve' ? styles.activeSubMenu : ''}`}>มือ P+/C</li></Link>
+              </ul>
+            )}
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };
