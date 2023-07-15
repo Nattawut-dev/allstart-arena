@@ -1,23 +1,174 @@
-.div{
-   background-color: blanchedalmond;
-   width: 100%;
+/* Tournament.module.css */
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Add styles for the loading spinner container */
+  display: flex;
+  flex-direction: column;
+
 }
-.container {
-   position: relative;
-   background-color: rgb(226, 210, 180);
+
+.load {
+  pointer-events: none;
+  opacity: 0.6;
+  
 }
-.header {
-margin-top: 20px;
-color: rgb(151, 150, 149);
-width: 100%;
-border-bottom: 1px solid black;
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #f0f0f0;
+  border-top-color: #007bff;
+  border-radius: 50%;
+  animation: spinner-rotate 1s linear infinite;
+  margin-left: 35px;
+}
+
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.h3{
+  text-align: center;
+  justify-content: center;
 }
 .content {
-margin-top: 50px;
-margin-left: 5rem;
-font-size: larger;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 700px;
+  margin: 0 auto;
+  height: 100%;
 }
-.h3 {
-   color: rgb(65, 65, 138);
 
+.header {
+  font-size: 28px;
+  margin-bottom: 30px;
+  text-align: center;
+  justify-content: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  width: 60%;
+  
+}
+.span{
+  font-size: 16px;
+  color: red;
+  font-weight: 600;
+  text-align: center;
+}
+.form-group label {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.form-group label span {
+  margin-left: 10px;
+}
+
+.form-group input[type='text'],
+.form-group input[type='file'],
+.form-group input[type='tel'],
+.form-group input[type='number'] {
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  background-color: #f7f7f7;
+  transition: background-color 0.2s ease-in-out;
+  margin-bottom: 5px;
+}
+
+.form-group input[type='text']:focus,
+.form-group input[type='file']:focus,
+.form-group input[type='tel']:focus,
+.form-group input[type='number']:focus{
+  outline: none;
+  background-color: #ebebeb;
+}
+.form-row {
+  display: flex;
+}
+
+.form-row input[type='text'] {
+  margin-right: 5px;
+  width: 50%;
+}
+.file_input {
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  background-color: #f7f7f7;
+  transition: background-color 0.2s ease-in-out;
+  transition: color 0.1s ease-in-out;
+  margin-bottom: 5px;
+  color: rgb(99, 99, 99);
+  cursor: pointer;
+}
+
+.file_input:hover {
+  color:#ffffff;
+  background-color: #777777;
+}
+.wrapper {
+  display: flex;
+}
+
+.imagePreview {
+  max-width: 200px;
+  max-height: 250px;
+  border-radius: 4px;
+  margin-top: 2.1rem;
+  margin-left: auto;
+}
+.selectimg{
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #f7f7f7;
+  transition: background-color 0.2s ease-in-out;
+  margin-bottom: 5px;
+}
+.submit_btn {
+  background-color: #007bff;
+  color: #ffffff;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  width: 100%;
+}
+
+.submit_btn:hover {
+  background-color: #0056b3;
 }

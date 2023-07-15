@@ -24,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
 
         const { name, phone, court_id, time_slot_id, startvalue, endvalue, usedate, price } = req.body;
-        console.log(startvalue)
         const insertQuery = `
        INSERT INTO reserve (name, phone, court_id, time_slot_id, start_time, end_time, usedate, price)
        SELECT ?, ?, ?, ?, ?, ?, ?, ?

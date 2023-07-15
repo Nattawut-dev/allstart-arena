@@ -1,14 +1,22 @@
 
-
-
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
+import mysql from 'mysql2/promise';
+
+const connection = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_DATABASE,
+  // ssl: {
+  //   rejectUnauthorized: true,
+  //   }
+});
 
 // Configure Cloudinary
 cloudinary.v2.config({
-  cloud_name: process.env.CLOUND_NAME,
+  cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.API_KEY,
   api_secret: process.env.SECRET,
   secure: true,
@@ -42,6 +50,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         folder: 'upload', // Set the desired folder name
         resource_type: 'image', // Specify the resource type (image, video, raw)
       });
+      const id = fields.id;
+      await connection.query('UPDATE tournament SET slipurl = ? , paymentStatus = ? WHERE id = ? ', [result.secure_url,1,id]);
 
       // Return the Cloudinary image URL
       res.status(200).json({ imageUrl: result.secure_url });
