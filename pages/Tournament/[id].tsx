@@ -33,7 +33,6 @@ function Tournament() {
       }
     }
 
-
     fetchData();
   }, [parsedId]);
 

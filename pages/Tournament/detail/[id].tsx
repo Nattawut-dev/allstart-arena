@@ -22,7 +22,7 @@ interface Detail {
     image_2: string;
     level: string;
     status: number;
-    paymentStatus : number;
+    paymentStatus: number;
 }
 interface Listtournament {
     id: number;
@@ -69,6 +69,8 @@ const DetailPage = ({ detail }: Props) => {
     const handleClose2 = () => { setShow2(false); setShow(true) };
 
     const [detail_data, setDetail_data] = useState<Detail>();
+    const [detail_data2, setDetail_data2] = useState<Detail>();
+
     const [detail_list, setDetail_list] = useState<Detail>();
 
     const router = useRouter();
@@ -88,10 +90,7 @@ const DetailPage = ({ detail }: Props) => {
         }
     };
     useEffect(() => {
-        fetchData2();
-        if (listtournament.length < 1) {
-            return;
-        }
+
         if (parsedId < 0 || parsedId > 3) {
             router.push('/booking');
             return;
@@ -105,7 +104,7 @@ const DetailPage = ({ detail }: Props) => {
             } else if (parsedId === 3) {
                 setLevel('P+/C');
             }
-
+            fetchData2();
         }
     }, [parsedId]);
 
@@ -168,6 +167,46 @@ const DetailPage = ({ detail }: Props) => {
 
         }
     }
+    const note = async (id: number) => {
+        const findData2 = detail.find((d) => d.id === id);
+
+        if (findData2) {
+            setDetail_data2(findData2)
+            console.log(findData2)
+            const { value: text } = await Swal.fire({
+                title: `ประท้วงทีม ${findData2.team_name}`,
+                showCancelButton: true,
+                input: 'textarea',
+                inputLabel: 'Message',
+                inputPlaceholder: 'Type your message here...',
+                inputAttributes: {
+                    'aria-label': 'Type your message here'
+                },
+                showLoaderOnConfirm: true,
+
+            })
+
+            if (text) {
+                try{
+                    const response = await fetch('/api/tournament/reservations', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          
+
+                        }),
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                      });
+                }catch{
+
+                }
+            }
+        }
+
+
+    }
+
     return (
         <>
             <div className={styles.header}>
@@ -199,8 +238,9 @@ const DetailPage = ({ detail }: Props) => {
                             {/* <th>ภาพชื่อนักกีฬา 2</th> */}
                             <th>ผลการพิจารณา</th>
                             <th>สถานะการชำระ</th>
-
+                            <th>หมายเหตุ</th>
                             <th>รายละเอียด</th>
+                            <th>ประท้วง</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -234,11 +274,15 @@ const DetailPage = ({ detail }: Props) => {
                                     {item.paymentStatus === 0 && <td className="table-danger">ยังไม่ชำระ</td>}
                                     {item.paymentStatus === 1 && <td className="table-warning">รอตรวจสอบ</td>}
                                     {item.paymentStatus === 2 && <td className="table-success">ชำระแล้ว</td>}
+                                    <td>-</td>
                                     <td>
                                         <Button variant="primary btn-sm" onClick={() => details(item.id)}>
                                             รายละเอียด
                                         </Button>
                                     </td>
+                                    <td><Button variant="primary btn-sm" onClick={() => note(item.id)}>
+                                        ประท้วง
+                                    </Button></td>
                                 </tr>
                             ))}
 
@@ -295,7 +339,7 @@ const DetailPage = ({ detail }: Props) => {
                     <div className={styles.wrapper2}>
                         <div >
                             {detail_data?.status === 0 && (
-                                <h5>ผลการพิจารณา : <span style={{ color: 'orange' }}>ระหว่างพิจารณา</span> </h5>
+                                <h5>ผลการพิจารณา : <span style={{ color: 'orange' }}>ระหว่างพิจารณา</span>  </h5>
                             )}
                             {detail_data?.status === 2 && (
                                 <h5>ผลการพิจารณา :  <span style={{ color: 'green' }}>ผ่าน</span> </h5>
@@ -304,8 +348,22 @@ const DetailPage = ({ detail }: Props) => {
                                 <h5>ผลการพิจารณา :  <span style={{ color: 'red' }}>ไม่ผ่าน</span></h5>
                             )}
                         </div>
+                        {detail_data?.status === 0 && (
+                            <Button variant="primary" disabled={true} onClick={() => Payment()}>ระหว่างพิจารณา</Button>
+                        )}
+                        {detail_data?.status === 1 && (
+                            <Button variant="primary" disabled={true} onClick={() => Payment()}>ไม่ผ่านการพิจารณา</Button>
+                        )}
+                        {detail_data?.status === 2 && detail_data?.paymentStatus !== 1 && (
+                            <Button variant="primary" disabled={false} onClick={() => Payment()}>ชำระเงิน</Button>
+                        )}
+                        {detail_data?.paymentStatus === 1 && (
+                            <Button variant="primary" disabled={true} onClick={() => Payment()}>กำลังตรวจสอบการชำระ</Button>
+                        )
+                        }
 
-                        <Button variant="primary" disabled={detail_data?.status === 2 ? false : true} onClick={() => Payment()}>ชำระเงิน</Button>
+
+
                     </div>
 
                 </Modal.Footer>
