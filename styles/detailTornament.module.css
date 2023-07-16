@@ -1,26 +1,26 @@
-/* การใช้งาน CSS Grid เพื่อจัดวางตาราง */
 .container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    grid-gap: 20px;
+
+    width: 100%;
+    overflow-x: auto;
 }
 
-/* การใช้งาน Flexbox เพื่อจัดกล่องเนื้อหาในแนวนอน */
-.flex-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
 
 /* การใช้งาน Media Queries เพื่อปรับแต่งสไตล์สำหรับอุปกรณ์ที่แตกต่างกัน */
 @media (max-width: 768px) {
     .container {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
+        max-width: 100%;
+        font-size: 12px
+      }
 
-    .flex-container {
+      .btn{
+        font-size: 12px;
+      }
+      .wrapper{
+        display: flex;
         flex-direction: column;
-        align-items: center;
+    }
+    .titleM h5{
+        font-size: 15px;
     }
 }
 
@@ -30,17 +30,18 @@
     border: 1px solid #ccc;
     border-collapse: collapse;
     width: 100%;
+    white-space: nowrap; 
+
 }
 
 .table th,
 .table td {
     padding: 10px;
+    text-align: left;
+    text-align: center;
+
 }
 
-.table th {
-    background-color: #555;
-    color: #fff;
-}
 
 /* การปรับแต่งรูปภาพ */
 .image {
@@ -48,39 +49,6 @@
     height: auto;
 }
 
-/* การใช้งาน Grid Layout เพื่อจัดวางเนื้อหาในแบบตาราง */
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-gap: 20px;
-}
-
-/* การปรับแต่งสีพื้นหลังและข้อความ */
-.card {
-    background-color: #f2f2f2;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.card h3 {
-    color: #333;
-}
-
-.card p {
-    color: #666;
-}
-
-/* การใช้งาน Flexbox เพื่อจัดกล่องเนื้อหาในแนวตั้ง */
-.vertical-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-}
-
-/* การปรับแต่งขนาดและสีของปุ่ม */
 .button {
     padding: 10px 20px;
     font-size: 16px;
@@ -96,19 +64,7 @@
     background-color: #0056b3;
 }
 
-/* เปลี่ยนสีใหม่เหมาะสม */
-.container {
-    background-color: #f9f9f9;
-}
 
-.table th {
-    background-color: #333;
-}
-
-.card {
-    background-color: #fff;
-    color: #333;
-}
 
 .button {
     background-color: #ff5722;
@@ -134,19 +90,13 @@
 .green {
     background-color: green;
     color: white;
-    /* ปรับสีตัวอักษรให้เป็นสีขาว */
 }
 
 .red {
     background-color: red;
     color: white;
-    /* ปรับสีตัวอักษรให้เป็นสีขาว */
 }
-.td {
-    text-align: justify;
-    display: flex;
-    align-items: center;
-  }
+
   .wrapper{
     display: flex;
     justify-content: space-around;
@@ -220,4 +170,4 @@
   .status{
     text-align: center;
   }
-  
+

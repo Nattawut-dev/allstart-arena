@@ -167,45 +167,81 @@ const DetailPage = ({ detail }: Props) => {
 
         }
     }
+
+
+
     const note = async (id: number) => {
         const findData2 = detail.find((d) => d.id === id);
 
         if (findData2) {
-            setDetail_data2(findData2)
-            console.log(findData2)
-            const { value: text } = await Swal.fire({
+
+            Swal.fire({
                 title: `ประท้วงทีม ${findData2.team_name}`,
-                showCancelButton: true,
                 input: 'textarea',
-                inputLabel: 'Message',
-                inputPlaceholder: 'Type your message here...',
+                inputPlaceholder: 'เหตุผลที่ต้องการประท้วง',
                 inputAttributes: {
-                    'aria-label': 'Type your message here'
+                    autocapitalize: 'off'
+
                 },
+                showCancelButton: true,
+                confirmButtonText: 'ประท้วง',
                 showLoaderOnConfirm: true,
+                preConfirm: async (text) => {
+                    if (text === '') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'ท่านไม่ได้กรอกอะไร',
+                            text: 'ไม่มีการประท้วง',
+                        })
+                    }
+                    else {
+                        Swal.fire({
+                            title: `ต้องการประท้วงทีม ${findData2.team_name} ?`,
+                            icon: 'warning',
+                            text: `ด้วยเหตุผล  ${text}`,
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'ยืนยัน'
+                        }).then(async (result) => {
+                            if (result.isConfirmed) {
+                                try {
+                                    const response = await fetch('/api/tournament/protest', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            id: findData2.id,
+                                            postnote: text
+                                        })
+                                    });
 
-            })
+                                    if (response.ok) {
+                                        Swal.fire(
+                                            'ประท้วง!',
+                                            'บันทึกข้อมูลเรียบร้อย',
+                                            'success'
+                                        )
+                                    }
+                                } catch (error) {
+                                    Swal.showValidationMessage(`Request failed: ${error}`);
+                                }
 
-            if (text) {
-                try{
-                    const response = await fetch('/api/tournament/reservations', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                          
+                            }
+                        })
+                    }
 
-                        }),
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                      });
-                }catch{
-
-                }
-            }
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            });
         }
+    };
 
 
-    }
+
+
+
+
 
     return (
         <>
@@ -221,26 +257,26 @@ const DetailPage = ({ detail }: Props) => {
                 }
             </div>
             <div className={styles.container}>
-                <table className={`table table-bordered table-striped `}>
+                <table className={`table table-bordered table-striped  ${styles.table}`}>
                     <thead className='table-info'>
                         <tr>
                             <th>#</th>
                             <th>ชื่อทีม</th>
                             <th>ชื่อนักกีฬา 1</th>
-                            <th>อายุ</th>
-                            <th>เพศ</th>
-                            <th>สังกัด</th>
+
                             {/* <th>ภาพชื่อนักกีฬา 1</th> */}
                             <th>ชื่อนักกีฬา 2</th>
-                            <th>อายุ</th>
-                            <th>เพศ</th>
-                            <th>สังกัด</th>
+
                             {/* <th>ภาพชื่อนักกีฬา 2</th> */}
                             <th>ผลการพิจารณา</th>
+
                             <th>สถานะการชำระ</th>
-                            <th>หมายเหตุ</th>
                             <th>รายละเอียด</th>
+
                             <th>ประท้วง</th>
+
+                            <th>หมายเหตุ</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -251,16 +287,12 @@ const DetailPage = ({ detail }: Props) => {
                                     <td>{index + 1}</td>
                                     <td>{item.team_name}</td>
                                     <td>{item.Name_1} ({item.Nickname_1})</td>
-                                    <td>{item.age_1}</td>
-                                    <td>{item.gender_1}</td>
-                                    <td>{item.affiliation_1}</td>
+
                                     {/* <td>
         <img src={item.image_1} alt="Image 1" className={styles.image} />
       </td> */}
                                     <td>{item.Name_2}  ({item.Nickname_2})</td>
-                                    <td>{item.age_2}</td>
-                                    <td>{item.gender_2}</td>
-                                    <td>{item.affiliation_2}</td>
+
                                     {/* <td>
         <img src={item.image_2} alt="Image 2" className={styles.image} />
       </td> */}
@@ -274,15 +306,16 @@ const DetailPage = ({ detail }: Props) => {
                                     {item.paymentStatus === 0 && <td className="table-danger">ยังไม่ชำระ</td>}
                                     {item.paymentStatus === 1 && <td className="table-warning">รอตรวจสอบ</td>}
                                     {item.paymentStatus === 2 && <td className="table-success">ชำระแล้ว</td>}
-                                    <td>-</td>
                                     <td>
-                                        <Button variant="primary btn-sm" onClick={() => details(item.id)}>
+                                        <Button variant="primary btn-sm" onClick={() => details(item.id)} className={styles.btn}>
                                             รายละเอียด
                                         </Button>
                                     </td>
-                                    <td><Button variant="primary btn-sm" onClick={() => note(item.id)}>
+                                    <td><Button variant="danger btn-sm" onClick={() => note(item.id)} className={styles.btn}>
                                         ประท้วง
                                     </Button></td>
+                                    <td>-</td>
+
                                 </tr>
                             ))}
 

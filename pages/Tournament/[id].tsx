@@ -211,22 +211,31 @@ function Tournament() {
           </div>
           <div className={styles.wrapper}>
             <div className={styles['form-group']}>
-              <label htmlFor="Name_1">ผู้เข้าแข่งขัน 1</label>
-              <input
-                name="Name_1"
-                type="text"
-                placeholder="ชื่อ-สกุล"
-                onChange={(e) => setName_1(e.target.value)}
-                value={Name_1}
-              />
-              <input
-                name="Nickname_1"
-                type="text"
-                placeholder="ชื่อเล่น"
-                onChange={(e) => setNickname_1(e.target.value)}
-                value={Nickname_1}
-              />
+              <label htmlFor="">ผู้เข้าแข่งขัน 1</label>
               <div className={styles['form-row']}>
+                <label htmlFor="Name_1">ชื่อ-สกุล  </label>
+                <input
+                  name="Name_1"
+                  type="text"
+                  placeholder="ชื่อ-สกุล"
+                  onChange={(e) => setName_1(e.target.value)}
+                  value={Name_1}
+                />
+              </div>
+
+              <div className={styles['form-row']}>
+                <label htmlFor="Nickname_1">ชื่อเล่น </label>
+                <input
+                  name="Nickname_1"
+                  type="text"
+                  placeholder="ชื่อเล่น"
+                  onChange={(e) => setNickname_1(e.target.value)}
+                  value={Nickname_1}
+                />
+              </div>
+
+              <div className={styles['form-row']}>
+                <label htmlFor="age_1">อายุ </label>
                 <input
                   name="age_1"
                   type="number"
@@ -234,6 +243,9 @@ function Tournament() {
                   onChange={(e) => setAge_1(e.target.value)}
                   value={age_1}
                 />
+              </div>
+              <div className={styles['form-row']}>
+                <label htmlFor="gender_1">เพศ </label>
                 <input
                   name="gender_1"
                   type="text"
@@ -241,23 +253,29 @@ function Tournament() {
                   onChange={(e) => setGender_1(e.target.value)}
                   value={gender_1}
                 />
-
               </div>
-              <input
-                name="affiliation_1"
-                type="text"
-                placeholder="สังกัด"
-                onChange={(e) => setAffiliation_1(e.target.value)}
-                value={affiliation_1}
-              />
-              <input
-                name="tel_1"
-                type="tel"
-                pattern="[0-9]*"
-                placeholder="เบอร์ติดต่อ"
-                onChange={(e) => setTel_1(e.target.value)}
-                value={tel_1}
-              />
+              <div className={styles['form-row']}>
+                <label htmlFor="affiliation_1">สังกัด </label>
+                <input
+                  name="affiliation_1"
+                  type="text"
+                  placeholder="สังกัด"
+                  onChange={(e) => setAffiliation_1(e.target.value)}
+                  value={affiliation_1}
+                />
+              </div>
+              <div className={styles['form-row']}>
+                <label htmlFor="tel_1">เบอร์โทร </label>
+                <input
+                  name="tel_1"
+                  type="tel"
+                  pattern="[0-9]*"
+                  placeholder="เบอร์ติดต่อ"
+                  onChange={(e) => setTel_1(e.target.value)}
+                  value={tel_1}
+                />
+              </div>
+
               <label htmlFor="file-input-1" className={styles.file_input}>
                 อัพโหลดภาพนักกีฬา 1
               </label>
@@ -282,23 +300,31 @@ function Tournament() {
           </div>
           <div className={styles.wrapper}>
             <div className={styles['form-group']}>
-              <label htmlFor="Name_2">ผู้เข้าแข่งขัน 2</label>
-              <input
-                name="Name_2"
-                type="text"
-                placeholder="ชื่อ-สกุล"
-                onChange={(e) => setName_2(e.target.value)}
-                value={Name_2}
-              />
-              <input
-                name="Nickname_2"
-                type="text"
-                placeholder="ชื่อเล่น"
-                onChange={(e) => setNickname_2(e.target.value)}
-                value={Nickname_2}
-              />
+              <label htmlFor="">ผู้เข้าแข่งขัน 2</label>
               <div className={styles['form-row']}>
+                <label htmlFor="Name_2">ชื่อ-สกุล  </label>
+                <input
+                  name="Name_2"
+                  type="text"
+                  placeholder="ชื่อ-สกุล"
+                  onChange={(e) => setName_2(e.target.value)}
+                  value={Name_2}
+                />
+              </div>
 
+              <div className={styles['form-row']}>
+                <label htmlFor="Nickname_">ชื่อเล่น </label>
+                <input
+                  name="Nickname_"
+                  type="text"
+                  placeholder="ชื่อเล่น"
+                  onChange={(e) => setNickname_2(e.target.value)}
+                  value={Nickname_2}
+                />
+              </div>
+
+              <div className={styles['form-row']}>
+                <label htmlFor="age_2">อายุ </label>
                 <input
                   name="age_2"
                   type="number"
@@ -306,6 +332,9 @@ function Tournament() {
                   onChange={(e) => setAge_2(e.target.value)}
                   value={age_2}
                 />
+              </div>
+              <div className={styles['form-row']}>
+                <label htmlFor="gender_2">เพศ </label>
                 <input
                   name="gender_2"
                   type="text"
@@ -313,23 +342,29 @@ function Tournament() {
                   onChange={(e) => setGender_2(e.target.value)}
                   value={gender_2}
                 />
-
               </div>
-              <input
-                name="affiliation_2"
-                type="text"
-                placeholder="สังกัด"
-                onChange={(e) => setAffiliation_2(e.target.value)}
-                value={affiliation_2}
-              />
-              <input
-                name="tel_2"
-                type="tel"
-                pattern="[0-9]*"
-                placeholder="เบอร์ติดต่อ"
-                onChange={(e) => setTel_2(e.target.value)}
-                value={tel_2}
-              />
+              <div className={styles['form-row']}>
+                <label htmlFor="affiliation_2">สังกัด </label>
+                <input
+                  name="affiliation_2"
+                  type="text"
+                  placeholder="สังกัด"
+                  onChange={(e) => setAffiliation_2(e.target.value)}
+                  value={affiliation_2}
+                />
+              </div>
+              <div className={styles['form-row']}>
+                <label htmlFor="tel_2">เบอร์โทร </label>
+                <input
+                  name="tel_2"
+                  type="tel"
+                  pattern="[0-9]*"
+                  placeholder="เบอร์ติดต่อ"
+                  onChange={(e) => setTel_2(e.target.value)}
+                  value={tel_2}
+                />
+              </div>
+
               <label htmlFor="file-input-2" className={styles.file_input}>
                 อัพโหลดภาพนักกีฬา 2
               </label>
@@ -340,13 +375,17 @@ function Tournament() {
                 accept="image/*"
                 onChange={handleImageChange_2}
                 id="file-input-2"
+                className={styles.file_input}
               />
+
             </div>
+
             <img
               src={`${image_2 ? URL.createObjectURL(image_2) : '/user.png'}`}
-              alt="Participant 1"
+              alt="Participant 2"
               className={styles.imagePreview}
             />
+
           </div>
           <div>
             <button type="submit" className={styles.submit_btn}>
