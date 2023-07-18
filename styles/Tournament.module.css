@@ -13,7 +13,7 @@
 .load {
   pointer-events: none;
   opacity: 0.6;
-  
+
 }
 
 .spinner {
@@ -30,30 +30,40 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
 
-.h3{
+.h3 {
   text-align: center;
   justify-content: center;
+  margin: 10px 0px
 }
+
 .content {
-  margin-top: 10px;
+
+  display: flex;
+  justify-content: center;
+
+}
+
+.h6 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #0011ff;
+  margin: 1rem 0;
+}
+
+.centeredContent {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   background-color: #ffffff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 700px;
-  margin: 0 auto;
-  height: 100%;
+  padding: 20px;
   overflow: auto;
-  white-space: nowrap; 
-  width: 100%;
+  white-space: nowrap;
+  max-width: 1100px;
 }
 
 .header {
@@ -70,27 +80,23 @@
 
 .form-group {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   margin-bottom: 20px;
-  width: 100%;
-  
+  width: fit-content;
 }
-.form-group label{
 
-  margin-right: 15px;
-}  
-.span{
+.span {
   font-size: 16px;
   color: red;
   font-weight: 600;
   text-align: center;
 }
+
 .form-group label {
-  display: flex;
-  align-items: center;
   font-size: 15px;
   font-weight: bold;
   margin-bottom: 10px;
+
 }
 
 .form-group label span {
@@ -100,7 +106,8 @@
 .form-group input[type='text'],
 .form-group input[type='file'],
 .form-group input[type='tel'],
-.form-group input[type='number'] {
+.form-group input[type='number'],
+.form-group select {
   padding: 8px;
   border: none;
   border-radius: 4px;
@@ -108,50 +115,72 @@
   background-color: #f7f7f7;
   transition: background-color 0.2s ease-in-out;
   margin-bottom: 5px;
+  margin-right: 1rem;
+  width: 400px;
+
+
 }
 
 .form-group input[type='text']:focus,
 .form-group input[type='file']:focus,
 .form-group input[type='tel']:focus,
-.form-group input[type='number']:focus{
+.form-group input[type='number']:focus,
+.form-group select:focus {
   outline: none;
   background-color: #ebebeb;
 }
+
 .form-row {
   display: flex;
+  flex-direction: column;
+}
+
+.form-col label {
+  margin-top: 10px;
+  margin-right: 10px;
 }
 
 .form-row input {
   width: 100%;
 }
 
+
 .file_input {
   padding: 8px;
   border: none;
   border-radius: 4px;
   font-size: 15px;
-  background-color: #f7f7f7;
+  background-color: #657eac;
   transition: background-color 0.2s ease-in-out;
   transition: color 0.1s ease-in-out;
   margin-bottom: 5px;
-  color: rgb(99, 99, 99);
+  color: rgb(255, 255, 255);
   cursor: pointer;
 }
 
 .file_input:hover {
-  color:#ffffff;
-  background-color: #777777;
+  color: #ffffff;
+  background-color: #1e56aa;
 }
+
 .wrapper {
   display: flex;
+}
+
+.line {
+  border-bottom: 1px solid black;
+
 }
 
 .imagePreview {
   max-width: 200px;
   max-height: 250px;
   border-radius: 4px;
+  margin: 0 auto;
+  margin-bottom: 1rem;
 }
-.selectimg{
+
+.selectimg {
   padding: 10px;
   border: none;
   border-radius: 4px;
@@ -160,6 +189,7 @@
   transition: background-color 0.2s ease-in-out;
   margin-bottom: 5px;
 }
+
 .submit_btn {
   background-color: #007bff;
   color: #ffffff;
@@ -179,13 +209,15 @@
 }
 
 @media (max-width: 768px) {
-  .wrapper{
+  .wrapper {
     flex-direction: column;
   }
+
   .form-group input[type='text'],
   .form-group input[type='file'],
   .form-group input[type='tel'],
-  .form-group input[type='number'] {
+  .form-group input[type='number'],
+  .form-group select {
     padding: 8px;
     border: none;
     border-radius: 4px;
@@ -193,5 +225,25 @@
     background-color: #f7f7f7;
     transition: background-color 0.2s ease-in-out;
     margin-bottom: 5px;
+    width: 100%;
+  }
+
+  .form-col {
+    display: flex;
+    flex-direction: column;
+
+  }
+
+  .form-group {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .content {
+    width: 100%;
+  }
+
+  .centeredContent {
+    width: 100%;
   }
 }
