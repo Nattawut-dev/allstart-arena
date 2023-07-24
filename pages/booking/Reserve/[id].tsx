@@ -215,12 +215,12 @@ export default function Page() {
         <br />
         <label>
           Name:
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required/>
         </label>
         <br />
         <label>
           Phone:
-          <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input type="tel"   maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)}  required/>
         </label>
         <br />
         <div><p style={{ color: "red" }}>{error}</p></div>
