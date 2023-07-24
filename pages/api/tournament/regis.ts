@@ -4,16 +4,17 @@ import multiparty from 'multiparty';
 import mysql from 'mysql2/promise';
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
+import connection from '@/db/db';
 
-const connection = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_DATABASE,
-    // ssl: {
-    //   rejectUnauthorized: true,
-    //   }
-});
+// const connection = mysql.createPool({
+//     host: process.env.DB_HOST,
+//     user: process.env.DB_USER,
+//     password: process.env.DB_PASS,
+//     database: process.env.DB_DATABASE,
+//     // ssl: {
+//     //   rejectUnauthorized: true,
+//     //   }
+// });
 // Configure Cloudinary
 cloudinary.v2.config({
     cloud_name: process.env.CLOUD_NAME,

@@ -69,16 +69,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
     const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [modalTitle, setModalTitle] = useState('')
-    const [modalContent, setModalContent] = useState('')
-    const [showModal, setShowModal] = useState(false);
-
-    const handleCloseModal = () => {
-        setShowModal(false);
-    };
-
-    const handleOpenModal = () => {
-    };
+    const [reservations1, setReservations1] = useState<Reservation>();
 
     useEffect(() => {
         fetchReservations();
@@ -125,52 +116,40 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
     };
     const [loading, setLoading] = useState(false);
 
-    const  handleUpload = async() => {
+    const handleUpload = async () => {
         if (selectedFile) {
             setLoading(true);
-
+            console.log("tstsda")
             const formData = new FormData();
             formData.append('file', selectedFile);
+            formData.append('name', reservations1!.name);
+            formData.append('court_id', court1!.id.toString());
+            formData.append('startvalue', reservations1!.start_time);
+            formData.append('endvalue', reservations1!.end_time);
+            formData.append('usedate', reservations1!.usedate);
 
-            fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    fetch('/api/slipURL', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            name: reservations1?.name,
-                            court_id: court1?.id,
-                            startvalue: reservations1?.start_time,
-                            endvalue: reservations1?.end_time,
-                            usedate: reservations1?.usedate,
-                            slip: data.imageUrl,
-                            status: 1
-                        }),
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }).then((response) => {
-                        setLoading(false);
-                        setShow(false);
-                    })
-                    window.location.reload()
 
-                    // setShow(false);
-                    // setLoading(false);
-                    // window.location.reload()
-                })
-                .catch((error) => {
-                    console.error(error);
-                    // Handle error cases
+            try {
+                const response = await fetch('/api/ReservationSlip', {
+                    method: 'POST',
+                    body: formData,
                 });
+                
+
+                if (response.ok) {
+                    setLoading(false);
+                    setShow(false);
+                    window.location.reload();
+                } else {
+                    console.error('Error:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
 
         }
     };
 
-    const [reservations1, setReservations1] = useState<Reservation>();
     const [court1, setCourt1] = useState<Court>();
     const [timeSlot1, setTimeSlot1] = useState<TimeSlot>();
 
@@ -184,135 +163,137 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
         }
     }
     const [show, setShow] = useState(false);
-
     const handleClose = () => setShow(false);
+
     return (
+        <>
+            {loading &&
+                <div className={styles.loading}><div className={styles.lds_roller}><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+            }
+            <div className={`${styles.container} `}>
+                <h5 className={styles.title}>ตารางการจองของวันที่  {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</h5>
+                <div className={styles.btn_wrapper}>
+                    <button className={`${styles.btn} ${parsedId == 0 ? styles.active : ''}`} onClick={() => setbtn(0)}>{format((dateInBangkok), 'dd MMMM ')}</button>
+                    <button className={`${styles.btn} ${parsedId == 1 ? styles.active : ''}`} onClick={() => setbtn(1)}>{format(addDays(dateInBangkok, 1), 'dd MMMM ')}</button>
+                    <button className={`${styles.btn} ${parsedId == 2 ? styles.active : ''}`} onClick={() => setbtn(2)}>{format(addDays(dateInBangkok, 2), 'dd MMMM ')}</button>
+                    <button className={`${styles.btn} ${parsedId == 3 ? styles.active : ''}`} onClick={() => setbtn(3)}>{format(addDays(dateInBangkok, 3), 'dd MMMM ')}</button>
+                    <button className={`${styles.btn} ${parsedId == 4 ? styles.active : ''}`} onClick={() => setbtn(4)}>{format(addDays(dateInBangkok, 4), 'dd MMMM ')}</button>
+                    <button className={`${styles.btn} ${parsedId == 5 ? styles.active : ''}`} onClick={() => setbtn(5)}>{format(addDays(dateInBangkok, 5), 'dd MMMM ')}</button>
+                    <button className={`${styles.btn} ${parsedId == 6 ? styles.active : ''}`} onClick={() => setbtn(6)}>{format(addDays(dateInBangkok, 6), 'dd MMMM ')}</button>
+                    <button className={`${styles.btn} ${parsedId == 7 ? styles.active : ''}`} onClick={() => setbtn(7)}>{format(addDays(dateInBangkok, 7), 'dd MMMM ')}</button>
+                </div>
 
-        <div className={styles.container}>
+                <div className={styles['table-container']}>
+                    <table className={styles['schedule-table']}>
+                        <thead>
+                            <tr>
+                                <th>คอร์ท</th>
+                                <th>เวลาใช้สนาม</th>
+                                <th>ชื่อผู้จอง</th>
+                                <th>สภานะ</th>
+                                <th>การจ่าย</th>
 
-            <h5 className={styles.title}>ตารางการจองของวันที่  {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</h5>
-            <div className={styles.btn_wrapper}>
-                <button className={`${styles.btn} ${parsedId == 0 ? styles.active : ''}`} onClick={() => setbtn(0)}>{format((dateInBangkok), 'dd MMMM ')}</button>
-                <button className={`${styles.btn} ${parsedId == 1 ? styles.active : ''}`} onClick={() => setbtn(1)}>{format(addDays(dateInBangkok, 1), 'dd MMMM ')}</button>
-                <button className={`${styles.btn} ${parsedId == 2 ? styles.active : ''}`} onClick={() => setbtn(2)}>{format(addDays(dateInBangkok, 2), 'dd MMMM ')}</button>
-                <button className={`${styles.btn} ${parsedId == 3 ? styles.active : ''}`} onClick={() => setbtn(3)}>{format(addDays(dateInBangkok, 3), 'dd MMMM ')}</button>
-                <button className={`${styles.btn} ${parsedId == 4 ? styles.active : ''}`} onClick={() => setbtn(4)}>{format(addDays(dateInBangkok, 4), 'dd MMMM ')}</button>
-                <button className={`${styles.btn} ${parsedId == 5 ? styles.active : ''}`} onClick={() => setbtn(5)}>{format(addDays(dateInBangkok, 5), 'dd MMMM ')}</button>
-                <button className={`${styles.btn} ${parsedId == 6 ? styles.active : ''}`} onClick={() => setbtn(6)}>{format(addDays(dateInBangkok, 6), 'dd MMMM ')}</button>
-                <button className={`${styles.btn} ${parsedId == 7 ? styles.active : ''}`} onClick={() => setbtn(7)}>{format(addDays(dateInBangkok, 7), 'dd MMMM ')}</button>
-            </div>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {reservations.map((reservation) => {
 
-            <div className={styles['table-container']}>
-                <table className={styles['schedule-table']}>
-                    <thead>
-                        <tr>
-                            <th>คอร์ท</th>
-                            <th>เวลาใช้สนาม</th>
-                            <th>ชื่อผู้จอง</th>
-                            <th>สภานะ</th>
-                            <th>การจ่าย</th>
+                                if (format(selectedDate, 'dd MMMM yyyy') == reservation.usedate) {
+                                    const court = courts.find((c) => c.id === reservation.court_id);
+                                    const timeSlot = timeSlots.find((ts) => ts.id === reservation.time_slot_id);
+                                    return (
 
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {reservations.map((reservation) => {
+                                        <tr key={reservation.id}>
+                                            <td>{court?.title}</td>
+                                            <td>{reservation.start_time} - {reservation.end_time}</td>
+                                            <td>{reservation.name}</td>
+                                            <td style={{ color: reservation.status === 1 ? 'orange' : reservation.status === 2 ? 'green' : 'red' }}>
+                                                {reservation.status === 1 ? 'กำลังตรวจสอบ' : reservation.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
+                                            </td>                                   <td>
+                                                <Button variant="primary btn-sm" onClick={() => payment(reservation.id)}>L
+                                                </Button></td>
+                                        </tr>
 
-                            if (format(selectedDate, 'dd MMMM yyyy') == reservation.usedate) {
-                                const court = courts.find((c) => c.id === reservation.court_id);
-                                const timeSlot = timeSlots.find((ts) => ts.id === reservation.time_slot_id);
-                                return (
+                                    );
+                                }
+                            })}
+                        </tbody>
+                    </table>
+                </div>
 
-                                    <tr key={reservation.id}>
-                                        <td>{court?.title}</td>
-                                        <td>{reservation.start_time} - {reservation.end_time}</td>
-                                        <td>{reservation.name}</td>
-                                        <td style={{ color: reservation.status === 1 ? 'orange' : reservation.status === 2 ? 'green' : 'red' }}>
-                                            {reservation.status === 1 ? 'กำลังตรวจสอบ' : reservation.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
-                                        </td>                                   <td>
-                                            <Button variant="primary btn-sm" onClick={() => payment(reservation.id)}>L
-                                            </Button></td>
-                                    </tr>
+                <Modal
 
-                                );
-                            }
-                        })}
-                    </tbody>
-                </table>
-            </div>
-
-            <Modal
-                show={show}
-                onHide={handleClose}
-                backdrop="static"
-                keyboard={false}
-                centered
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-
-                    <div>
-                        <div className={styles.wrapper1}>
-
-                            <div className={styles.img}><Image src={previewImage ? previewImage : '/QR1.jpg'} alt="Qrcode" width="200" height="250" /></div>
-
-                            <div className={styles.detail}>
-                                <div className={styles.wrapper}>
-                                    <p>ชื่อผู้จอง</p>
-                                    <p>{reservations1?.name}</p>
+                    show={show}
+                    onHide={handleClose}
+                    backdrop="static"
+                    keyboard={false}
+                    centered
+                >
+                    <Modal.Header closeButton className={`${loading ? styles.load : ''}`}>
+                        <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className={`${loading ? styles.load : ''}`}>
+                        <div>
+                            <div className={styles.wrapper1}>
+                                <div className={styles.img}><Image src={previewImage ? previewImage : '/QR1.jpg'} alt="Qrcode" width="200" height="250" /></div>
+                                <div className={styles.detail}>
+                                    <div className={styles.wrapper}>
+                                        <p>ชื่อผู้จอง</p>
+                                        <p>{reservations1?.name}</p>
+                                    </div>
+                                    <div className={styles.wrapper}>
+                                        <p>คอร์ทที่จอง</p>
+                                        <p>{court1?.title}</p>
+                                    </div>
+                                    <div className={styles.wrapper}>
+                                        <p>วันที่ใช้สนาม</p>
+                                        <p>{reservations1?.usedate}</p>
+                                    </div>
+                                    <div className={styles.wrapper}>
+                                        <p>เวลาใช้สนาม</p>
+                                        <p>{reservations1?.start_time} - {reservations1?.end_time}</p>
+                                    </div>
+                                    <div className={styles.wrapper}>
+                                        <p>จำนวนเงินที่ต้องจ่าย</p>
+                                        <p>{reservations1?.price} บาท</p>
+                                    </div>
+                                    <div className={styles.wrapper}>
+                                        <label htmlFor="file-input" className={styles.file_input}>
+                                            เลือกภาพสลิป
+                                        </label>
+                                        <input
+                                            style={{ display: 'none' }}
+                                            id="file-input"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                            className="file-input"
+                                        />
+                                        <button
+                                            onClick={handleUpload}
+                                            disabled={!selectedFile || loading}
+                                            className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
+                                            style={{ backgroundColor: loading ? 'red' : '' }}
+                                        >
+                                            {loading ? 'อัพโหลด...' : 'ส่งสลิป'}
+                                        </button>
+                                    </div>
+                                    {/* <button  className={styles.slip}>แนบสลิป</button> */}
                                 </div>
-                                <div className={styles.wrapper}>
-                                    <p>คอร์ทที่จอง</p>
-                                    <p>{court1?.title}</p>
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <p>วันที่ใช้สนาม</p>
-                                    <p>{reservations1?.usedate}</p>
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <p>เวลาใช้สนาม</p>
-                                    <p>{reservations1?.start_time} - {reservations1?.end_time}</p>
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <p>จำนวนเงินที่ต้องจ่าย</p>
-                                    <p>{reservations1?.price} บาท</p>
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <label htmlFor="file-input" className={styles.file_input}>
-                                        เลือกภาพ
-                                    </label>
-                                    <input
-                                        style={{ display: 'none' }}
-                                        id="file-input"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleFileChange}
-                                        className="file-input"
-                                    />
-                                    <button
-                                        onClick={handleUpload}
-                                        disabled={!selectedFile || loading}
-                                        className={`${styles.slip} ${selectedFile ? '' : styles.disabled} ` }
-                                        style={{backgroundColor : loading ? 'red' : ''}}
-                                    >
-                                        {loading ? 'กำลังอัพโหลด...' : 'อัพโหลดสลิป'}
-                                    </button>
-                                </div>
-                                {/* <button  className={styles.slip}>แนบสลิป</button> */}
                             </div>
                         </div>
-                    </div>
-                </Modal.Body>
-                {/* <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={handleClose}>จ่ายแล้ว</Button>
-                </Modal.Footer> */}
-            </Modal>
+                    </Modal.Body>
+                    {/* <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose}>
+            Close
+        </Button>
+        <Button variant="primary" onClick={handleClose}>จ่ายแล้ว</Button>
+    </Modal.Footer> */}
+                </Modal>
 
-        </div>
+            </div>
+        </>
+
     );
 };
 

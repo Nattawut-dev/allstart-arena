@@ -199,7 +199,7 @@ export default function Page() {
   return (
     <div className={styles['reserve-form-container']}>
       <h2>จองสนามแบดมินตันคอร์ท {id} </h2>
-      <h2 style={{color : 'red'}}>วันที่ใช้คอร์ท {format(selectedDate, 'dd MMMM yyyy')}</h2>
+      <h2 style={{ color: 'red' }}>วันที่ใช้คอร์ท {format(selectedDate, 'dd MMMM yyyy')}</h2>
       <br />
       <h3>ราคารวม {price} บาท</h3>
 
@@ -223,7 +223,7 @@ export default function Page() {
           <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
         </label>
         <br />
-        <div><p style={{color :"red"}}>{error}</p></div>
+        <div><p style={{ color: "red" }}>{error}</p></div>
         <button type="submit">Submit</button>
       </form>
     </div>

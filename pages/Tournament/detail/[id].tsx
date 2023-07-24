@@ -69,9 +69,7 @@ const DetailPage = ({ detail }: Props) => {
     const handleClose2 = () => { setShow2(false); setShow(true) };
 
     const [detail_data, setDetail_data] = useState<Detail>();
-    const [detail_data2, setDetail_data2] = useState<Detail>();
 
-    const [detail_list, setDetail_list] = useState<Detail>();
 
     const router = useRouter();
     const { id } = router.query;

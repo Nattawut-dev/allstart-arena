@@ -1,16 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import mysql, { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import db from '@/db/db';
-const connection = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_DATABASE,
-  // ssl : {rejectUnauthorized: true}
-});
+import connection from '@/db/db';
+// const connection = mysql.createPool({
+//   host: process.env.DB_HOST,
+//   user: process.env.DB_USER,
+//   password: process.env.DB_PASS,
+//   database: process.env.DB_DATABASE,
+//   // ssl : {rejectUnauthorized: true}
+// });
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+
   try {
     if (req.method === 'GET') {
       const query = 'SELECT id,name, court_id, time_slot_id,usedate ,start_time,end_time, price ,status FROM reserve';

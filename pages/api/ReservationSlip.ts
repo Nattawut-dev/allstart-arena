@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
+import connection from '@/db/db';
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -16,11 +17,11 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-
-  try{
+  try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
+
     const form = new multiparty.Form();
 
     form.parse(req, async (err, fields, files) => {
@@ -28,28 +29,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.error(err);
         return res.status(500).json({ error: 'Server error' });
       }
-  
+
       try {
         // Get the uploaded file from the files object
         const file = files.file[0];
-  
+
         // Upload the image to Cloudinary
         const result = await cloudinary.v2.uploader.upload(file.path, {
           folder: 'upload', // Set the desired folder name
           resource_type: 'image', // Specify the resource type (image, video, raw)
         });
-  
+
         // Return the Cloudinary image URL
-        
-        res.status(200).json({ imageUrl: result.secure_url });
+        const name = fields.name;
+        const court_id = fields.court_id;
+        const startvalue = fields.startvalue;
+        const endvalue = fields.endvalue;
+        const usedate = fields.usedate;
+
+        if (result.secure_url) {
+          try {
+            await connection.query('UPDATE reserve SET slip = ? ,status =? WHERE name = ? AND court_id = ? AND start_time = ? AND end_time = ? AND usedate = ?', [
+              result.secure_url, 1, name, court_id, startvalue, endvalue, usedate
+            ]);
+            return res.status(200).json({ imageUrl: result.secure_url });
+          } catch {
+            return res.status(500).json({ error: 'Server error' });
+          }
+        } else {
+          return res.status(500).json({ error: 'Failed to upload image to Cloudinary' });
+        }
       } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        return res.status(500).json({ error: 'Server error' });
       }
     });
-  }catch{
-    res.status(500).json({ error: 'Server error' });
-
+  } catch {
+    return res.status(500).json({ error: 'Server error' });
   }
- 
 }
