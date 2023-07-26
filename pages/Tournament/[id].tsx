@@ -2,16 +2,36 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../../styles/Tournament.module.css';
 import Swal from 'sweetalert2'
-import { GetServerSideProps } from 'next';
+import { GetServerSideProps, GetStaticProps } from 'next';
 
 
 interface TeamData {
   team_name: string;
-  // Add other properties from your data
 }
 
+interface Listtournament {
+  id: number;
+  title: string;
+  ordinal: number;
+  location: string;
+  timebetween: string;
+  status: number;
+}
+interface Props {
+  listtournament: Listtournament[];
+}
 
-function Tournament() {
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
+  const List = await fetch(`${process.env.HOSTNAME}/api/tournament/listtournament`);
+  const Listdata = await List.json();
+
+  return {
+    props: {
+      listtournament: Listdata.results, // The fetched data is an array of rules, so we pass it directly
+    },
+  };
+};
+function Tournament({ listtournament }: Props) {
   const router = useRouter();
   const { id } = router.query;
   const parsedId = parseInt(id as string);
@@ -32,8 +52,8 @@ function Tournament() {
         setLevel('P+/C');
       }
     }
-
     fetchData();
+
   }, [parsedId]);
 
   const fetchData = async () => {
@@ -83,8 +103,8 @@ function Tournament() {
     e.preventDefault();
     fetchData();
     checkTeamname(title);
-    {otherGender1 === 'อื่นๆ' ? setGender_1(gender_1):setGender_1(otherGender1)}
-    {otherGender2 === 'อื่นๆ' ? setGender_2(gender_2):setGender_2(otherGender2)}
+    { otherGender1 === 'อื่นๆ' ? setGender_1(gender_1) : setGender_1(otherGender1) }
+    { otherGender2 === 'อื่นๆ' ? setGender_2(gender_2) : setGender_2(otherGender2) }
 
     if (team_name_1 != true && team_name_1 != null) {
       Swal.fire({
@@ -114,7 +134,7 @@ function Tournament() {
       affiliation_2 &&
       tel_2 &&
       image_2 &&
-      level       
+      level
     ) {
 
       setIsLoading(true)
@@ -204,264 +224,276 @@ function Tournament() {
       setMessage('');
     }
   };
-  return (
 
-    <>
-      <h4 className={styles.h3}>สมัครแข่งขัน ระดับมือ {level}</h4>
-      <div className={`${styles.content} ${isLoading ? styles.load : ''}`}>
-        <div className={styles.centeredContent}>
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles['form-group']}>
-              <div className={styles['form-col']}>
-                <label htmlFor="title">ชื่อทีม</label>
-                <input
-                  name="title"
-                  type="text"
-                  placeholder="ชื่อทีม"
-                  onChange={(e) => checkTeamname(e.target.value)}
-                  value={title}
-                />
-                {message ? (
-                  <div style={{ color: 'red' }}>{message}</div>
-                ) : ''}
-              </div>
-            </div>
-
-            <h6 className={styles.h6}>ผู้เข้าแข่งขัน 1</h6>
-
-            <div className={styles.wrapper}>
-              <div className={styles['form-group']}>
-                <div className={styles['form-row']}>
-                  <label htmlFor="Name_1">ชื่อ-สกุล  </label>
-                  <input
-                    name="Name_1"
-                    type="text"
-                    placeholder="ชื่อ-สกุล"
-                    onChange={(e) => setName_1(e.target.value)}
-                    value={Name_1}
-                  />
-                </div>
-
-                <div className={styles['form-row']}>
-                  <label htmlFor="Nickname_1">ชื่อเล่น </label>
-                  <input
-                    name="Nickname_1"
-                    type="text"
-                    placeholder="ชื่อเล่น"
-                    onChange={(e) => setNickname_1(e.target.value)}
-                    value={Nickname_1}
-                  />
-                </div>
-
-                <div className={styles['form-row']}>
-                  <label htmlFor="age_1">อายุ </label>
-                  <input
-                    name="age_1"
-                    type="number"
-                    placeholder="อายุ"
-                    onChange={(e) => setAge_1(e.target.value)}
-                    value={age_1}
-                  />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="gender_1">เพศ </label>
-                  <select
-                    name="gender_1"
-                    onChange={(e) => setOtherGender1(e.target.value)}
-                    value={otherGender1}
-                  >
-                    <option value="">เลือกเพศ</option>
-                    <option value="ชาย">ชาย</option>
-                    <option value="หญิง">หญิง</option>
-                    <option value="อื่นๆ">อื่นๆ</option>
-                  </select>
-                </div>
-
-                {otherGender1 === 'อื่นๆ' && (
-                  <div className={styles['form-row']}>
-                    <label htmlFor="other_gender">เพศอื่นๆ </label>
-                    <input
-                      name="other_gender"
-                      type="text"
-                      placeholder="เพศอื่นๆ"
-                      onChange={(e) => setGender_1(e.target.value)}
-                      value={gender_1}
-                    />
-                  </div>
-                )}
-                <div className={styles['form-row']}>
-                  <label htmlFor="affiliation_1">สังกัด </label>
-                  <input
-                    name="affiliation_1"
-                    type="text"
-                    placeholder="สังกัด"
-                    onChange={(e) => setAffiliation_1(e.target.value)}
-                    value={affiliation_1}
-                  />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="tel_1">เบอร์โทร </label>
-                  <input
-                    name="tel_1"
-                    type="number"
-                    pattern="[0-9]*"
-                    placeholder="เบอร์ติดต่อ"
-                    onChange={(e) => setTel_1(e.target.value)}
-                    value={tel_1}
-                  />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="">ภาพนักกีฬา 1</label>
-                  <label htmlFor="file-input-1" className={styles.file_input}>
-                    อัพโหลดภาพนักกีฬา 1
-                  </label>
-                  <input
-                    style={{ display: 'none' }}
-                    name="image_1"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange_1}
-                    id="file-input-1"
-                    className={styles.file_input}
-                  />
-                </div>
-              </div>
-
-              <img
-                src={`${image_1 ? URL.createObjectURL(image_1) : '/user.png'}`}
-                alt="Participant 1"
-                className={styles.imagePreview}
-              />
-
-            </div>
-            <div className={styles.line}></div>
-            <h6 className={styles.h6}>ผู้เข้าแข่งขัน 2</h6>
-            <div className={styles.wrapper}>
-              <div className={styles['form-group']}>
-                <div className={styles['form-row']}>
-                  <label htmlFor="Name_2">ชื่อ-สกุล  </label>
-                  <input
-                    name="Name_2"
-                    type="text"
-                    placeholder="ชื่อ-สกุล"
-                    onChange={(e) => setName_2(e.target.value)}
-                    value={Name_2}
-                  />
-                </div>
-
-                <div className={styles['form-row']}>
-                  <label htmlFor="Nickname_">ชื่อเล่น </label>
-                  <input
-                    name="Nickname_"
-                    type="text"
-                    placeholder="ชื่อเล่น"
-                    onChange={(e) => setNickname_2(e.target.value)}
-                    value={Nickname_2}
-                  />
-                </div>
-
-                <div className={styles['form-row']}>
-                  <label htmlFor="age_2">อายุ </label>
-                  <input
-                    name="age_2"
-                    type="number"
-                    placeholder="อายุ"
-                    onChange={(e) => setAge_2(e.target.value)}
-                    value={age_2}
-                  />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="gender_2">เพศ </label>
-                  <select
-                    name="gender_2"
-                    onChange={(e) => setOtherGender2(e.target.value)}
-                    value={otherGender2}
-                  >
-                    <option value="">เลือกเพศ</option>
-                    <option value="ชาย">ชาย</option>
-                    <option value="หญิง">หญิง</option>
-                    <option value="อื่นๆ">อื่นๆ</option>
-                  </select>
-                </div>
-
-                {otherGender2 === 'อื่นๆ' && (
-                  <div className={styles['form-row']}>
-                    <label htmlFor="other_gender2">เพศอื่นๆ </label>
-                    <input
-                      name="other_gender2"
-                      type="text"
-                      placeholder="เพศอื่นๆ"
-                      onChange={(e) => setGender_2(e.target.value)}
-                      value={gender_2}
-                    />
-                  </div>
-                )}
-                <div className={styles['form-row']}>
-                  <label htmlFor="affiliation_2">สังกัด </label>
-                  <input
-                    name="affiliation_2"
-                    type="text"
-                    placeholder="สังกัด"
-                    onChange={(e) => setAffiliation_2(e.target.value)}
-                    value={affiliation_2}
-                  />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="tel_2">เบอร์โทร </label>
-                  <input
-                    name="tel_2"
-                    type="tel"
-                    pattern="[0-9]*"
-                    placeholder="เบอร์ติดต่อ"
-                    onChange={(e) => setTel_2(e.target.value)}
-                    value={tel_2}
-                  />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="">ภาพนักกีฬา 2</label>
-                  <label htmlFor="file-input-2" className={styles.file_input}>
-                    อัพโหลดภาพนักกีฬา 2
-                  </label>
-                  <input
-                    style={{ display: 'none' }}
-                    name="image_2"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange_2}
-                    id="file-input-2"
-                    className={styles.file_input}
-                  />
-                </div>
-
-              </div>
-              <img
-                src={`${image_2 ? URL.createObjectURL(image_2) : '/user.png'}`}
-                alt="Participant 2"
-                className={styles.imagePreview}
-              />
-
-            </div>
-            <div>
-              <button type="submit" className={styles.submit_btn}>
-                ส่งข้อมูล
-              </button>
-            </div>
-          </form>
-        </div>
-
+  if (listtournament[0].status === 0) {
+    return (
+      <div className={styles.notnow}>
+        <h2>ยังไม่มีจัดการแข่งขัน</h2>
 
       </div>
-      {isLoading && (
-        <div className={styles.loading}>
-          <p className={styles.span}>รอสักครู่... </p>
-          <p className={styles.span}>กำลังบันทึกข้อมูล</p>
-          <p className={styles.span}>กรุณาอย่าปิดหน้านี้</p>
-          <div className={styles.spinner}></div>
-        </div>
+    )
+  }
+  else {
+    return (
 
-      )}
-    </>
-  );
+      <>
+        <h4 className={styles.h3}>สมัครแข่งขัน ระดับมือ {level}</h4>
+        <div className={`${styles.content} ${isLoading ? styles.load : ''}`}>
+          <div className={styles.centeredContent}>
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <div className={styles['form-group']}>
+                <div className={styles['form-col']}>
+                  <label htmlFor="title">ชื่อทีม</label>
+                  <input
+                    name="title"
+                    type="text"
+                    placeholder="ชื่อทีม"
+                    onChange={(e) => checkTeamname(e.target.value)}
+                    value={title}
+                  />
+                  {message ? (
+                    <div style={{ color: 'red' }}>{message}</div>
+                  ) : ''}
+                </div>
+              </div>
+
+              <h6 className={styles.h6}>ผู้เข้าแข่งขัน 1</h6>
+
+              <div className={styles.wrapper}>
+                <div className={styles['form-group']}>
+                  <div className={styles['form-row']}>
+                    <label htmlFor="Name_1">ชื่อ-สกุล  </label>
+                    <input
+                      name="Name_1"
+                      type="text"
+                      placeholder="ชื่อ-สกุล"
+                      onChange={(e) => setName_1(e.target.value)}
+                      value={Name_1}
+                    />
+                  </div>
+
+                  <div className={styles['form-row']}>
+                    <label htmlFor="Nickname_1">ชื่อเล่น </label>
+                    <input
+                      name="Nickname_1"
+                      type="text"
+                      placeholder="ชื่อเล่น"
+                      onChange={(e) => setNickname_1(e.target.value)}
+                      value={Nickname_1}
+                    />
+                  </div>
+
+                  <div className={styles['form-row']}>
+                    <label htmlFor="age_1">อายุ </label>
+                    <input
+                      name="age_1"
+                      type="number"
+                      placeholder="อายุ"
+                      onChange={(e) => setAge_1(e.target.value)}
+                      value={age_1}
+                    />
+                  </div>
+                  <div className={styles['form-row']}>
+                    <label htmlFor="gender_1">เพศ </label>
+                    <select
+                      name="gender_1"
+                      onChange={(e) => setOtherGender1(e.target.value)}
+                      value={otherGender1}
+                    >
+                      <option value="">เลือกเพศ</option>
+                      <option value="ชาย">ชาย</option>
+                      <option value="หญิง">หญิง</option>
+                      <option value="อื่นๆ">อื่นๆ</option>
+                    </select>
+                  </div>
+
+                  {otherGender1 === 'อื่นๆ' && (
+                    <div className={styles['form-row']}>
+                      <label htmlFor="other_gender">เพศอื่นๆ </label>
+                      <input
+                        name="other_gender"
+                        type="text"
+                        placeholder="เพศอื่นๆ"
+                        onChange={(e) => setGender_1(e.target.value)}
+                        value={gender_1}
+                      />
+                    </div>
+                  )}
+                  <div className={styles['form-row']}>
+                    <label htmlFor="affiliation_1">สังกัด </label>
+                    <input
+                      name="affiliation_1"
+                      type="text"
+                      placeholder="สังกัด"
+                      onChange={(e) => setAffiliation_1(e.target.value)}
+                      value={affiliation_1}
+                    />
+                  </div>
+                  <div className={styles['form-row']}>
+                    <label htmlFor="tel_1">เบอร์โทร </label>
+                    <input
+                      name="tel_1"
+                      type="number"
+                      pattern="[0-9]*"
+                      placeholder="เบอร์ติดต่อ"
+                      onChange={(e) => setTel_1(e.target.value)}
+                      value={tel_1}
+                    />
+                  </div>
+                  <div className={styles['form-row']}>
+                    <label htmlFor="">ภาพนักกีฬา 1</label>
+                    <label htmlFor="file-input-1" className={styles.file_input}>
+                      อัพโหลดภาพนักกีฬา 1
+                    </label>
+                    <input
+                      style={{ display: 'none' }}
+                      name="image_1"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange_1}
+                      id="file-input-1"
+                      className={styles.file_input}
+                    />
+                  </div>
+                </div>
+
+                <img
+                  src={`${image_1 ? URL.createObjectURL(image_1) : '/user.png'}`}
+                  alt="Participant 1"
+                  className={styles.imagePreview}
+                />
+
+              </div>
+              <div className={styles.line}></div>
+              <h6 className={styles.h6}>ผู้เข้าแข่งขัน 2</h6>
+              <div className={styles.wrapper}>
+                <div className={styles['form-group']}>
+                  <div className={styles['form-row']}>
+                    <label htmlFor="Name_2">ชื่อ-สกุล  </label>
+                    <input
+                      name="Name_2"
+                      type="text"
+                      placeholder="ชื่อ-สกุล"
+                      onChange={(e) => setName_2(e.target.value)}
+                      value={Name_2}
+                    />
+                  </div>
+
+                  <div className={styles['form-row']}>
+                    <label htmlFor="Nickname_">ชื่อเล่น </label>
+                    <input
+                      name="Nickname_"
+                      type="text"
+                      placeholder="ชื่อเล่น"
+                      onChange={(e) => setNickname_2(e.target.value)}
+                      value={Nickname_2}
+                    />
+                  </div>
+
+                  <div className={styles['form-row']}>
+                    <label htmlFor="age_2">อายุ </label>
+                    <input
+                      name="age_2"
+                      type="number"
+                      placeholder="อายุ"
+                      onChange={(e) => setAge_2(e.target.value)}
+                      value={age_2}
+                    />
+                  </div>
+                  <div className={styles['form-row']}>
+                    <label htmlFor="gender_2">เพศ </label>
+                    <select
+                      name="gender_2"
+                      onChange={(e) => setOtherGender2(e.target.value)}
+                      value={otherGender2}
+                    >
+                      <option value="">เลือกเพศ</option>
+                      <option value="ชาย">ชาย</option>
+                      <option value="หญิง">หญิง</option>
+                      <option value="อื่นๆ">อื่นๆ</option>
+                    </select>
+                  </div>
+
+                  {otherGender2 === 'อื่นๆ' && (
+                    <div className={styles['form-row']}>
+                      <label htmlFor="other_gender2">เพศอื่นๆ </label>
+                      <input
+                        name="other_gender2"
+                        type="text"
+                        placeholder="เพศอื่นๆ"
+                        onChange={(e) => setGender_2(e.target.value)}
+                        value={gender_2}
+                      />
+                    </div>
+                  )}
+                  <div className={styles['form-row']}>
+                    <label htmlFor="affiliation_2">สังกัด </label>
+                    <input
+                      name="affiliation_2"
+                      type="text"
+                      placeholder="สังกัด"
+                      onChange={(e) => setAffiliation_2(e.target.value)}
+                      value={affiliation_2}
+                    />
+                  </div>
+                  <div className={styles['form-row']}>
+                    <label htmlFor="tel_2">เบอร์โทร </label>
+                    <input
+                      name="tel_2"
+                      type="tel"
+                      pattern="[0-9]*"
+                      placeholder="เบอร์ติดต่อ"
+                      onChange={(e) => setTel_2(e.target.value)}
+                      value={tel_2}
+                    />
+                  </div>
+                  <div className={styles['form-row']}>
+                    <label htmlFor="">ภาพนักกีฬา 2</label>
+                    <label htmlFor="file-input-2" className={styles.file_input}>
+                      อัพโหลดภาพนักกีฬา 2
+                    </label>
+                    <input
+                      style={{ display: 'none' }}
+                      name="image_2"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange_2}
+                      id="file-input-2"
+                      className={styles.file_input}
+                    />
+                  </div>
+
+                </div>
+                <img
+                  src={`${image_2 ? URL.createObjectURL(image_2) : '/user.png'}`}
+                  alt="Participant 2"
+                  className={styles.imagePreview}
+                />
+
+              </div>
+              <div>
+                <button type="submit" className={styles.submit_btn}>
+                  ส่งข้อมูล
+                </button>
+              </div>
+            </form>
+          </div>
+
+
+        </div>
+        {isLoading && (
+          <div className={styles.loading}>
+            <p className={styles.span}>รอสักครู่... </p>
+            <p className={styles.span}>กำลังบันทึกข้อมูล</p>
+            <p className={styles.span}>กรุณาอย่าปิดหน้านี้</p>
+            <div className={styles.spinner}></div>
+          </div>
+
+        )}
+      </>
+    );
+  }
+
 }
 
 export default Tournament;

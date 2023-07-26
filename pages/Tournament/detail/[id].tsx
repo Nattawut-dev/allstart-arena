@@ -30,7 +30,6 @@ interface Listtournament {
     ordinal: number;
     location: string;
     timebetween: string;
-
 }
 interface Props {
     detail: Detail[];

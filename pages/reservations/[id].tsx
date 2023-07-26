@@ -209,10 +209,13 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                             <td>{court?.title}</td>
                                             <td>{reservation.start_time} - {reservation.end_time}</td>
                                             <td>{reservation.name}</td>
-                                            <td style={{ color: reservation.status === 1 ? 'orange' : reservation.status === 2 ? 'green' : 'red' }}>
+
+                    
+
+                                            <td className=''  style={{ backgroundColor: reservation.status === 1 ? '#FDCE4E' : reservation.status === 2 ? '#d1e7dd' : '#eccccf' }}>
                                                 {reservation.status === 1 ? 'กำลังตรวจสอบ' : reservation.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
                                             </td>                                   <td>
-                                                <Button variant="primary btn-sm" onClick={() => payment(reservation.id)}>ชำระเงิน</Button></td>
+                                                <Button className={styles.btnPay} variant="primary btn-sm " onClick={() => payment(reservation.id)}>ชำระ</Button></td>
                                         </tr>
                                     );
                                 })}
@@ -276,8 +279,8 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                         <p>จำนวนเงินที่ต้องจ่าย</p>
                                         <p>{reservations1?.price} บาท</p>
                                     </div>
-                                    <h4 style={{textAlign: "center"}}>
-                                    ทั้งหมด <span style={{color : 'red'}}>{reservations1?.price}</span> บาท
+                                    <h4 style={{ textAlign: "center" }}>
+                                        ทั้งหมด <span style={{ color: 'red' }}>{reservations1?.price}</span> บาท
                                     </h4>
 
                                     {/* <button  className={styles.slip}>แนบสลิป</button> */}

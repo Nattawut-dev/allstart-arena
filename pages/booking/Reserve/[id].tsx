@@ -216,12 +216,12 @@ export default function Page() {
         <br />
         <label>
           Name:
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          <input type="text" maxLength={16} value={name} onChange={(e) => setName(e.target.value)} placeholder='ชื่อ (ไม่เกิน 16 ตัวอักษร)' required />
         </label>
         <br />
         <label>
           Phone:
-          <input type="tel" maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+          <input type="tel" maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='เบอร์โทร' required />
         </label>
         <br />
         <div><p style={{ color: "red" }}>{error}</p></div>
