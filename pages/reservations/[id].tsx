@@ -134,7 +134,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                     method: 'POST',
                     body: formData,
                 });
-                
+
 
                 if (response.ok) {
                     setLoading(false);
@@ -187,36 +187,40 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                     <table className={styles['schedule-table']}>
                         <thead>
                             <tr>
+                                <th>ลำดับ</th>
                                 <th>คอร์ท</th>
                                 <th>เวลาใช้สนาม</th>
                                 <th>ชื่อผู้จอง</th>
                                 <th>สภานะ</th>
-                                <th>การจ่าย</th>
+                                <th>ชำระเงิน</th>
 
                             </tr>
                         </thead>
                         <tbody>
-                            {reservations.map((reservation) => {
-
-                                if (format(selectedDate, 'dd MMMM yyyy') == reservation.usedate) {
+                            {reservations
+                                .filter(item => item.usedate === format(selectedDate, 'dd MMMM yyyy'))
+                                .map((reservation, index) => {
                                     const court = courts.find((c) => c.id === reservation.court_id);
                                     const timeSlot = timeSlots.find((ts) => ts.id === reservation.time_slot_id);
                                     return (
 
                                         <tr key={reservation.id}>
+                                            <td>{index + 1}</td>
                                             <td>{court?.title}</td>
                                             <td>{reservation.start_time} - {reservation.end_time}</td>
                                             <td>{reservation.name}</td>
                                             <td style={{ color: reservation.status === 1 ? 'orange' : reservation.status === 2 ? 'green' : 'red' }}>
                                                 {reservation.status === 1 ? 'กำลังตรวจสอบ' : reservation.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
                                             </td>                                   <td>
-                                                <Button variant="primary btn-sm" onClick={() => payment(reservation.id)}>L
-                                                </Button></td>
+                                                <Button variant="primary btn-sm" onClick={() => payment(reservation.id)}>ชำระเงิน</Button></td>
                                         </tr>
-
                                     );
-                                }
-                            })}
+                                })}
+                            {reservations.filter(item => item.usedate === format(selectedDate, 'dd MMMM yyyy')).length === 0 &&
+                                <tr>
+                                    <td colSpan={5}>ยังไม่มีการจอง</td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -235,7 +239,22 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                     <Modal.Body className={`${loading ? styles.load : ''}`}>
                         <div>
                             <div className={styles.wrapper1}>
-                                <div className={styles.img}><Image src={previewImage ? previewImage : '/QR1.jpg'} alt="Qrcode" width="200" height="250" /></div>
+                                <div className={styles.img}>
+                                    <Image src={previewImage ? previewImage : '/QR5.jpg'} alt="Qrcode" width="200" height="250" />
+                                    {
+                                        previewImage == null &&
+                                        <div className={styles.payment}>
+                                            <div className={styles.wrapper4}>
+                                                <p>พร้อมเพย์ :</p>
+                                                <p>0987022613</p>
+                                            </div>
+                                            <div className={styles.wrapper4}>
+                                                <p>ชื่อบัญชี :</p>
+                                                <p>ณัฐวุฒิ กายชาติ</p>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
                                 <div className={styles.detail}>
                                     <div className={styles.wrapper}>
                                         <p>ชื่อผู้จอง</p>
@@ -257,38 +276,44 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                         <p>จำนวนเงินที่ต้องจ่าย</p>
                                         <p>{reservations1?.price} บาท</p>
                                     </div>
-                                    <div className={styles.wrapper}>
-                                        <label htmlFor="file-input" className={styles.file_input}>
-                                            เลือกภาพสลิป
-                                        </label>
-                                        <input
-                                            style={{ display: 'none' }}
-                                            id="file-input"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFileChange}
-                                            className="file-input"
-                                        />
-                                        <button
-                                            onClick={handleUpload}
-                                            disabled={!selectedFile || loading}
-                                            className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
-                                            style={{ backgroundColor: loading ? 'red' : '' }}
-                                        >
-                                            {loading ? 'อัพโหลด...' : 'ส่งสลิป'}
-                                        </button>
-                                    </div>
+                                    <h4 style={{textAlign: "center"}}>
+                                    ทั้งหมด <span style={{color : 'red'}}>{reservations1?.price}</span> บาท
+                                    </h4>
+
                                     {/* <button  className={styles.slip}>แนบสลิป</button> */}
                                 </div>
                             </div>
+
                         </div>
                     </Modal.Body>
-                    {/* <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-            Close
-        </Button>
-        <Button variant="primary" onClick={handleClose}>จ่ายแล้ว</Button>
-    </Modal.Footer> */}
+                    <Modal.Footer>
+                        <div className={styles.footer1}>
+
+                            <div className={styles.btn1}><Button className='btn-info '><a href="/QR5.jpg" download="QR.jpg">โหลดสลิป</a></Button></div>
+                            <div className={styles.slipbtn}>
+                                <label htmlFor="file-input" className={styles.file_input}>
+                                    เลือกภาพสลิป
+                                </label>
+                                <input
+                                    style={{ display: 'none' }}
+                                    id="file-input"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="file-input"
+                                />
+                                <button
+                                    onClick={handleUpload}
+                                    disabled={!selectedFile || loading}
+                                    className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
+                                    style={{ backgroundColor: loading ? 'red' : '' }}
+                                >
+                                    {loading ? 'อัพโหลด...' : 'ส่งสลิป'}
+                                </button>
+                            </div>
+
+                        </div>
+                    </Modal.Footer>
                 </Modal>
 
             </div>

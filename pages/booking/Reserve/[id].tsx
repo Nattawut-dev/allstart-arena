@@ -196,6 +196,7 @@ export default function Page() {
   // ตัดตัวเลือกที่ไม่ถูกสร้างจากผลลัพธ์ของ map
   const lastOptionIndex = timeSlotOptions.findIndex(option => option === null);
   const filteredTimeSlotOptions = lastOptionIndex === -1 ? timeSlotOptions : timeSlotOptions.slice(0, lastOptionIndex);
+
   return (
     <div className={styles['reserve-form-container']}>
       <h2>จองสนามแบดมินตันคอร์ท {id} </h2>
@@ -203,24 +204,24 @@ export default function Page() {
       <br />
       <h3>ราคารวม {price} บาท</h3>
 
-      <h5>
+      <h6>
         เวลา{' '}
-        <select onChange={(e) => handleTimeSlotChange(e.target.value)}>
+        <select className={styles.select} onChange={(e) => handleTimeSlotChange(e.target.value)}>
           {filteredTimeSlotOptions}
         </select>
-      </h5>
+      </h6>
 
 
       <form onSubmit={handleSubmit}>
         <br />
         <label>
           Name:
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required/>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
         </label>
         <br />
         <label>
           Phone:
-          <input type="tel"   maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)}  required/>
+          <input type="tel" maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)} required />
         </label>
         <br />
         <div><p style={{ color: "red" }}>{error}</p></div>

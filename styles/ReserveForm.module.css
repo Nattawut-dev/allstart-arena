@@ -53,4 +53,9 @@
       max-width: 300px;
     }
   }
-  
+  .select {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 1px 4px 5px rgb(170, 170, 170);
+  }
