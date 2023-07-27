@@ -1,6 +1,8 @@
 import { GetStaticProps } from 'next';
 import React from 'react';
 import styles from '@/styles/rules.module.css'
+import NotFoundPage from '../404'
+
 interface Rules {
   id: number;
   title: string;
@@ -12,16 +14,31 @@ interface Props {
 }
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
-  const response = await fetch(`${process.env.HOSTNAME}/api/rules`);
-  const rulesdata = await response.json();
-  return {
-    props: {
-      rules: rulesdata, // The fetched data is an array of rules, so we pass it directly
-    },
-  };
+  try {
+    const response = await fetch(`${process.env.HOSTNAME}/api/rules`);
+    const rulesdata = await response.json();
+    return {
+      props: {
+        rules: rulesdata,
+      },
+    };
+  } catch {
+    return {
+      props: {
+        rules: [],
+      },
+    };
+  }
+
 };
 
 const Rules = ({ rules }: Props) => {
+  if (rules.length < 1) {
+    return (
+      <NotFoundPage />
+    )
+  }
+
   return (
     <>
       <div className={styles.container}>

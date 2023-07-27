@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '../../styles/Tournament.module.css';
 import Swal from 'sweetalert2'
 import { GetServerSideProps, GetStaticProps } from 'next';
+import NotFoundPage from '../404';
 
 
 interface TeamData {
@@ -119,6 +120,7 @@ function Tournament({ listtournament }: Props) {
       })
     }
     else if (
+      listtournament &&
       title &&
       Name_1 &&
       Nickname_1 &&
@@ -142,6 +144,7 @@ function Tournament({ listtournament }: Props) {
       try {
 
         const formData = new FormData();
+        formData.append('listT_id', listtournament[0].id.toString());
         formData.append('title', title);
         formData.append('Name_1', Name_1);
         formData.append('Nickname_1', Nickname_1);
@@ -224,6 +227,7 @@ function Tournament({ listtournament }: Props) {
       setMessage('');
     }
   };
+
 
   if (listtournament[0].status === 0) {
     return (
@@ -335,7 +339,8 @@ function Tournament({ listtournament }: Props) {
                     <label htmlFor="tel_1">เบอร์โทร </label>
                     <input
                       name="tel_1"
-                      type="number"
+                      type="tel"
+                      maxLength={10}
                       pattern="[0-9]*"
                       placeholder="เบอร์ติดต่อ"
                       onChange={(e) => setTel_1(e.target.value)}
@@ -443,6 +448,7 @@ function Tournament({ listtournament }: Props) {
                     <input
                       name="tel_2"
                       type="tel"
+                      maxLength={10}
                       pattern="[0-9]*"
                       placeholder="เบอร์ติดต่อ"
                       onChange={(e) => setTel_2(e.target.value)}

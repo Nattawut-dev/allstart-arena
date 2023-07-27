@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../../styles/ReserveBadmintonCourt.module.css'; 3
-import { format, addDays, subDays, isBefore, isAfter } from 'date-fns';
+import { format, addDays, isAfter } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import { InferGetServerSidePropsType, GetServerSideProps } from 'next';
-
+import NotFoundPage  from '../404'
 interface TimeSlot {
     id: number;
     start_time: string;
@@ -43,7 +43,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
         const timeslots = await fetch(`${process.env.HOSTNAME}/api/reserve/time-slots`);
         const timeslots_data = await timeslots.json();
 
-
         return {
             props: {
                 timeSlots: timeslots_data.timeSlots,
@@ -53,7 +52,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 
         };
     } catch (error) {
-        console.error('Failed to fetch data:', error);
         return {
             props: {
                 timeSlots: [],
@@ -69,26 +67,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-
-    // useEffect(() => {
-    //   const handleStart = debounce(() => {
-    //     setIsLoading(true);
-    //   }, 300);
-
-    //   const handleComplete = debounce(() => {
-    //     setIsLoading(false);
-    //   }, 300);
-
-    //   router.events.on('routeChangeStart', handleStart);
-    //   router.events.on('routeChangeComplete', handleComplete);
-    //   router.events.on('routeChangeError', handleComplete);
-
-    //   return () => {
-    //     router.events.off('routeChangeStart', handleStart);
-    //     router.events.off('routeChangeComplete', handleComplete);
-    //     router.events.off('routeChangeError', handleComplete);
-    //   };
-    // }, []);
 
 
     const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -115,8 +93,6 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
 
 
-
-
     const setbtn = (addDay: any) => {
         setSelectedDate(addDays(dateInBangkok, addDay))
         getReservations();
@@ -136,14 +112,10 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
 
 
-
-    if (timeSlots == undefined) {
+    if (timeSlots.length < 1 || courts.length < 1) {
+        
         return (
-            <div className={styles.container}>
-                <h2 className={styles.h2}>จองสนามแบดมินตัน</h2>
-                <h3 className={styles.h2}>ระบบล่มจ้าาาาาาาาาาาาาาาาาาาาาาา...... </h3>
-                <h3 className={styles.h2}>T_T</h3>
-            </div>
+            <NotFoundPage />
         );
     } else {
         return (

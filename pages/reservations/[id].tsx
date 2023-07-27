@@ -7,6 +7,7 @@ import { GetServerSideProps } from 'next';
 import Image from 'next/image';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2'
+import NotFoundPage  from '../404'
 
 interface TimeSlot {
     id: number;
@@ -198,7 +199,12 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
     }
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
-
+    if (timeSlots.length < 1 || courts.length < 1) {
+        
+        return (
+            <NotFoundPage />
+        );
+    }
     return (
         <>
             {loading &&

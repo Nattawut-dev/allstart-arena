@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
 interface Detail {
     id: number;
+    listT_id : number
     team_name: string;
     Name_1: string;
     Nickname_1: string;
@@ -39,7 +40,7 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
     const List = await fetch(`${process.env.HOSTNAME}/api/tournament/listtournament`);
     const Listdata = await List.json();
-    const response = await fetch(`${process.env.HOSTNAME}/api/tournament/detailTournament`);
+    const response = await fetch(`${process.env.HOSTNAME}/api/tournament/detailTournament?listT_id=${Listdata.results[0].id}`);
     const data = await response.json();
     return {
         props: {
@@ -245,7 +246,7 @@ const DetailPage = ({ listtournament, detail }: Props) => {
                 <div className={styles.header}>
                     {listtournament.length >= 1 && (
                         <div>
-                            <h6>รายการแข่งแบดมินตัน <span>{listtournament[0].title}</span> ครั้งที่ <span> {listtournament[0].id}</span></h6>
+                            <h6>รายการแข่งแบดมินตัน <span>{listtournament[0].title}</span> ครั้งที่ <span> {listtournament[0].ordinal}</span></h6>
                             <h6>ณ สถานที่ <span> {listtournament[0].location}</span></h6>
                             <h6>ระหว่างวันที่ <span>{listtournament[0].timebetween}</span></h6>
                             <h6>ระดับมือ <span style={{ fontWeight: 'bolder' }}>{level}</span> </h6>
@@ -277,8 +278,10 @@ const DetailPage = ({ listtournament, detail }: Props) => {
                             </tr>
                         </thead>
                         <tbody>
+
                             {detail
-                                .filter(item => item.level === level)
+                            
+                                .filter(item => item.level === level) 
                                 .map((item, index) => (
                                     <tr key={item.id}>
                                         <td>{index + 1}</td>
