@@ -256,10 +256,10 @@
   content: " ";
   display: block;
   position: absolute;
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: #fa0000;
+  background: #00ffaa;
   margin: -4px 0 0 -4px;
 }
 .lds_roller div:nth-child(1) {
@@ -332,8 +332,11 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 9999;
+  color: rgb(255, 102, 0);
+  font-weight: bold;
+  
 }
 .load {
   pointer-events: none;
-  opacity: 0.4;
+  opacity: 0.1;
 }

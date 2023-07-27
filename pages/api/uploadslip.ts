@@ -2,18 +2,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
-import mysql from 'mysql2/promise';
-import connection from '@/db/db';
+import pool from '@/db/db';
 
-// const connection = mysql.createPool({
-//   host: process.env.DB_HOST,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASS,
-//   database: process.env.DB_DATABASE,
-//   // ssl: {
-//   //   rejectUnauthorized: true,
-//   //   }
-// });
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -30,6 +20,7 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -41,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error(err);
       return res.status(500).json({ error: 'Server error' });
     }
-
+    const connection= await pool.getConnection()
     try {
       // Get the uploaded file from the files object
       const file = files.file[0];
@@ -59,6 +50,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
+    }finally {
+      connection.release(); // Release the connection back to the pool when done
     }
   });
 }

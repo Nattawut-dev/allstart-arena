@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import styles from '@/styles/reservation.module.css';
 import { utcToZonedTime } from 'date-fns-tz';
-import { format, addDays, subDays, isBefore, isAfter } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
 import Image from 'next/image';
 import { Button, Modal } from 'react-bootstrap';
+import Swal from 'sweetalert2'
 
 interface TimeSlot {
     id: number;
@@ -100,7 +101,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-
+    const [imgUrl, setImgUrl] = useState('')
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files && event.target.files[0];
         if (file) {
@@ -108,18 +109,41 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
             // Preview the selected image
             const reader = new FileReader();
-            reader.onload = () => {
+            reader.onload = (event) => {
+                if (event.target && typeof event.target.result === 'string') {
+                    const imageUrl = event.target.result;
+                    setImgUrl(imageUrl);
+                }
+
                 setPreviewImage(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
     };
     const [loading, setLoading] = useState(false);
+    const confirm = () => {
+        Swal.fire({
+            title: `ต้องการส่งภาพสลิปนี้ ?`,
+            imageUrl: imgUrl,
+            imageHeight: 250,
+            imageWidth: 200,
+            showCancelButton: true,
+            cancelButtonText: "ยกเลิก",
+            confirmButtonText: 'ตกลง',
+
+        }).then((result) => {
+            if (result.isConfirmed) {
+                handleUpload();
+            } else {
+                console.log('User canceled the action.');
+            }
+        })
+    }
 
     const handleUpload = async () => {
         if (selectedFile) {
+
             setLoading(true);
-            console.log("tstsda")
             const formData = new FormData();
             formData.append('file', selectedFile);
             formData.append('name', reservations1!.name);
@@ -139,7 +163,17 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                 if (response.ok) {
                     setLoading(false);
                     setShow(false);
-                    window.location.reload();
+
+                    Swal.fire({
+                        position: 'center',
+                        icon: 'success',
+                        title: 'บันทึกสำเร็จ',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    }).then(() => {
+                        window.location.reload();
+                    })
+
                 } else {
                     console.error('Error:', response.statusText);
                 }
@@ -168,7 +202,15 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
     return (
         <>
             {loading &&
-                <div className={styles.loading}><div className={styles.lds_roller}><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+                <div>
+                    <div>
+
+                    </div>
+                    <div className={styles.loading}>
+                        <p>กำลังโหลด...</p>
+                        <div className={styles.lds_roller}><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+                </div>
+
             }
             <div className={`${styles.container} `}>
                 <h5 className={styles.title}>ตารางการจองของวันที่  {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</h5>
@@ -187,7 +229,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                     <table className={styles['schedule-table']}>
                         <thead>
                             <tr>
-                                <th>ลำดับ</th>
+                                <th>#</th>
                                 <th>คอร์ท</th>
                                 <th>เวลาใช้สนาม</th>
                                 <th>ชื่อผู้จอง</th>
@@ -210,9 +252,9 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                             <td>{reservation.start_time} - {reservation.end_time}</td>
                                             <td>{reservation.name}</td>
 
-                    
 
-                                            <td className=''  style={{ backgroundColor: reservation.status === 1 ? '#FDCE4E' : reservation.status === 2 ? '#d1e7dd' : '#eccccf' }}>
+
+                                            <td className='' style={{ backgroundColor: reservation.status === 1 ? '#FDCE4E' : reservation.status === 2 ? '#d1e7dd' : '#eccccf' }}>
                                                 {reservation.status === 1 ? 'กำลังตรวจสอบ' : reservation.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
                                             </td>                                   <td>
                                                 <Button className={styles.btnPay} variant="primary btn-sm " onClick={() => payment(reservation.id)}>ชำระ</Button></td>
@@ -221,7 +263,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                 })}
                             {reservations.filter(item => item.usedate === format(selectedDate, 'dd MMMM yyyy')).length === 0 &&
                                 <tr>
-                                    <td colSpan={5}>ยังไม่มีการจอง</td>
+                                    <td colSpan={6}>ยังไม่มีการจอง</td>
                                 </tr>
                             }
                         </tbody>
@@ -306,7 +348,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                     className="file-input"
                                 />
                                 <button
-                                    onClick={handleUpload}
+                                    onClick={confirm}
                                     disabled={!selectedFile || loading}
                                     className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
                                     style={{ backgroundColor: loading ? 'red' : '' }}

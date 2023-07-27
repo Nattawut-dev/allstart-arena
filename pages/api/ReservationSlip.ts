@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
-import connection from '@/db/db';
+import pool from '@/db/db';
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -17,6 +17,8 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const connection= await pool.getConnection()
+
   try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
@@ -66,5 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch {
     return res.status(500).json({ error: 'Server error' });
+  }finally {
+    connection.release(); // Release the connection back to the pool when done
   }
 }

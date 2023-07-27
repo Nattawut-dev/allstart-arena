@@ -5,17 +5,15 @@ import { useRouter } from 'next/router';
 
 interface SidebarProps {
   isOpen: boolean;
+
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen  }) => {
   const router = useRouter();
   const { id } = router.query
-  const path = router.pathname
-  const [selectedmainMenu, setSelectedmainMenu] = useState(null);
   const [selectedSubMenu1, setSelectedSubMenu1] = useState(true);
   const [selectedSubMenu2, setSelectedSubMenu2] = useState(true);
   const [selectedSubMenu3, setSelectedSubMenu3] = useState(true);
-
 
 
 
@@ -50,7 +48,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                 <Link href="/Tournament/2" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '2' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}>มือ P-/P</li></Link>
                 <Link href="/Tournament/3" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '3' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}>มือ P+/C</li></Link>
               </ul>
-
             )}
           </li>
           <li

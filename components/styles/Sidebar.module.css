@@ -9,7 +9,7 @@
   font-family: 'Roboto', sans-serif;
   z-index: 100;
   width: 220px;
-  box-shadow: 1px 10px 6px   rgba(0, 0, 0, 0.2);
+  box-shadow: 1px 4px 6px   rgba(0, 0, 0, 0.2);
   top: 60px; /* เพิ่มค่า top เพื่อให้ Sidebar ไม่ทับ Topbar */
 
 }
@@ -23,6 +23,8 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  font-weight: bold;
+
 }
 
 .menu-item {
@@ -34,6 +36,7 @@
 
 .menu-item:hover {
   color: rgb(50, 85, 241);
+  background-color: #dbe6ff;
 }
 
 .menu-item-active {
@@ -60,7 +63,10 @@
   padding: 10px;
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
-  color: rgb(50, 85, 241);
+  color: rgb(255, 255, 255);
+  background-color: #5685f3;
+  border-radius: 5px;
+
 }
 
 .menu-item a {
@@ -71,9 +77,13 @@
 
 
 .activeMenuItem {
-  color: #2d6df7;
+  color: #0c2ef1;
 }
 
 .activeSubMenu {
-  color: #2d6df7;
+  font-weight: bold;
+  color: #0c2ef1;
+  background-color: #dbe6ff;
+  border-radius: 5px;
+
 }

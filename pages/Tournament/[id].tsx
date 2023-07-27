@@ -228,10 +228,12 @@ function Tournament({ listtournament }: Props) {
   if (listtournament[0].status === 0) {
     return (
       <div className={styles.notnow}>
-        <h2>ยังไม่มีจัดการแข่งขัน</h2>
-
+        <div className={styles.notnowBox}>
+          <h1>ยังไม่มีการจัดการแข่งขัน</h1>
+          <p>ขณะนี้ยังไม่มีการจัดการแข่งขัน เช็คอัพเดทการแข่งขันได้ที่เพจ</p>
+        </div>
       </div>
-    )
+    );
   }
   else {
     return (

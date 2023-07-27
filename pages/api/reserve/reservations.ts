@@ -1,21 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import mysql, { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import connection from '@/db/db';
-// const connection = mysql.createPool({
-//   host: process.env.DB_HOST,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASS,
-//   database: process.env.DB_DATABASE,
-//   // ssl : {rejectUnauthorized: true}
-// });
+import pool from '@/db/db';
+
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const connection= await pool.getConnection()
 
   try {
     if (req.method === 'GET') {
       const query = 'SELECT id,name, court_id, time_slot_id,usedate ,start_time,end_time, price ,status FROM reserve';
-      const [reservations] = await connection.query(query);
+      const [reservations] = await pool.query(query);
       res.json(reservations);
 
 
@@ -59,5 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error) {
     console.error('Error executing query:', error);
     res.status(500).json({ message: 'Internal Server Error' });
+  }   finally {
+    connection.release(); // Release the connection back to the pool when done
   }
 }

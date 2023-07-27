@@ -1,10 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
-import mysql from 'mysql2/promise';
-import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
-import connection from '@/db/db';
+import pool from '@/db/db';
 
 // const connection = mysql.createPool({
 //     host: process.env.DB_HOST,
@@ -29,6 +26,7 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const connection= await pool.getConnection()
 
     try {
         if (req.method !== 'POST') {
@@ -115,6 +113,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch {
         res.status(500).json({ error: 'Server error' });
 
+    }finally {
+      connection.release(); // Release the connection back to the pool when done
     }
 
 }
