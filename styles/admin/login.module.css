@@ -1,0 +1,67 @@
+/* styles.module.css */
+
+/* Main Container Styling */
+.loginContainer {
+    /* ... (เหมือนเดิม) */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
+    background-image: linear-gradient(to bottom right, #08575a, #b5c1da); /* พื้นหลังให้เป็น gradient ของสีเขียว */
+}
+.loginContainer h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #eef5fa;
+    /* Badminton blue text color */
+}
+
+
+.loginContainer form {
+    display: flex;
+    flex-direction: column;
+    width: 300px; /* กำหนดความกว้างของฟอร์ม */
+    background-color: #fff; /* พื้นหลังของฟอร์ม */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.loginContainer div {
+    margin-bottom: 20px;
+}
+
+.loginContainer label {
+    font-weight: bold;
+    color: #268bd2;
+    /* Badminton blue text color */
+        font-size: 1.2rem; /* ขนาดตัวอักษรของ Label ให้ใหญ่ขึ้น */
+
+}
+
+.loginContainer input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem; /* ขนาดตัวอักษรของ Input ให้เล็กลง */
+    width: 100%;
+}
+
+.loginContainer button {
+    padding: 10px 20px;
+    background-color: #268bd2;
+    /* Badminton blue background color */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.2rem; /* ขนาดตัวอักษรของปุ่มให้ใหญ่ขึ้น */
+    margin-top: 20px; /* กำหนดระยะห่างของปุ่มจากข้อมูลอื่น ๆ */
+}
+
+.loginContainer button:hover {
+    background-color: #073642;
+    /* Darker badminton green on hover */
+}
+

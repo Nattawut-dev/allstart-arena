@@ -123,12 +123,12 @@ export default function Page() {
           // Reset form fields if needed
           setName('');
           setPhone('');
-          router.replace(`/booking/Reserve/Avaliable`)
+          router.replace(`/booking/Reserve/feedback/Avaliable/${parsedId}`)
 
         } else {
 
           console.error('Error submitting data');
-          router.replace(`/booking/Reserve/notAvaliable`)
+          router.replace(`/booking/Reserve/feedback/notAvaliable/${parsedId}`)
 
         }
       } catch (error) {

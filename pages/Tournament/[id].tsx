@@ -169,22 +169,22 @@ function Tournament({ listtournament }: Props) {
         });
 
         if (response.ok) {
-          // setTitle('');
-          // setName_1('');
-          // setNickname_1('');
-          // setAge_1('');
-          // setGender_1('');
-          // setAffiliation_1('');
-          // setTel_1('');
-          // setImage_1(null);
-          // setName_2('');
-          // setNickname_2('');
-          // setAge_2('');
-          // setGender_2('');
-          // setAffiliation_2('');
-          // setTel_2('');
-          // setImage_2(null);
-          // setError('');
+          setTitle('');
+          setName_1('');
+          setNickname_1('');
+          setAge_1('');
+          setGender_1('');
+          setAffiliation_1('');
+          setTel_1('');
+          setImage_1(null);
+          setName_2('');
+          setNickname_2('');
+          setAge_2('');
+          setGender_2('');
+          setAffiliation_2('');
+          setTel_2('');
+          setImage_2(null);
+          setError('');
           setIsLoading(false)
 
           Swal.fire({
@@ -243,6 +243,17 @@ function Tournament({ listtournament }: Props) {
     return (
 
       <>
+        <div className={styles.header}>
+          {listtournament.length >= 1 && (
+            <div>
+              <h6>รายการแข่งแบดมินตัน <span>{listtournament[0].title}</span> ครั้งที่ <span> {listtournament[0].ordinal}</span></h6>
+              <h6>ณ สถานที่ <span> {listtournament[0].location}</span></h6>
+              <h6>ระหว่างวันที่ <span>{listtournament[0].timebetween}</span></h6>
+              <h6>ระดับมือ <span style={{ fontWeight: 'bolder' }}>{level}</span> </h6>
+            </div>
+          )
+          }
+        </div>
         <h4 className={styles.h3}>สมัครแข่งขัน ระดับมือ {level}</h4>
         <div className={`${styles.content} ${isLoading ? styles.load : ''}`}>
           <div className={styles.centeredContent}>

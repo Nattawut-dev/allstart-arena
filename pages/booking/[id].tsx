@@ -93,7 +93,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
 
 
-    const setbtn = (addDay: any) => {
+    const setbtn = (addDay : number) => {
         setSelectedDate(addDays(dateInBangkok, addDay))
         getReservations();
         router.push(`/booking/${encodeURIComponent(addDay)}`)

@@ -247,7 +247,15 @@
     width: 100%;
   }
 }
-
+.header {
+  text-align: center;
+  margin: 10px;
+  font-size: 18px;
+}
+.header div span {
+  font-weight: bold;
+  color: #e68e2a;
+}
 .notnow {
   display: flex;
   justify-content: center;

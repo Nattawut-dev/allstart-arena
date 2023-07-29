@@ -7,7 +7,8 @@ import { GetServerSideProps } from 'next';
 import Image from 'next/image';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2'
-import NotFoundPage  from '../404'
+import NotFoundPage from '../404'
+import useCountdown from '../countdown';
 
 interface TimeSlot {
     id: number;
@@ -186,21 +187,36 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
     };
 
     const [court1, setCourt1] = useState<Court>();
-    const [timeSlot1, setTimeSlot1] = useState<TimeSlot>();
+
+    const [targetTime, setTargetTime] = useState(new Date());
+
 
     const payment = (id: any) => {
         const reservation = reservations.find((r) => r.id === id);
         setReservations1(reservation)
         if (reservation) {
+            if (reservation.status === 0) {
+                const targetTime = new Date(reservation.reserved_date);
+                setTargetTime(targetTime)
+            }
             const court = courts.find((c) => c.id === reservation.court_id);
             setCourt1(court)
             setShow(true);
         }
+
     }
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        setShow(false)
+    };
+
+
+    const countdownMinutes = 15;
+
+    const { minutesRemaining, secondsRemaining } = useCountdown(targetTime, countdownMinutes);
+
     if (timeSlots.length < 1 || courts.length < 1) {
-        
+
         return (
             <NotFoundPage />
         );
@@ -219,6 +235,8 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
             }
             <div className={`${styles.container} `}>
+
+
                 <h5 className={styles.title}>ตารางการจองของวันที่  {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</h5>
                 <div className={styles.btn_wrapper}>
                     <button className={`${styles.btn} ${parsedId == 0 ? styles.active : ''}`} onClick={() => setbtn(0)}>{format((dateInBangkok), 'dd MMMM ')}</button>
@@ -330,6 +348,46 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                     <h4 style={{ textAlign: "center" }}>
                                         ทั้งหมด <span style={{ color: 'red' }}>{reservations1?.price}</span> บาท
                                     </h4>
+                                    {reservations1?.status === 0 && (
+                                        <div>
+                                            {minutesRemaining > 0 && (
+                                                <div style={{ textAlign: "center" }}>
+                                                    <h6>
+                                                        <span >กรุณาชำระเงินภายใน </span>
+                                                        <span style={{ color: 'red' }} >
+                                                            <span>{minutesRemaining.toString().padStart(2, '0')}:{secondsRemaining.toString().padStart(2, '0')}</span>
+                                                        </span>
+                                                        <span> นาที </span>
+                                                    </h6>
+                                                </div>
+                                            )}
+
+                                            {minutesRemaining < 0 && (
+                                                <div style={{ textAlign: "center" }}>
+                                                    <div><h5>   <span style={{ color: 'red' }}>ข้อมูลถูกลบแล้วกรุณาจองใหม่</span></h5></div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {reservations1?.status !== 0 && (
+                                        <div style={{ textAlign: "center" }}>
+                                            {reservations1?.status === 1 && (
+                                                <div><h5> สถานะ  <span style={{ color: 'orange' }}>กำลังตรวจสอบสลิป</span></h5></div>
+
+                                            )}
+                                            {reservations1?.status === 2 && (
+
+                                                <div><h5> สถานะ   <span style={{ color: 'green' }}>ชำระเงินสำเร็จ</span></h5></div>
+
+                                            )}
+                                        </div>
+
+                                    )}
+
+
+
+
 
                                     {/* <button  className={styles.slip}>แนบสลิป</button> */}
                                 </div>
