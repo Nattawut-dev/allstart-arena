@@ -1,0 +1,21 @@
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ใช้ min-height เพื่อให้ wrapper ขยายตามเนื้อหา */
+  background-color: #ffffff;
+}
+
+.contentWrapper {
+  flex: 1; /* ใช้ flex: 1 เพื่อให้ contentWrapper ขยายตามเนื้อหา */
+  display: flex;
+}
+
+.content {
+  width: calc(95%);
+}
+
+.open .content {
+  margin-left: calc(220px ); /* ขยับเนื้อหาเมื่อเปิดเมนูด้านข้าง */
+  width: calc(100% - 220px);
+}

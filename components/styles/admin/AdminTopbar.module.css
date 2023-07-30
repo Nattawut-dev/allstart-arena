@@ -1,9 +1,17 @@
-
+/* .topBar {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  background-color: #ffffff;
+  color: #000000;
+  padding: 0 20px;
+  box-shadow: 1px 1px 6px   rgba(0, 0, 0, 0.2);
+} */
 .topBar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 220px;
   display: flex;
   align-items: center;
   height: 60px;
@@ -31,6 +39,6 @@
 }
 
 .title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: bold;
 }

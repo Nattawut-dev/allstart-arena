@@ -9,10 +9,12 @@ import { useRouter } from 'next/router';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  const isAdminRoute = router.pathname.startsWith('/admin');
+  const isAdminRoute = router.pathname.startsWith('/admin/backend');
+  const islogin = router.pathname.startsWith('/admin/login');
+
   return (
     <div>
-      {isAdminRoute ? <AdminLayout><Component {...pageProps} /></AdminLayout> : <Layout> <Component {...pageProps} /> </Layout>}
+      {isAdminRoute ? <AdminLayout><Component {...pageProps} /></AdminLayout> : islogin ? <Component {...pageProps} />:<Layout> <Component {...pageProps} /> </Layout>}
 
     </div >
 
