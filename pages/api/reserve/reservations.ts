@@ -4,7 +4,7 @@ import pool from '@/db/db';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const connection= await pool.getConnection()
+  const connection = await pool.getConnection()
 
   try {
     if (req.method === 'GET') {
@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error) {
     console.error('Error executing query:', error);
     res.status(500).json({ message: 'Internal Server Error' });
-  }   finally {
+  } finally {
     connection.release(); // Release the connection back to the pool when done
   }
 }

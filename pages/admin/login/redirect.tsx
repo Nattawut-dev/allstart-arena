@@ -16,6 +16,11 @@ export default function Welcome() {
                 const data = await response.json();
                 if (response.ok) {
                     setMessage(data.message);
+                    if (data.message == "Authenticated") {
+                        router.push('/admin/backend')
+
+                    }
+
                 } else {
                     // Redirect to the login page if the user is not authenticated
                     router.push('/admin/login')
@@ -30,36 +35,11 @@ export default function Welcome() {
         checkAuthentication();
     }, []);
 
-    const handleLogout = async () => {
-        try {
-            // Send a request to the server to clear the session (logout)
-            const response = await fetch('/api/admin/logout', {
-                method: 'POST',
-                credentials: 'include', // Include cookies in the request
-            });
-
-            if (response.ok) {
-                // Redirect to the login page after successful logout
-                router.push('/admin/login');
-            } else {
-                setMessage('Logout failed. Please try again.');
-            }
-        } catch (error) {
-            console.error('Error while logging out', error);
-            setMessage('An error occurred. Please try again later.');
-        }
-    };
-    if (message != "Authenticated") {
-        return (
-            <>
-            </>
-        );
-    }
     return (
-        <div>
-            <h1>Welcome</h1>
-            <p>{message}</p>
-            <button onClick={handleLogout}>Logout</button>
-        </div>
+        <>
+            <div style={{ top: "50%", left: "50%" ,position:"absolute" , transform : "translate(-50%,-50%)"}}>
+                <h5 >redirecting....</h5>
+            </div>
+        </>
     );
 }

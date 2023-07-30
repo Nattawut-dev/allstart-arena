@@ -24,7 +24,7 @@ export default function Login() {
             if (response.ok) {
                 setMessage(data.message);
                 // Redirect to the welcome page after successful login
-                router.push('/admin/redirect');
+                router.push('/admin/login/redirect');
                 // window.location.href = '/admin/welcome';
             } else {
                 setMessage('Login failed. Please check your username and password.');

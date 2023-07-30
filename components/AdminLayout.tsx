@@ -21,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className={styles.wrapper}>
-      <Topbar toggleSidebar={toggleSidebar} />
+      <Topbar toggleSidebar={toggleSidebar} isOpen={isSidebarOpen}/>
       <div className={`${styles.contentWrapper} ${isSidebarOpen ? styles.open : ''}`}>
         <Sidebar isOpen={isSidebarOpen} />
         <div className={styles.content}>
