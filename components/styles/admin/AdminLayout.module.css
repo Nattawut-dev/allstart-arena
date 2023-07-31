@@ -16,7 +16,7 @@
   margin-top: 40px;
   /* ขยับเนื้อหาขึ้นไปข้างล่างของ Topbar */
   width: calc(100%);
-  background: #91c7e2;
+  background: #ffffff;
 
 }
 
@@ -26,3 +26,6 @@
   width: calc(100%);
 }
 
+.box{
+  margin: 1rem;
+}

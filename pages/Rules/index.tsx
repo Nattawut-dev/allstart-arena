@@ -41,9 +41,20 @@ const Rules = ({ rules }: Props) => {
 
   return (
     <>
+
       <div className={styles.container}>
         <h3 className={styles.heading}>{rules[0].title}</h3>
         <p className={styles.content}>{rules[0].content}</p>
+        <div className={styles.contect} >
+          <div className={styles.box}>
+
+            <p style={{textAlign: "center" , marginBottom : "15px" , fontWeight : "bold"}}>ช่องทางการติดต่อ</p>
+            <p>ไอดีไลน์ : {"Sdf"}</p>
+            <p >โทร : {"0981290683"}</p>
+            <p >Facebook : <a href="">{"สนามแบดมินตัน"}</a></p>
+          </div>
+        </div>
+
       </div>
     </>
   );

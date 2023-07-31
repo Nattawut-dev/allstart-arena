@@ -8,7 +8,7 @@ type LayoutProps = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  
+
   useEffect(() => {
     setIsSidebarOpen(window.innerWidth >= 768);
   }, []);
@@ -21,14 +21,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className={styles.wrapper}>
-      <Topbar toggleSidebar={toggleSidebar} isOpen={isSidebarOpen}/>
+      <Topbar toggleSidebar={toggleSidebar} isOpen={isSidebarOpen} />
       <div className={`${styles.contentWrapper} ${isSidebarOpen ? styles.open : ''}`}>
         <Sidebar isOpen={isSidebarOpen} />
         <div className={styles.content}>
-          {children}
-          {/* {React.Children.map(children, (child:any) =>
-            React.cloneElement(child, { isSidebarOpen: isSidebarOpen })
-          )} */}
+          <div className={styles.box}>
+            {children}
+          </div>
         </div>
       </div>
     </div>

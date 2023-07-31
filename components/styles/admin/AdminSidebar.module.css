@@ -80,13 +80,14 @@ margin-left: 10px
 
 
 .activeMenuItem {
-  color: #0c2ef1;
+  color: #ffffff;
+  background-color: #002f6d;
 
 }
 
 .activeSubMenu {
   font-weight: bold;
-  color: #0c2ef1;
-  background-color: #dbe6ff;
+  color: #ffffff;
+  background-color: #002f6d;
   border-radius: 5px;
 }

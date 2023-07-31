@@ -43,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       <div className={styles.menu}>
         <ul className={styles['menu-list']}>
 
-          <Link href="/Rules" className={styles.link} ><li className={`${styles['menu-item']} ${router.pathname === '/Rules' ? styles.activeMenuItem : ''}`}> <div><FaChalkboard /> <span> ตั้งค่ากฎ</span></div> </li></Link>
+          <Link href="/admin/backend" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend' ? styles.activeMenuItem : ''}`}> <div><FaChalkboard /> <span> ตั้งค่ากฎ</span></div> </li></Link>
           <li
             className={`${styles['menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/reservations/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu1(!selectedSubMenu1)}
@@ -78,8 +78,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               </ul>
             )}
           </li>
-          <Link href="/Rules" className={styles.link} ><li className={`${styles['menu-item']} ${router.pathname === '/Rules' ? styles.activeMenuItem : ''}`}> <div> <FaTh /> <span>คอร์ท</span></div> </li></Link>
-          <Link href="/Rules" className={styles.link} ><li className={`${styles['menu-item']} ${router.pathname === '/Rules' ? styles.activeMenuItem : ''}`}> <div><FaRegClock /> <span>เวลา</span></div>  </li></Link>
+          <Link href="/Rules" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Rules' ? styles.activeMenuItem : ''}`}> <div> <FaTh /> <span>คอร์ท</span></div> </li></Link>
+          <Link href="/Rules" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Rules' ? styles.activeMenuItem : ''}`}> <div><FaRegClock /> <span>เวลา</span></div>  </li></Link>
 
           <Link onClick={handleLogout} href="" className={styles.link} ><li className={`${styles['sub-menu-item']}`} > <div><FiLogOut /> <span>ออกจากระบบ</span></div>    </li></Link>
         </ul>

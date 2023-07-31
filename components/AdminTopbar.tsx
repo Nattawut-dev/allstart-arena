@@ -13,7 +13,10 @@ const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isOpen }) => {
   return (
     <div className={styles.topBar}>
       <button className={styles.sidebarToggle} onClick={toggleSidebar}>
-        <span className={styles.sidebarToggleIcon}>{isOpen ? <FaTimes />:<FaAlignLeft /> }</span>
+        <span className={styles.sidebarToggleIcon}>
+          <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/menu--v3.png" alt="menu--v3" />
+        </span>
+        {/* <span className={styles.sidebarToggleIcon}>{isOpen ? <FaTimes />:<FaAlignLeft /> }</span> */}
       </button>
       <div className={styles.logo}>
         <Image src="/badminton-logo.jpg" alt="Badminton Logo" width={40} height={40} />
