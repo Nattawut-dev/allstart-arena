@@ -7,7 +7,12 @@ interface Rules {
   id: number;
   title: string;
   content: string;
+  tel: string;
+  line_id: string;
+  facebook_title: string;
+  facebook_url: string;
 }
+
 
 interface Props {
   rules: Rules[];
@@ -49,9 +54,9 @@ const Rules = ({ rules }: Props) => {
           <div className={styles.box}>
 
             <p style={{textAlign: "center" , marginBottom : "15px" , fontWeight : "bold"}}>ช่องทางการติดต่อ</p>
-            <p>ไอดีไลน์ : {"Sdf"}</p>
-            <p >โทร : {"0981290683"}</p>
-            <p >Facebook : <a href="">{"สนามแบดมินตัน"}</a></p>
+            <p>ไอดีไลน์ : {rules[0].line_id}</p>
+            <p >โทร : {rules[0].tel}</p>
+            <p >Facebook : <a href={rules[0].facebook_url} target="_blank">{rules[0].facebook_title}</a></p>
           </div>
         </div>
 

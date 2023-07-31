@@ -6,17 +6,23 @@
     font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 10px;
+    background-color: rgb(252, 229, 199);
+    border-radius: 10px;
+    padding: 0.5rem;
+
 }
 
 .content {
     white-space: pre-wrap;
+    background-color: rgb(252, 229, 199);
+    border-radius: 10px;
+    padding: 1rem;
 }
 .content textarea{
     width: 100%;
     height: 300px;
 }
 .container {
-    padding: 20px;
     height: fit-content;
 }
 
@@ -28,8 +34,12 @@
     text-align: end;
     font-size: 1rem;
     background-color: aliceblue;
+    width: 300px;
 }
-
+.box p input {
+    justify-content: flex-end;
+    text-align: end;
+}
 .contect {
     display: flex;
     flex-direction: column;
@@ -40,4 +50,41 @@
 
 .contect p {
     margin: 3px;
+    background-color: rgb(252, 229, 199);
+    border-radius: 10px;
+}
+
+.btn{
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    background-color: rgb(56, 56, 255);
+    color: white;
+    font-weight: bold;
+}
+.btn:disabled {
+    background-color: rgb(137, 137, 248);
+
+}
+.btn:hover {
+    background-color: rgb(137, 137, 248);
+}
+.wrapperBtn {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 5px;
+}
+.wrapperBtn div {
+    display: flex;
+    flex-direction: column;
+}
+.wrapperBtn div p{
+    margin-left: 1rem;
+    background-color: rgb(252, 229, 199);
+    border-radius: 5px;
+    padding: .4rem;
+}
+.wrapperBtn div p input{
+    width: 300px;
+    background-color: rgb(252, 229, 199);
 }
