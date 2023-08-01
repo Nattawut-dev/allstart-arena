@@ -45,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
           <Link href="/admin/backend" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend' ? styles.activeMenuItem : ''}`}> <div><FaChalkboard /> <span> ตั้งค่ากฎ</span></div> </li></Link>
           <li
-            className={`${styles['menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/reservations/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeMenuItem : ''}`}
+            className={`${styles['menu-item']} ${router.pathname === '/admin/backend/booking/[id]' || router.pathname === '/reservations/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu1(!selectedSubMenu1)}
           >
             {selectedSubMenu1 === true ? (
@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
             {selectedSubMenu1 === true && (
               <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
-                <Link href="/booking/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} > <div><FaCalendarPlus /> <span> จองสนาม</span></div></li></Link>
+                <Link href="/admin/backend/booking/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} > <div><FaCalendarPlus /> <span> จองสนาม</span></div></li></Link>
                 <Link href="/reservations/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay/> <span>ข้อมูลการจอง</span> </div></li></Link>
                 <Link href="/reservations/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt/> <span>ข้อมูลการจองย้อนหลัง</span></div></li></Link>
               </ul>

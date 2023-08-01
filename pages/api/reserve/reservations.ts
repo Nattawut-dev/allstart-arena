@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (req.method === 'GET') {
       const query = 'SELECT id,name, court_id, time_slot_id,reserved_date, usedate ,start_time,end_time, price ,status FROM reserve';
-      const [reservations] = await pool.query(query);
+      const [reservations] = await connection.query(query);
       res.json(reservations);
 
 
