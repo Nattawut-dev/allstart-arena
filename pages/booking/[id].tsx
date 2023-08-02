@@ -4,7 +4,7 @@ import styles from '../../styles/ReserveBadmintonCourt.module.css'; 3
 import { format, addDays, isAfter } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import { InferGetServerSidePropsType, GetServerSideProps } from 'next';
-import NotFoundPage  from '../404'
+import NotFoundPage from '../404'
 interface TimeSlot {
     id: number;
     start_time: string;
@@ -71,10 +71,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
     const [reservations, setReservations] = useState<Reservation[]>([]);
 
-    useEffect(() => {
-        getReservations();
-        check(parsedId)
-    }, []);
+
+
     const check = (id: any) => {
         if (id < 0 || id > 7) {
             router.push('/booking')
@@ -89,11 +87,17 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     const dateInBangkok = utcToZonedTime(new Date(), timeZone);
     const parsedId = parseInt(router.query.id as string)
 
+    useEffect(() => {
+        getReservations();
+        check(parsedId);
+        setbtn(parsedId);
+
+    }, [parsedId]);
 
     const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
 
 
-    const setbtn = (addDay : number) => {
+    const setbtn = (addDay: number) => {
         setSelectedDate(addDays(dateInBangkok, addDay))
         getReservations();
         router.push(`/booking/${encodeURIComponent(addDay)}`)
@@ -113,7 +117,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
 
     if (timeSlots.length < 1 || courts.length < 1) {
-        
+
         return (
             <NotFoundPage />
         );

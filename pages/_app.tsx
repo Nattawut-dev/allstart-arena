@@ -14,8 +14,8 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <div>
-      {islogin ? <Component {...pageProps} /> : <Layout> <Component {...pageProps} /> </Layout>}
-      {/* isAdminRoute ? <AdminLayout><Component {...pageProps} /></AdminLayout> :  */}
+      {isAdminRoute ? <AdminLayout><Component {...pageProps} /></AdminLayout> : islogin ? <Component {...pageProps} /> : <Layout> <Component {...pageProps} /> </Layout>}
+      
     </div >
 
     // <Layout>

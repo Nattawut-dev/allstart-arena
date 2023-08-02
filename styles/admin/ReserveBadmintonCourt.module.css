@@ -1,0 +1,230 @@
+.container {
+  overflow-x: auto;
+}
+
+.table {
+  margin-top: 1%;
+  width: 100%;
+  white-space: nowrap;
+  border: 2px solid rgb(109, 173, 247);
+  border-collapse: collapse;
+
+}
+
+.time-column {
+  width: 20%;
+}
+
+.cell {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  border-color: rgb(255, 255, 255);
+
+}
+
+.reserved {
+  background-color: #ff7675;
+  color: white;
+}
+
+.available {
+  background-color: #74b9ff;
+  color: white;
+}
+
+.time,
+.tablehead,
+.reserveDate {
+  white-space: nowrap;
+  background-color: #b5cae2;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-color: rgb(255, 255, 255);
+}
+
+.reserveDate2 {
+  display: flex;
+  justify-content: space-between;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Add styles for the loading spinner container */
+}
+
+.load {
+  opacity: 0.6;
+  cursor: default;
+
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f0f0f0;
+  border-top-color: #007bff;
+  border-radius: 50%;
+  animation: spinner-rotate 1s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* .tablehead {
+  background-color: aliceblue;
+  text-align: center;
+  white-space: nowrap;
+  padding: 10px;
+  background-color: #b5cae2;
+
+} */
+
+.h2 {
+  text-align: center;
+}
+
+.reserveDate {
+  background-color: #83c1ff;
+  white-space: nowrap;
+  padding: 10px;
+  text-align: center;
+  color: rgb(0, 0, 0);
+  font-size: large;
+  font-weight: 500;
+}
+.reserveDate span {
+  background-color: white;
+  padding: 5px;
+  border-radius: 8px;
+  color: #f80000;
+}
+
+.btn {
+  padding: 8px 12px;
+  margin-right: 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+}
+
+.active {
+  background-color: #67839e;
+  color: #ffffff;
+  border: #ffffff;
+}
+
+/* Adjustments for smaller screens */
+@media screen and (max-width: 768px) {
+  .table {
+    font-size: 12px;
+  }
+
+  .cell {
+    padding: 5px;
+  }
+
+  .btn {
+    padding: 10px 15px;
+    margin-right: 15px;
+
+  }
+
+}
+
+
+/* Adjustments for medium-sized screens */
+@media screen and (max-width: 1024px) {
+  .table {
+    font-size: 13px;
+  }
+
+  .cell {
+    padding: 5px;
+  }
+
+  .btn {
+    padding: 5px 10px;
+    margin-right: 15px;
+    font-size: 13px;
+  }
+
+  .reserveDate {
+    font-size: 15px;
+  }
+}
+
+/* Adjustments for larger screens */
+@media screen and (min-width: 1280px) {
+  .table {
+    font-size: 16px;
+  }
+
+  .cell {
+    padding: 12px;
+  }
+}
+
+.notnow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80%;
+}
+
+.notnowBox {
+  max-width: 600px;
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.notnow h1 {
+  color: #0066cc;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.notnow p {
+  color: #444;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+
+.DatePicker{
+  max-width: 110px;
+  padding: 5px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  border: 1px solid #410653;
+}
+
+.date_wrapper {
+  background-color: #176bd8;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.date_wrapper p{
+ margin: 0;
+ color: rgb(255, 255, 255);
+}

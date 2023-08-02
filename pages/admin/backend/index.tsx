@@ -242,7 +242,6 @@ export default function Welcome() {
     }
 
     return (
-        <AdminLayout>
 
             <div className={styles.Container}>
                 <h3>ตั้งค่ากฎ/ข้อมูลติดต่อ</h3>
@@ -344,6 +343,5 @@ export default function Welcome() {
                 </div>
             </div>
 
-        </AdminLayout>
     );
 }
