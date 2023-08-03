@@ -32,7 +32,12 @@ interface Reservation {
   start_time: string;
   end_time: string;
 }
-
+interface Holidays {
+  id: number;
+  title: string;
+  date: string;
+  status: number;
+}
 interface Props {
   timeSlots: TimeSlot[];
   courts: Court[];
@@ -73,6 +78,9 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [foundHoliday, setFoundHoliday] = useState<Holidays[]>([])
+  const [isHoliday, setIsHoliday] = useState(false);
+
   const getReservations = async () => {
     const response = await fetch(`/api/reserve/reservations`);
     const data = await response.json();
@@ -82,17 +90,40 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   const dateInBangkok = utcToZonedTime(new Date(), timeZone);
   const parsedId = parseInt(router.query.id as string)
 
-  const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
   useEffect(() => {
+    getHoliday();
     getReservations();
-    setbtn(parsedId);
+    selectDate(parsedId);
   }, [parsedId]);
 
+  const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
+
+  const selectDate = (id: number) => {
+    setSelectedDate(addDays(dateInBangkok, id))
+  }
+  const getHoliday = async () => {
+    try {
+      const selectDate = format(selectedDate, 'dd-MM-yyyy')
+      const response = await fetch(`/api/reserve/holidays?date=${selectDate}`);
+      const data = await response.json();
+      if (data.results.length >= 1) {
+        setFoundHoliday(data.results);
+        if (data.results[0].status === 0) {
+          setIsHoliday(true)
+        } else {
+          setIsHoliday(false)
+        }
+      } else {
+        setIsHoliday(false)
+      }
+    } catch {
+      console.log('error');
+    }
+  };
 
 
   const setbtn = (addDay: number) => {
     setSelectedDate(addDays(dateInBangkok, addDay))
-    getReservations();
     router.push(`/admin/backend/booking/${encodeURIComponent(addDay)}`)
   }
 
@@ -159,8 +190,9 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                     Reservation for <span>{selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
                   </td>
                 </tr>
+
                 <tr>
-                  <td>
+                  <td >
                     <div className={styles.date_wrapper}>
                       <p>เดือน/วัน/ปี</p>
                       <DatePicker
@@ -169,7 +201,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                         className={styles.DatePicker}
                       /></div>
                   </td>
-                  <td colSpan={6} className={styles.reserveDate}>
+                  <th colSpan={6} className={styles.reserveDate}>
 
 
                     <button className={`${styles.btn} ${parsedId == 0 ? styles.active : ''}`} onClick={() => setbtn(0)}>{format((dateInBangkok), 'dd MMMM ')}</button>
@@ -181,64 +213,92 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                     <button className={`${styles.btn} ${parsedId == 6 ? styles.active : ''}`} onClick={() => setbtn(6)}>{format(addDays(dateInBangkok, 6), 'dd MMMM ')}</button>
                     <button className={`${styles.btn} ${parsedId == 7 ? styles.active : ''}`} onClick={() => setbtn(7)}>{format(addDays(dateInBangkok, 7), 'dd MMMM ')}</button>
 
-                  </td>
+                  </th>
                 </tr>
-                <tr>
-                  <th className={styles.tablehead}>Time/Court</th>
-                  {courts &&
-                    courts.length > 0 &&
-                    courts.map((court) => <th className={styles.tablehead} key={court.id}> {court.title}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {timeSlots.map((timeSlot) => (
-                  <tr key={timeSlot.id}>
-                    <td className={styles.time}>
-                      {timeSlot.start_time} - {timeSlot.end_time}
-                    </td>
-                    {courts.map((court) => {
-                      const reservation = reservations.find(
-                        (reservation) =>
-                          reservation.court_id === court.id &&
-                          reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
-                          (
-                            // (reservation.start_time >= timeSlot.start_time && reservation.start_time < timeSlot.end_time) ||  // กรณีการจองเริ่มต้นในช่วงเวลาที่กำหนด
-                            // (reservation.end_time > timeSlot.start_time && reservation.end_time <= timeSlot.end_time) ||  // กรณีการจองสิ้นสุดในช่วงเวลาที่กำหนด
-                            (reservation.start_time <= timeSlot.start_time && reservation.end_time >= timeSlot.end_time)  // กรณีการจองที่ครอบคลุมช่วงเวลาที่กำหนด
-                          )
-                      );
-                      const isAvailable = !reservation;
-                      const isExpired = reservation && isAfter(new Date(), new Date(reservation.usedate));
-                      return (
-                        <td
-                          key={court.id}
-                          className={`${styles.cell} ${isAvailable ? styles.available : styles.reserved} ${isExpired ? styles.expired : ''
-                            }`}
-                          onClick={() => {
-                            if (isAvailable && !isExpired) {
-                              handleCourtReservation(
-                                court.id,
-                                timeSlot.id,
-                                timeSlot.start_time,
-                                timeSlot.end_time,
-                                parsedId
-                              );
-                            }
-                          }}
-                        >
-                          {isAvailable ? timeSlot.price + " ฿" : reservation.name}
-                        </td>
-                      );
-                    })}
+                {!isHoliday &&
+                  <tr>
+                    <th className={styles.tablehead}>Time/Court</th>
+
+                    {courts && courts.length > 0 && (
+
+                      courts.map((court) => (<th className={styles.tablehead} key={court.id}> {court.title}</th>))
+                    )
+
+                    }
                   </tr>
-                ))}
-              </tbody>
+                }
+
+              </thead>
+
+              {!isHoliday &&
+                // if 
+                <tbody>
+                  {
+                    timeSlots.map((timeSlot) => (
+                      <tr key={timeSlot.id}>
+                        <td className={styles.time}>
+                          {timeSlot.start_time} - {timeSlot.end_time}
+                        </td>
+                        {courts.map((court) => {
+                          const reservation = reservations.find(
+                            (reservation) =>
+                              reservation.court_id === court.id &&
+                              reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
+                              (
+                                // (reservation.start_time >= timeSlot.start_time && reservation.start_time < timeSlot.end_time) ||  // กรณีการจองเริ่มต้นในช่วงเวลาที่กำหนด
+                                // (reservation.end_time > timeSlot.start_time && reservation.end_time <= timeSlot.end_time) ||  // กรณีการจองสิ้นสุดในช่วงเวลาที่กำหนด
+                                (reservation.start_time <= timeSlot.start_time && reservation.end_time >= timeSlot.end_time)  // กรณีการจองที่ครอบคลุมช่วงเวลาที่กำหนด
+                              )
+                          );
+                          const isAvailable = !reservation;
+                          const isExpired = reservation && isAfter(new Date(), new Date(reservation.usedate));
+
+
+                          return (
+                            <td
+                              key={court.id}
+                              className={`${styles.cell} ${isAvailable ? styles.available : styles.reserved} ${isExpired ? styles.expired : ''
+                                }`}
+                              onClick={() => {
+                                if (isAvailable && !isExpired) {
+                                  handleCourtReservation(
+                                    court.id,
+                                    timeSlot.id,
+                                    timeSlot.start_time,
+                                    timeSlot.end_time,
+                                    parsedId
+                                  );
+                                }
+                              }}
+                            >
+                              {isAvailable ? timeSlot.price + " ฿" : reservation.name}
+                            </td>
+                          );
+
+
+                        })}
+                      </tr>
+                    ))}
+                </tbody>
+              }
+
+
             </table>
+            {
+              isHoliday &&
+              <div className='d-flex justify-content-center fs-5 flex-column '>
+                <span className='d-flex justify-content-center'>วันที่เลือกหยุดให้บริการเนื่องจาก</span>
+                <span className='d-flex justify-content-center fs-5 text-danger fw-bold'>{foundHoliday[0].title}</span>
+
+              </div>
+
+
+            }
           </div>
         </div>
 
 
-      </div>
+      </div >
 
     );
   }

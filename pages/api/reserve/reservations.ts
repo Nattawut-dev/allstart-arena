@@ -34,7 +34,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ];
         const [result] = await connection.query(insertQuery, params);
 
-        console.log((result as any).affectedRows)
         if ((result as any).affectedRows === 1) {
           res.status(200).json({ success: true, message: 'Data inserted successfully' });
         } else {

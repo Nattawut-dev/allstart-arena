@@ -16,7 +16,7 @@ export default async function insertData(name: string, phone: string) {
     await connection.query('INSERT INTO reserve (name, phone) VALUES (?, ?)', [
       name,
       phone,
-      
+
     ]);
     return {
       success: true,
@@ -25,7 +25,7 @@ export default async function insertData(name: string, phone: string) {
   } catch (error) {
     return {
       success: false,
-      //   message: error.message
+      // message: error.message
     };
   }
 }
