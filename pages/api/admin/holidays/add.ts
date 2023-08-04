@@ -4,13 +4,16 @@ import pool from '@/db/db';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { title ,date} = req.body;
+    const { title, date, status } = req.body;
     const connection = await pool.getConnection();
     try {
-        const query = `INSERT INTO holidays (title, date) VALUES (?,?)`;
-
+        const query = `INSERT INTO holidays (title, date, status)
+        SELECT ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1 FROM holidays WHERE date = ?
+        )`;
         // Execute the SQL query to insert data
-        const [results] = await connection.query(query, [title,date]);
+        const [results] = await connection.query(query, [title, date, status, date]);
 
         // Check if the results contain any data to determine success
         if ((results as any).affectedRows > 0) {

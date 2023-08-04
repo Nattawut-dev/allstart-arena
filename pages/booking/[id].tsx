@@ -112,12 +112,12 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
     const getHoliday = async () => {
         try {
-            const selectDate = format(selectedDate, 'dd-MM-yyyy')
+            const selectDate = format(selectedDate, 'MM-dd-yyyy')
             const response = await fetch(`/api/reserve/holidays?date=${selectDate}`);
             const data = await response.json();
             if (data.results.length >= 1) {
                 setFoundHoliday(data.results);
-                if (data.results[0].status === 0) {
+                if (data.results[0].status === 1) {
                     setIsHoliday(true)
                 } else {
                     setIsHoliday(false)
