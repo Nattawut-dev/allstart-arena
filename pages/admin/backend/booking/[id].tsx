@@ -80,7 +80,10 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [foundHoliday, setFoundHoliday] = useState<Holidays[]>([])
   const [isHoliday, setIsHoliday] = useState(false);
-
+  const [show, setShow] = useState(false);
+  const handleClose = () => {
+    setShow(false)
+  };
   const getReservations = async () => {
     const response = await fetch(`/api/reserve/reservations`);
     const data = await response.json();
@@ -180,8 +183,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                 )} */}
 
         <div>
-          {/* <h2 className={styles.h2}>จองสนามแบดมินตัน</h2> */}
-
+          <Button onClick={() => setShow(true)}>ตั้งค่าวันหยุด</Button>
           <div className={styles.tableWrapper}>
             <table className={`${styles.table}  ${isLoading ? styles.load : ''}`} >
               <thead>
@@ -297,7 +299,26 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
           </div>
         </div>
 
+        <Modal
 
+          show={show}
+          onHide={handleClose}
+          backdrop="static"
+          keyboard={false}
+          centered
+          className='modal-dialog-scrollable'
+        >
+          <Modal.Header>
+            <Modal.Title><h5>ตั้งค่าวันหยุด</h5></Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+
+          </Modal.Body>
+          <Modal.Footer>
+
+          </Modal.Footer>
+        </Modal>
       </div >
 
     );

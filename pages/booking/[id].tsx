@@ -196,7 +196,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                 {
                                     isHoliday ?
                                         <tr>
-                                            <td className='d-flex justify-content-center fs-5'>วันที่เลือกหยุดให้บริการเนื่องจาก  </td>
+                                            <td className='d-flex justify-content-center fs-5'>วันที่เลือกหยุดให้บริการเนื่องจาก</td>
                                             <td className='d-flex justify-content-center fs-5 text-danger fw-bold'>{foundHoliday[0].title}</td>
                                         </tr> :
                                         timeSlots.map((timeSlot) => (
