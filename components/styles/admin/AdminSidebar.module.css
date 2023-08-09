@@ -37,7 +37,7 @@
 
 .menu-item:hover {
   color: rgb(255, 255, 255);
-  background-color: #006ba0;
+  background-color: rgb(2, 107, 160);
 }
 
 .menu-item-active {

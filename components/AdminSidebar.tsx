@@ -45,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
           <Link href="/admin/backend" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend' ? styles.activeMenuItem : ''}`}> <div><FaChalkboard /> <span> ตั้งค่ากฎ</span></div> </li></Link>
           <li
-            className={`${styles['menu-item']} ${router.pathname === '/admin/backend/booking/[id]' || router.pathname === '/reservations/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeMenuItem : ''}`}
+            className={`${styles['menu-item']} ${ router.pathname.startsWith('/admin/backend/booking/') ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu1(!selectedSubMenu1)}
           >
             {selectedSubMenu1 === true ? (
@@ -55,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             {selectedSubMenu1 === true && (
               <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
                 <Link href="/admin/backend/booking/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} > <div><FaCalendarPlus /> <span> จองสนาม</span></div></li></Link>
-                <Link href="/admin/backend/booking/holidays" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay/> <span>วันหยุด</span> </div></li></Link>
+                <Link href="/admin/backend/booking/holidays" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/holidays' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay/> <span>วันหยุด</span> </div></li></Link>
                 <Link href="/reservations/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay/> <span>ข้อมูลการจอง</span> </div></li></Link>
                 <Link href="/reservations/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt/> <span>ข้อมูลการจองย้อนหลัง</span></div></li></Link>
               </ul>
@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           </li>
 
           <li
-            className={`${styles['menu-item']} ${router.pathname === '/Tournament/[id]' ? styles.activeMenuItem : ''}`}
+            className={`${styles['menu-item']} ${router.pathname.startsWith('/admin/backend/tournament/') ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu2(!selectedSubMenu2)}
           >
             {selectedSubMenu2 === true ? (
@@ -71,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             ) : <a><FaChevronCircleRight /> <span style={{marginLeft : "10px"}}></span>การแข่งขัน</a>}
             {selectedSubMenu2 === true && (
               <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
-                <Link href="/Tournament/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '0' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>การตั้งค่า</span></div> </li></Link>
+                <Link href="/admin/backend/tournament/setting" className={styles.link} ><li className={`${styles['sub-menu-item']} ${ router.pathname === '/admin/backend/tournament/setting' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>การตั้งค่า</span></div> </li></Link>
                 <Link href="/Tournament/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '0' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ N</span></div></li></Link>
                 <Link href="/Tournament/1" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '1' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ S</span></div></li></Link>
                 <Link href="/Tournament/2" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '2' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ P-/P</span></div> </li></Link>

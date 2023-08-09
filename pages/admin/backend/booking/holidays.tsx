@@ -229,7 +229,7 @@ function holiday() {
       <div className={styles.container}>
 
         <div className={styles.box}>
-          <h5>จัดการวันหยุด</h5>
+          <h5 className='fw-bold'>จัดการวันหยุด</h5>
           <table className="table table-bordered">
             <thead>
               <tr>

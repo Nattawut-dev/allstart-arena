@@ -32,11 +32,13 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
     },
   };
 };
+
 function Tournament({ listtournament }: Props) {
   const router = useRouter();
   const { id } = router.query;
   const parsedId = parseInt(id as string);
   const [level, setLevel] = useState('');
+  const [isTournament, setIsTournament] = useState(false);
 
   useEffect(() => {
     if (parsedId < 0 || parsedId > 3) {
@@ -54,7 +56,11 @@ function Tournament({ listtournament }: Props) {
       }
     }
     fetchData();
-
+    if (listtournament.length >= 1) {
+      setIsTournament(true)
+  } else {
+      setIsTournament(false)
+  }
   }, [parsedId]);
 
   const fetchData = async () => {
@@ -229,7 +235,7 @@ function Tournament({ listtournament }: Props) {
   };
 
 
-  if (listtournament[0].status === 0) {
+  if (!isTournament) {
     return (
       <div className={styles.notnow}>
         <div className={styles.notnowBox}>
@@ -239,6 +245,7 @@ function Tournament({ listtournament }: Props) {
       </div>
     );
   }
+  
   else {
     return (
 
