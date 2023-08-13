@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
                 <Link href="/admin/backend/booking/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} > <div><FaCalendarPlus /> <span> จองสนาม</span></div></li></Link>
                 <Link href="/admin/backend/booking/holidays" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/holidays' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay/> <span>วันหยุด</span> </div></li></Link>
-                <Link href="/reservations/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay/> <span>ข้อมูลการจอง</span> </div></li></Link>
+                <Link href="/admin/backend/booking/new_reserved" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/new_reserved' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay/> <span>การจองใหม่</span> </div></li></Link>
                 <Link href="/reservations/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt/> <span>ข้อมูลการจองย้อนหลัง</span></div></li></Link>
               </ul>
             )}

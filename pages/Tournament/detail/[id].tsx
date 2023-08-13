@@ -31,6 +31,7 @@ interface Listtournament {
     ordinal: number;
     location: string;
     timebetween: string;
+    max_team : number;
     status: number;
 }
 interface Props {
@@ -307,7 +308,7 @@ const DetailPage = ({ listtournament, detail }: Props) => {
                                         <td><Button variant="danger btn-sm" onClick={() => note(item.id)} className={styles.btn}>
                                             ประท้วง
                                         </Button></td>
-                                        <td>-</td>
+                                        <td className='fw-bold'>{listtournament[0].max_team > index ? <span className='text-success'>ทีมหลัก</span> : <span className='text-warning'>ทีมสำรอง</span> }</td>
 
                                     </tr>
                                 ))}

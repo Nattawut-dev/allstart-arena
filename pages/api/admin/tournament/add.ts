@@ -4,13 +4,13 @@ import pool from '@/db/db';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { title, ordinal, location ,timebetween} = req.body;
+    const { title, ordinal, location, timebetween, max_team } = req.body;
     const connection = await pool.getConnection();
-    console.log( title, ordinal, location ,timebetween)
+    console.log(title, ordinal, location, timebetween)
     try {
-        const query = `INSERT INTO listtournament (title, ordinal, location, timebetween) VALUES (?, ?, ?, ?);`; 
+        const query = `INSERT INTO listtournament (title, ordinal, location, timebetween , max_team) VALUES (?, ?, ?, ?,?);`;
         // Execute the SQL query to insert data
-        const [results] = await connection.query(query, [title, ordinal, location, timebetween]);
+        const [results] = await connection.query(query, [title, ordinal, location, timebetween, max_team]);
 
         // Check if the results contain any data to determine success
         if ((results as any).affectedRows > 0) {

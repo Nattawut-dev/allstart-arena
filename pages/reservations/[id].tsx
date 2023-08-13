@@ -257,7 +257,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                 <th>คอร์ท</th>
                                 <th>เวลาใช้สนาม</th>
                                 <th>ชื่อผู้จอง</th>
-                                <th>สภานะ</th>
+                                <th>สถานะ</th>
                                 <th>ชำระเงิน</th>
 
                             </tr>

@@ -4,29 +4,36 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import styles from '@/styles/admin/tournament/setting.module.css'
+import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
 
 
-interface Tournament {
+interface Reserve {
     id: number;
-    title: string;
-    ordinal: number;
-    location: string;
-    timebetween: string;
-    max_team: number;
+    name: string;
+    phone: number;
+    court_id: number;
+    time_slot_id: number;
+    reserved_date: string;
+    usedate: string;
+    start_time: string;
+    end_time: string;
+    price: number;
     status: number;
+    slip: string;
 }
 
 
 
 
-
 function holiday() {
-    const [tournament, setTournament] = useState<Tournament[]>([])
-    const [editholiday, setEditholiday] = useState<Tournament | null>(null);
+    const [reserve, setreserve] = useState<Reserve[]>([])
+    const [editholiday, setEditholiday] = useState<Reserve | null>(null);
+    const [detail, setDetail] = useState<Reserve | null>(null);
 
-    const [isTournament, setIsTournament] = useState(false);
+    const [filter, setFilter] = useState<string>("transferred");
+
+    const [isreserve, setIsreserve] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     const [title, setTitle] = useState('');
@@ -43,26 +50,27 @@ function holiday() {
     const [max_team2, setMax_team2] = useState(0);
 
 
-    const [status, setStatus] = useState(false);
+    const [status, setStatus] = useState(1);
 
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
 
 
     useEffect(() => {
-        getHoliday();
+        getReserve(1);
     }, []);
 
 
-    const getHoliday = async () => {
+    const getReserve = async (status: number) => {
         try {
-            const response = await fetch(`/api/admin/tournament/get`);
+            const response = await fetch(`/api/admin/reserved/new/get?status=${status}`);
+            setStatus(status)
             const data = await response.json();
             if (data.length >= 1) {
-                setTournament(data);
-                setIsTournament(true)
+                setreserve(data);
+                setIsreserve(true)
             } else {
-                setIsTournament(false)
+                setIsreserve(false)
             }
         } catch {
             console.log('error');
@@ -73,7 +81,7 @@ function holiday() {
 
     const handleCheckboxChange = async (id: number, currentStatus: number) => {
         const newStatus = currentStatus === 1 ? 0 : 1;
-        const checkIf1 = tournament.find(tournament => tournament.status === 1);
+        const checkIf1 = reserve.find(reserve => reserve.status === 1);
         if (checkIf1 && newStatus != 0) {
             Swal.fire({
                 icon: 'error',
@@ -83,7 +91,7 @@ function holiday() {
             return;
         }
         try {
-            const response = await fetch('/api/admin/tournament/statusUpdate', {
+            const response = await fetch('/api/admin/reserve/statusUpdate', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -96,9 +104,9 @@ function holiday() {
             }
 
             // Update the local state immediately after the checkbox is clicked
-            setTournament((prevTournament) =>
-                prevTournament.map((tournament) =>
-                    tournament.id === id ? { ...tournament, status: newStatus } : tournament
+            setreserve((prevreserve) =>
+                prevreserve.map((reserve) =>
+                    reserve.id === id ? { ...reserve, status: newStatus } : reserve
                 )
             );
         } catch (error: any) {
@@ -106,7 +114,8 @@ function holiday() {
             // Handle any error or display an error message
         }
     };
-    const deleteTournament = async (id: number, title: string, location: string, ordinal: number) => {
+    console.log(reserve)
+    const deletereserve = async (id: number, title: string, location: string, ordinal: number) => {
         Swal.fire({
             title: `ต้องการลบ? `,
             text: `รายการ ${title} สถานที่ ${location} ครั้งที่ ${ordinal}`,
@@ -118,7 +127,7 @@ function holiday() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/admin/tournament/delete?id=${id}`, {
+                    const response = await fetch(`/api/admin/reserve/delete?id=${id}`, {
                         method: 'DELETE',
                     });
 
@@ -133,8 +142,8 @@ function holiday() {
                     }
 
                     // Update the local state to remove the deleted holiday
-                    setTournament((prevTournament) =>
-                        prevTournament.filter((Tournament) => Tournament.id !== id)
+                    setreserve((prevreserve) =>
+                        prevreserve.filter((reserve) => reserve.id !== id)
                     );
                 } catch (error: any) {
                     console.error(error.message);
@@ -146,7 +155,7 @@ function holiday() {
 
     };
 
-    const handleAddTournament = async () => {
+    const handleAddreserve = async () => {
         if (title == '') {
             Swal.fire({
                 icon: 'error',
@@ -158,12 +167,12 @@ function holiday() {
 
         try {
 
-            const response = await fetch('/api/admin/tournament/add', {
+            const response = await fetch('/api/admin/reserve/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ title, ordinal, location, timebetween ,max_team}),
+                body: JSON.stringify({ title, ordinal, location, timebetween, max_team }),
             });
 
             if (!response.ok) {
@@ -195,7 +204,7 @@ function holiday() {
             // Handle any error or display an error message
         }
     };
-    const editSelecter = (item: Tournament) => {
+    const editSelecter = (item: Reserve) => {
         setTitle2(item.title);
         setID2(item.id);
         setLocation2(item.location);
@@ -207,7 +216,7 @@ function holiday() {
 
     async function updateHoliday() {
         try {
-            const response = await fetch(`/api/admin/tournament/update`, {
+            const response = await fetch(`/api/admin/reserve/update`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -236,7 +245,7 @@ function holiday() {
             setTimebetween2('');
             setMax_team2(0)
             setShow2(false);
-            getHoliday();
+            getReserve(status);
 
         } catch (error) {
             console.error('An error occurred while updating the data:', error);
@@ -244,9 +253,9 @@ function holiday() {
         }
     }
 
-    if (!isTournament) {
+    if (!isreserve) {
         return (
-            <div>No Tournament</div>
+            <div>No reserve</div>
         )
     }
 
@@ -257,30 +266,62 @@ function holiday() {
 
                 <div className={styles.box}>
                     <h5 className='fw-bold'>จัดการ รายการแข่งขัน</h5>
-                    <table className="table table-bordered">
-                        <thead>
+                    <div className='d-flex justify-content-end mb-2'>
+                        <Button
+                            className='mx-2'
+                            onClick={() => {
+                                setFilter('transferred');
+                                getReserve(1);
+                            }}
+                            style={{
+                                backgroundColor: filter === 'transferred' ? 'green' : 'white',
+                                color: filter === 'transferred' ? 'white' : 'black',
+                            }}
+                        >
+                            โอนแล้ว
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setFilter('notTransferred');
+                                getReserve(0);
+                            }}
+                            style={{
+                                backgroundColor: filter === 'notTransferred' ? 'red' : 'white',
+                                color: filter === 'notTransferred' ? 'white' : 'black',
+                            }}
+                        >
+                            ยังไม่โอน
+                        </Button>
+                    </div>
+                    <table className="table table-bordered table-striped">
+                        <thead >
                             <tr>
                                 <th scope="col">#</th>
+                                <th scope="col">คอร์ท</th>
                                 <th scope="col">ชื่อ</th>
-                                <th scope="col">สถานที่</th>
-                                <th scope="col">วันจัด-วันสิ้นสุด</th>
-                                <th scope="col">ครั้งที่</th>
-                                <th scope="col">จำนวนทีม</th>
+                                <th scope="col">เบอร์โทร</th>
+                                <th scope="col">วันใช้คอร์ท</th>
+                                <th scope="col">เวลาใช้สนาม</th>
+                                <th scope="col">ราคารวม</th>
                                 <th scope="col">สถานะ</th>
-                                <th scope="col">อัพเดท</th>
+                                <th scope="col">รายละเอียด</th>
                                 <th scope="col">ลบ</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {tournament.map((item, index) => (
+                            {reserve.map((item, index) => (
                                 <tr key={item.id}>
                                     <td>{index + 1}</td>
-                                    <td>{item.title}</td>
-                                    <td>{item.location}</td>
-                                    <td>{item.timebetween}</td>
-                                    <td>{item.ordinal}</td>
-                                    <td>{item.max_team}</td>
-                                    <td>
+                                    <td>{item.court_id}</td>
+                                    <td>{item.name}</td>
+                                    <td>{item.phone}</td>
+                                    <td>{item.usedate}</td>
+                                    <td>{item.start_time} - {item.end_time}</td>
+                                    <td>{item.price}</td>
+                                    <td className='' style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
+                                        {item.status === 1 ? 'ตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
+                                    </td>
+                                    {/* <td>
                                         <div className={styles.switch}>
                                             <input
                                                 type="checkbox"
@@ -290,21 +331,21 @@ function holiday() {
                                             />
                                             <label htmlFor={`${item.id}`}>Toggle</label>
                                         </div>
-                                    </td>
+                                    </td> */}
                                     <td>
                                         <Button
                                             className="btn-sm"
                                             onClick={() => {
-                                                editSelecter(item)
+                                                setDetail(item)
                                             }}
                                         >
-                                            แก้ไข
+                                            รายละเอียด
                                         </Button>
                                     </td>
                                     <td>
                                         <Button
                                             className="btn-sm btn-danger"
-                                            onClick={() => deleteTournament(item.id, item.title, item.location, item.ordinal)}
+                                            onClick={() => deletereserve(item.id, item.title, item.location, item.ordinal)}
                                         >
                                             ลบ
                                         </Button></td>
@@ -327,7 +368,7 @@ function holiday() {
                     <Modal.Title>เพิ่มงานแข่ง</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div className={styles.addtournament}>
+                    <div className={styles.addreserve}>
                         <div className='d-flex flex-column'>
                             <label htmlFor="title" className='mb-2'>ชื่อ</label>
                             <input
@@ -380,7 +421,7 @@ function holiday() {
                 </Modal.Body>
                 <Modal.Footer>
                     <div>
-                        <Button onClick={handleAddTournament}>ยืนยัน</Button>
+                        <Button onClick={handleAddreserve}>ยืนยัน</Button>
                     </div>
                     <div>
                         <Button className='btn-danger' onClick={() => setShow(false)}>ยกเลิก</Button>
@@ -393,7 +434,7 @@ function holiday() {
                     <Modal.Title>แก้ไขงานแข่ง'</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div className={styles.addtournament}>
+                    <div className={styles.addreserve}>
                         <div className='d-flex flex-column'>
                             <label htmlFor="title" className='mb-1'>ชื่อ</label>
                             <input
