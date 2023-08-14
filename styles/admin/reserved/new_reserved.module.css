@@ -70,3 +70,42 @@
     margin-right: 10px;
     margin-bottom: 5px;
 }
+
+.wrapper1 {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .wrapper {
+    display: flex;
+    justify-content: space-between;
+  }
+  .img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  .img div a {
+    color: #fff;
+    text-decoration: none;
+  }
+  .detail {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0px 20px 10px 10px;
+    padding: 0;
+    justify-content: center;
+  }
+  .wrapper4{
+    display: flex;
+    justify-content: space-evenly;
+  }
+  
+  .footer1{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }

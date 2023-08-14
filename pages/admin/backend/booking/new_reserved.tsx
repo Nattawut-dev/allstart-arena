@@ -30,6 +30,7 @@ function holiday() {
     const [reserve, setreserve] = useState<Reserve[]>([])
     const [editholiday, setEditholiday] = useState<Reserve | null>(null);
     const [detail, setDetail] = useState<Reserve | null>(null);
+    const [reservations1, setReservations1] = useState<Reserve>();
 
     const [filter, setFilter] = useState<string>("transferred");
 
@@ -252,6 +253,30 @@ function holiday() {
             throw error;
         }
     }
+    const checkslip = async (item: Reserve) => {
+
+        if (item) {
+            setReservations1(item)
+
+            // Swal.fire({
+            //     title: `ต้องการส่งภาพสลิปนี้ ?`,
+            //     imageUrl: item.slip,
+            //     imageHeight: 250,
+            //     imageWidth: 200,
+            //     showCancelButton: true,
+            //     cancelButtonText: "ยกเลิก",
+            //     confirmButtonText: 'ตกลง',
+
+            // }).then((result) => {
+            //     if (result.isConfirmed) {
+
+            //     } else {
+            //         console.log('User canceled the action.');
+            //     }
+            // })
+        }
+
+    }
 
     if (!isreserve) {
         return (
@@ -265,7 +290,7 @@ function holiday() {
             <div className={styles.container}>
 
                 <div className={styles.box}>
-                    <h5 className='fw-bold'>จัดการ รายการแข่งขัน</h5>
+                    <h5 className='fw-bold'>ตรวจสอบการโอนเงิน</h5>
                     <div className='d-flex justify-content-end mb-2'>
                         <Button
                             className='mx-2'
@@ -303,8 +328,8 @@ function holiday() {
                                 <th scope="col">วันใช้คอร์ท</th>
                                 <th scope="col">เวลาใช้สนาม</th>
                                 <th scope="col">ราคารวม</th>
-                                <th scope="col">สถานะ</th>
-                                <th scope="col">รายละเอียด</th>
+                                <th scope="col">สลิป</th>
+                                <th scope="col">แก้ไข</th>
                                 <th scope="col">ลบ</th>
                             </tr>
                         </thead>
@@ -318,9 +343,10 @@ function holiday() {
                                     <td>{item.usedate}</td>
                                     <td>{item.start_time} - {item.end_time}</td>
                                     <td>{item.price}</td>
-                                    <td className='' style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
+                                    <td><Button className="btn-sm" onClick={() => {checkslip(item);  setShow(true);}}>ตรวจสอบ</Button></td>
+                                    {/* <td className='' style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
                                         {item.status === 1 ? 'ตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
-                                    </td>
+                                    </td> */}
                                     {/* <td>
                                         <div className={styles.switch}>
                                             <input
@@ -336,10 +362,11 @@ function holiday() {
                                         <Button
                                             className="btn-sm"
                                             onClick={() => {
-                                                setDetail(item)
+                                                setDetail(item);
+                                               
                                             }}
                                         >
-                                            รายละเอียด
+                                            แก้ไข
                                         </Button>
                                     </td>
                                     <td>
@@ -357,75 +384,118 @@ function holiday() {
                         </tbody>
                     </table>
 
-                    <div className='d-flex justify-content-end'> <Button onClick={() => setShow(true)}>เพิ่มงานแข่ง</Button></div>
 
                 </div>
 
             </div>
+            <Modal
 
-            <Modal show={show} onHide={() => setShow(false)} centered>
+                show={show}
+                onHide={() => setShow(false)}
+                backdrop="static"
+                keyboard={false}
+                centered
+            >
                 <Modal.Header closeButton>
-                    <Modal.Title>เพิ่มงานแข่ง</Modal.Title>
+                    <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    <div className={styles.addreserve}>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="title" className='mb-2'>ชื่อ</label>
-                            <input
-                                type="text"
-                                id='title'
-                                placeholder='ชื่องานแข่ง'
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                            />
+                <Modal.Body className={`${loading ? styles.load : ''}`}>
+                    <div>
+                        <div className={styles.wrapper1}>
+                            <div className={styles.img}>
+                                <img src={reservations1?.slip} alt="Qrcode" width="200" height="250" />
+                                {/* {
+                                    previewImage == null &&
+                                    <div className={styles.payment}>
+                                        <div className={styles.wrapper4}>
+                                            <p>พร้อมเพย์ :</p>
+                                            <p>0987022613</p>
+                                        </div>
+                                        <div className={styles.wrapper4}>
+                                            <p>ชื่อบัญชี :</p>
+                                            <p>ณัฐวุฒิ กายชาติ</p>
+                                        </div>
+                                    </div>
+                                } */}
+                            </div>
+                            <div className={styles.detail}>
+                                <div className={styles.wrapper}>
+                                    <p>ชื่อผู้จอง</p>
+                                    <p>{reservations1?.name}</p>
+                                </div>
+                                <div className={styles.wrapper}>
+                                    <p>คอร์ทที่จอง</p>
+                                    {/* <p>{court1?.title}</p> */}
+                                </div>
+                                <div className={styles.wrapper}>
+                                    <p>วันที่ใช้สนาม</p>
+                                    <p>{reservations1?.usedate}</p>
+                                </div>
+                                <div className={styles.wrapper}>
+                                    <p>เวลาใช้สนาม</p>
+                                    <p>{reservations1?.start_time} - {reservations1?.end_time}</p>
+                                </div>
+                                <div className={styles.wrapper}>
+                                    <p>จำนวนเงินที่ต้องจ่าย</p>
+                                    <p>{reservations1?.price} บาท</p>
+                                </div>
+                                <h4 style={{ textAlign: "center" }}>
+                                    ทั้งหมด <span style={{ color: 'red' }}>{reservations1?.price}</span> บาท
+                                </h4>
+        
+
+                                {reservations1?.status !== 0 && (
+                                    <div style={{ textAlign: "center" }}>
+                                        {reservations1?.status === 1 && (
+                                            <div><h5> สถานะ  <span style={{ color: 'orange' }}>กำลังตรวจสอบสลิป</span></h5></div>
+
+                                        )}
+                                        {reservations1?.status === 2 && (
+
+                                            <div><h5> สถานะ   <span style={{ color: 'green' }}>ชำระเงินสำเร็จ</span></h5></div>
+
+                                        )}
+                                    </div>
+
+                                )}
+
+
+
+
+
+                                {/* <button  className={styles.slip}>แนบสลิป</button> */}
+                            </div>
                         </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="location" className='mb-2'>สถานที่</label>
-                            <input
-                                type="text"
-                                id='location'
-                                placeholder='สถานที่'
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                            />
-                        </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="timebetween" className='mb-2'>วันจัด-วันสิ้นสุด</label>
-                            <input
-                                type="text"
-                                id='timebetween'
-                                placeholder='วันที่เริ่ม-วันที่สิ้นสุด'
-                                value={timebetween}
-                                onChange={(e) => setTimebetween(e.target.value)}
-                            />
-                        </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="ordinal" className='mb-2'>ครั้งที่</label>
-                            <input
-                                type="number"
-                                id="ordinal"
-                                value={ordinal}
-                                onChange={(e) => setOrdinal(parseInt(e.target.value))}
-                            />
-                        </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="max_team" className='mb-1'>จำนวนทีม</label>
-                            <input
-                                type="number"
-                                id="max_team"
-                                value={max_team}
-                                onChange={(e) => setMax_team(parseInt(e.target.value))}
-                            />
-                        </div>
+
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <div>
-                        <Button onClick={handleAddreserve}>ยืนยัน</Button>
-                    </div>
-                    <div>
-                        <Button className='btn-danger' onClick={() => setShow(false)}>ยกเลิก</Button>
-                    </div>
+                    {/* <div className={styles.footer1}> */}
+{/* 
+                        <div className={styles.btn1}><Button className='btn-info '><a href="/QR5.jpg" download="QR.jpg">โหลดสลิป</a></Button></div>
+                        <div className={styles.slipbtn}>
+                            <label htmlFor="file-input" className={styles.file_input}>
+                                เลือกภาพสลิป
+                            </label>
+                            <input
+                                style={{ display: 'none' }}
+                                id="file-input"
+                                type="file"
+                                accept="image/*"
+                                // onChange={handleFileChange}
+                                className="file-input"
+                            />
+                            <button
+                                onClick={confirm}
+                                disabled={!selectedFile || loading}
+                                className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
+                                style={{ backgroundColor: loading ? 'red' : '' }}
+                            >
+                                {loading ? 'อัพโหลด...' : 'ส่งสลิป'}
+                            </button>
+                        </div>
+
+                    </div> */}
                 </Modal.Footer>
             </Modal>
 
