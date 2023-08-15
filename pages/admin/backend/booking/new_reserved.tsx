@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
+import { count } from 'console';
 
 
 interface Reserve {
@@ -23,11 +24,19 @@ interface Reserve {
     slip: string;
 }
 
+interface Court {
+    id: number;
+    title: string;
+    status: number;
+}
 
 
 
 function holiday() {
     const [reserve, setreserve] = useState<Reserve[]>([])
+    const [courts, setCourts] = useState<Court[]>([])
+    const [selectcourt, setSelectCourt] = useState<Court>()
+
     const [editholiday, setEditholiday] = useState<Reserve | null>(null);
     const [detail, setDetail] = useState<Reserve | null>(null);
     const [reservations1, setReservations1] = useState<Reserve>();
@@ -56,27 +65,44 @@ function holiday() {
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
 
+    const [selectedOption, setSelectedOption] = useState<string>(''); // State to track the selected option
 
+    const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSelectedOption(event.target.value);
+    };
     useEffect(() => {
         getReserve(1);
+        getCourt();
     }, []);
 
 
     const getReserve = async (status: number) => {
         try {
             const response = await fetch(`/api/admin/reserved/new/get?status=${status}`);
-            setStatus(status)
+            setStatus(status);
             const data = await response.json();
             if (data.length >= 1) {
                 setreserve(data);
-                setIsreserve(true)
+                setIsreserve(true);
             } else {
-                setIsreserve(false)
+                setIsreserve(false);
             }
         } catch {
             console.log('error');
         }
     };
+    const getCourt = async () => {
+        try {
+            const courts = await fetch(`/api/reserve/courts`);
+            const courts_data = await courts.json();
+            setCourts(courts_data.courts);
+        } catch {
+            alert("error")
+        }
+
+    }
+
+
     const [loading, setLoading] = useState(false);
 
 
@@ -115,7 +141,7 @@ function holiday() {
             // Handle any error or display an error message
         }
     };
-    console.log(reserve)
+
     const deletereserve = async (id: number, title: string, location: string, ordinal: number) => {
         Swal.fire({
             title: `ต้องการลบ? `,
@@ -198,7 +224,7 @@ function holiday() {
             setTitle('');
             setMax_team(0)
             setShow(false);
-            getHoliday();
+            getReserve();
 
         } catch (error) {
             console.error('An error occurred while adding the data:', error);
@@ -257,25 +283,21 @@ function holiday() {
 
         if (item) {
             setReservations1(item)
-
-            // Swal.fire({
-            //     title: `ต้องการส่งภาพสลิปนี้ ?`,
-            //     imageUrl: item.slip,
-            //     imageHeight: 250,
-            //     imageWidth: 200,
-            //     showCancelButton: true,
-            //     cancelButtonText: "ยกเลิก",
-            //     confirmButtonText: 'ตกลง',
-
-            // }).then((result) => {
-            //     if (result.isConfirmed) {
-
-            //     } else {
-            //         console.log('User canceled the action.');
-            //     }
-            // })
+            const findCourt = courts.find((c) => c.id === item.court_id);
+            setSelectCourt(findCourt)
         }
 
+    }
+
+    const showslip = () => {
+        Swal.fire({
+            imageUrl: reservations1?.slip, // Replace with your image URL
+            imageAlt: 'Image Alt Text',
+            showCloseButton: true,
+            focusConfirm: false,
+            title: `${reservations1?.price} บาท`,
+            confirmButtonText: 'Close',
+        });
     }
 
     if (!isreserve) {
@@ -343,7 +365,7 @@ function holiday() {
                                     <td>{item.usedate}</td>
                                     <td>{item.start_time} - {item.end_time}</td>
                                     <td>{item.price}</td>
-                                    <td><Button className="btn-sm" onClick={() => {checkslip(item);  setShow(true);}}>ตรวจสอบ</Button></td>
+                                    <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>ตรวจสอบ</Button></td>
                                     {/* <td className='' style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
                                         {item.status === 1 ? 'ตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
                                     </td> */}
@@ -363,7 +385,7 @@ function holiday() {
                                             className="btn-sm"
                                             onClick={() => {
                                                 setDetail(item);
-                                               
+
                                             }}
                                         >
                                             แก้ไข
@@ -392,31 +414,19 @@ function holiday() {
 
                 show={show}
                 onHide={() => setShow(false)}
-                backdrop="static"
+                backdrop={true}
                 keyboard={false}
                 centered
+                animation={false}
             >
-                <Modal.Header closeButton>
+                <Modal.Header closeButton >
                     <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
                 </Modal.Header>
                 <Modal.Body className={`${loading ? styles.load : ''}`}>
                     <div>
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
-                                <img src={reservations1?.slip} alt="Qrcode" width="200" height="250" />
-                                {/* {
-                                    previewImage == null &&
-                                    <div className={styles.payment}>
-                                        <div className={styles.wrapper4}>
-                                            <p>พร้อมเพย์ :</p>
-                                            <p>0987022613</p>
-                                        </div>
-                                        <div className={styles.wrapper4}>
-                                            <p>ชื่อบัญชี :</p>
-                                            <p>ณัฐวุฒิ กายชาติ</p>
-                                        </div>
-                                    </div>
-                                } */}
+                                <button onClick={() => { showslip() }}><img src={reservations1?.slip} alt="Qrcode" width="200" height="250" /></button>
                             </div>
                             <div className={styles.detail}>
                                 <div className={styles.wrapper}>
@@ -425,7 +435,7 @@ function holiday() {
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>คอร์ทที่จอง</p>
-                                    {/* <p>{court1?.title}</p> */}
+                                    <p>{selectcourt?.title}</p>
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>วันที่ใช้สนาม</p>
@@ -439,12 +449,48 @@ function holiday() {
                                     <p>จำนวนเงินที่ต้องจ่าย</p>
                                     <p>{reservations1?.price} บาท</p>
                                 </div>
-                                <h4 style={{ textAlign: "center" }}>
+                                {/* <h4 style={{ textAlign: "center" }}>
                                     ทั้งหมด <span style={{ color: 'red' }}>{reservations1?.price}</span> บาท
-                                </h4>
-        
+                                </h4> */}
 
-                                {reservations1?.status !== 0 && (
+                                {/* <div><h5> สถานะ </h5></div> */}
+                    <div className={styles.container_radio}>
+                        <div className={styles.wrapper_radio}>
+                            <label className={`${styles.option} ${styles.radio1} ${selectedOption === 'กำลังตรวจสอบ' ? styles.checked : ''}`}>
+                                <input
+                                    style={{ display: "none" }}
+                                    type="radio"
+                                    value="กำลังตรวจสอบ"
+                                    id="option-1"
+                                    checked={selectedOption === 'กำลังตรวจสอบ'}
+                                    onChange={handleOptionChange}
+                                />
+                                <div className={styles.dot}>
+                                    <div className={styles.innerDot}></div>
+                                </div>
+                                <span>กำลังตรวจสอบ</span>
+
+                            </label>
+
+                            <label className={`${styles.option} ${styles.radio2} ${selectedOption === 'ยืนยันสลิป' ? styles.checked : ''}`}>
+                                <input
+                                    style={{ display: "none" }}
+
+                                    type="radio"
+                                    value="ยืนยันสลิป"
+                                    id="option-2"
+                                    checked={selectedOption === 'ยืนยันสลิป'}
+                                    onChange={handleOptionChange}
+                                />
+                                <div className={styles.dot}>
+                                    <div className={styles.innerDot}></div>
+                                </div>
+                                <span>ตรวจสอบแล้ว</span>
+
+                            </label>
+                        </div>
+                    </div>
+                                {/* {reservations1?.status !== 0 && (
                                     <div style={{ textAlign: "center" }}>
                                         {reservations1?.status === 1 && (
                                             <div><h5> สถานะ  <span style={{ color: 'orange' }}>กำลังตรวจสอบสลิป</span></h5></div>
@@ -457,7 +503,7 @@ function holiday() {
                                         )}
                                     </div>
 
-                                )}
+                                )} */}
 
 
 
@@ -468,34 +514,12 @@ function holiday() {
                         </div>
 
                     </div>
+
                 </Modal.Body>
                 <Modal.Footer>
-                    {/* <div className={styles.footer1}> */}
-{/* 
-                        <div className={styles.btn1}><Button className='btn-info '><a href="/QR5.jpg" download="QR.jpg">โหลดสลิป</a></Button></div>
-                        <div className={styles.slipbtn}>
-                            <label htmlFor="file-input" className={styles.file_input}>
-                                เลือกภาพสลิป
-                            </label>
-                            <input
-                                style={{ display: 'none' }}
-                                id="file-input"
-                                type="file"
-                                accept="image/*"
-                                // onChange={handleFileChange}
-                                className="file-input"
-                            />
-                            <button
-                                onClick={confirm}
-                                disabled={!selectedFile || loading}
-                                className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
-                                style={{ backgroundColor: loading ? 'red' : '' }}
-                            >
-                                {loading ? 'อัพโหลด...' : 'ส่งสลิป'}
-                            </button>
-                        </div>
 
-                    </div> */}
+                    <Button onClick={() => setShow(false)} className='btn btn-secondary '>Close</Button>
+
                 </Modal.Footer>
             </Modal>
 

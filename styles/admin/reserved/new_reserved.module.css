@@ -1,111 +1,187 @@
 .container {
-    overflow: auto
+  overflow: auto
 }
 
 .box {
-    /* max-width: 1000px; */
-    text-align: center;
-    margin: auto;
+  /* max-width: 1000px; */
+  text-align: center;
+  margin: auto;
 }
 
 .switch {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .switch input[type=checkbox] {
-    height: 0;
-    width: 0;
-    visibility: hidden;
+  height: 0;
+  width: 0;
+  visibility: hidden;
 }
 
 .switch label {
-    cursor: pointer;
-    text-indent: -9999px;
-    width: 50px;
-    height: 25px;
-    background: grey;
-    display: block;
-    border-radius: 25px;
-    position: relative;
+  cursor: pointer;
+  text-indent: -9999px;
+  width: 50px;
+  height: 25px;
+  background: grey;
+  display: block;
+  border-radius: 25px;
+  position: relative;
 }
 
 .switch label:after {
-    content: '';
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 25px;
-    height: 25px;
-    background: #fffefe;
-    border-radius: 25px;
-    transition: 0.3s;
-    border: solid #524e4e31;
+  content: '';
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 25px;
+  height: 25px;
+  background: #fffefe;
+  border-radius: 25px;
+  transition: 0.3s;
+  border: solid #524e4e31;
 
 }
 
 .switch input:checked+label {
-    background: #5aee04;
+  background: #5aee04;
 }
 
 .switch input:checked+label:after {
-    left: calc(100%);
-    transform: translateX(-100%);
+  left: calc(100%);
+  transform: translateX(-100%);
 }
 
 .switch label:active:after {
-    width: 10px;
+  width: 10px;
 }
 
 .addtournament {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
 }
 
 .addtournament input {
-    border: 0.1px solid rgb(46, 46, 46);
-    border-radius: 5px;
-    padding: 5px;
-    margin-right: 10px;
-    margin-bottom: 5px;
+  border: 0.1px solid rgb(46, 46, 46);
+  border-radius: 5px;
+  padding: 5px;
+  margin-right: 10px;
+  margin-bottom: 5px;
 }
 
 .wrapper1 {
-    display: flex;
-    width: 100%;
-    justify-content: flex-start;
-  }
-  
-  .wrapper {
-    display: flex;
-    justify-content: space-between;
-  }
-  .img {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  }
-  .img div a {
-    color: #fff;
-    text-decoration: none;
-  }
-  .detail {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin: 0px 20px 10px 10px;
-    padding: 0;
-    justify-content: center;
-  }
-  .wrapper4{
-    display: flex;
-    justify-content: space-evenly;
-  }
-  
-  .footer1{
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-  }
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.img button {
+  border: none;
+  background-color: white;
+}
+
+.img img {
+  border-radius: 8px;
+
+}
+
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0px 20px 10px 10px;
+  padding: 0;
+  justify-content: center;
+}
+
+.wrapper4 {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.footer1 {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+
+.wrapper_radio {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  height: 125px;
+  width: 100%;
+
+}
+
+.option {
+  background: #fff;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+ margin-bottom: .7rem;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 0 10px;
+  border: 2px solid lightgrey;
+  transition: all 0.3s ease;
+}
+
+.dot {
+  height: 20px;
+  width: 20px;
+  background: #d9d9d9;
+  border-radius: 50%;
+  position: relative;
+  margin-right: 0.7rem;
+}
+
+.innerDot {
+  position: absolute;
+  content: '';
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  background: #0069d9;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(1.5);
+  transition: all 0.3s ease;
+}
+
+
+.checked {
+  border-color: #0069d9;
+  background: #0069d9;
+}
+
+.checked .dot {
+  background: #fff;
+}
+
+.checked .innerDot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.checked span {
+  color: #fff;
+}
