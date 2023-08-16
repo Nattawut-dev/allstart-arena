@@ -67,8 +67,37 @@ function holiday() {
 
     const [selectedOption, setSelectedOption] = useState<string>(''); // State to track the selected option
 
-    const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleOptionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        const newStatus = value === 'กำลังตรวจสอบ' ? 1 : 2;
+
+        if (value) {
+            try {
+                const response = await fetch('/api/admin/reserved/new/updateStatus', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: reservations1?.id, newStatus: newStatus }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('An error occurred while updating the data.');
+                }
+
+                // Update the local state immediately after the checkbox is clicked
+                setreserve((prevreserve) =>
+                    prevreserve.map((reserve) =>
+                        reserve.id === reservations1?.id ? { ...reserve, status: newStatus } : reserve
+                    )
+                );
+            } catch (error: any) {
+                console.error(error.message);
+                // Handle any error or display an error message
+            }
+        }
         setSelectedOption(event.target.value);
+
     };
     useEffect(() => {
         getReserve(1);
@@ -454,42 +483,41 @@ function holiday() {
                                 </h4> */}
 
                                 {/* <div><h5> สถานะ </h5></div> */}
-                    <div className={styles.container_radio}>
-                        <div className={styles.wrapper_radio}>
-                            <label className={`${styles.option} ${styles.radio1} ${selectedOption === 'กำลังตรวจสอบ' ? styles.checked : ''}`}>
-                                <input
-                                    style={{ display: "none" }}
-                                    type="radio"
-                                    value="กำลังตรวจสอบ"
-                                    id="option-1"
-                                    checked={selectedOption === 'กำลังตรวจสอบ'}
-                                    onChange={handleOptionChange}
-                                />
-                                <div className={styles.dot}>
-                                    <div className={styles.innerDot}></div>
+                                <div className={styles.container_radio}>
+                                    <div className={styles.wrapper_radio}>
+                                        <label className={`${styles.option} ${styles.radio1} ${selectedOption === 'กำลังตรวจสอบ' ||  reservations1?.status === 1 ? styles.checked : ''}`}>
+                                            <input
+                                                style={{ display: "none" }}
+                                                type="radio"
+                                                value="กำลังตรวจสอบ"
+                                                id="option-1"
+                                                checked={selectedOption === 'กำลังตรวจสอบ' || reservations1?.status === 1}
+                                                onChange={handleOptionChange}
+                                            />
+                                            <div className={styles.dot}>
+                                                <div className={styles.innerDot}></div>
+                                            </div>
+                                            <span>กำลังตรวจสอบ</span>
+                                        </label>
+
+                                        <label className={`${styles.option} ${styles.radio2} ${selectedOption === 'ยืนยันสลิป' ? styles.checked : ''}`}>
+                                            <input
+                                                style={{ display: "none" }}
+
+                                                type="radio"
+                                                value="ยืนยันสลิป"
+                                                id="option-2"
+                                                checked={selectedOption === 'ยืนยันสลิป'}
+                                                onChange={handleOptionChange}
+                                            />
+                                            <div className={styles.dot}>
+                                                <div className={styles.innerDot}></div>
+                                            </div>
+                                            <span>ตรวจสอบแล้ว</span>
+
+                                        </label>
+                                    </div>
                                 </div>
-                                <span>กำลังตรวจสอบ</span>
-
-                            </label>
-
-                            <label className={`${styles.option} ${styles.radio2} ${selectedOption === 'ยืนยันสลิป' ? styles.checked : ''}`}>
-                                <input
-                                    style={{ display: "none" }}
-
-                                    type="radio"
-                                    value="ยืนยันสลิป"
-                                    id="option-2"
-                                    checked={selectedOption === 'ยืนยันสลิป'}
-                                    onChange={handleOptionChange}
-                                />
-                                <div className={styles.dot}>
-                                    <div className={styles.innerDot}></div>
-                                </div>
-                                <span>ตรวจสอบแล้ว</span>
-
-                            </label>
-                        </div>
-                    </div>
                                 {/* {reservations1?.status !== 0 && (
                                     <div style={{ textAlign: "center" }}>
                                         {reservations1?.status === 1 && (
