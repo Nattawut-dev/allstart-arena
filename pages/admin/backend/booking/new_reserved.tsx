@@ -6,7 +6,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
-import { count } from 'console';
+import useCountdown from '../../../countdown';
 
 
 interface Reserve {
@@ -37,7 +37,7 @@ function holiday() {
     const [courts, setCourts] = useState<Court[]>([])
     const [selectcourt, setSelectCourt] = useState<Court>()
 
-    const [editholiday, setEditholiday] = useState<Reserve | null>(null);
+    const [editreserve, setEditreserve] = useState<Reserve | null>(null);
     const [detail, setDetail] = useState<Reserve | null>(null);
     const [reservations1, setReservations1] = useState<Reserve>();
 
@@ -65,20 +65,33 @@ function holiday() {
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
 
-    const [selectedOption, setSelectedOption] = useState<string>(''); // State to track the selected option
+    const [selectedOption, setSelectedOption] = useState(0); // State to track the selected option
+
+    const [name, setName] = useState<string>('');
+    const [selectedCourtTitle, setSelectedCourtTitle] = useState<string>('');
+    const [useDate, setUseDate] = useState<string>('');
+    const [startTime, setStartTime] = useState<string>('');
+    const [endTime, setEndTime] = useState<string>('');
+    const [price, setPrice] = useState<number>(0);
+
+
+    const [targetTime, setTargetTime] = useState(new Date());
+    const countdownMinutes = 15;
+    const { minutesRemaining, secondsRemaining } = useCountdown(targetTime, countdownMinutes);
+
+
 
     const handleOptionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value
-        const newStatus = value === 'กำลังตรวจสอบ' ? 1 : 2;
 
-        if (value) {
+        const value = parseInt(event.target.value)
+        if (event) {
             try {
                 const response = await fetch('/api/admin/reserved/new/updateStatus', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ id: reservations1?.id, newStatus: newStatus }),
+                    body: JSON.stringify({ id: reservations1?.id, newStatus: value }),
                 });
 
                 if (!response.ok) {
@@ -86,17 +99,19 @@ function holiday() {
                 }
 
                 // Update the local state immediately after the checkbox is clicked
-                setreserve((prevreserve) =>
-                    prevreserve.map((reserve) =>
-                        reserve.id === reservations1?.id ? { ...reserve, status: newStatus } : reserve
-                    )
-                );
+                setSelectedOption(value);
+                // setreserve((prevreserve) =>
+                //     prevreserve.map((reserve) =>
+                //         reserve.id === reservations1?.id ? { ...reserve, status: value } : reserve
+                //     )
+                // );
+                getReserve(status);
             } catch (error: any) {
                 console.error(error.message);
                 // Handle any error or display an error message
             }
         }
-        setSelectedOption(event.target.value);
+
 
     };
     useEffect(() => {
@@ -135,46 +150,10 @@ function holiday() {
     const [loading, setLoading] = useState(false);
 
 
-    const handleCheckboxChange = async (id: number, currentStatus: number) => {
-        const newStatus = currentStatus === 1 ? 0 : 1;
-        const checkIf1 = reserve.find(reserve => reserve.status === 1);
-        if (checkIf1 && newStatus != 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'ข้อผิดพลาด',
-                text: 'สามารถเปิดได้แค่ครั้งละ 1 การแข่งเท่านั้น',
-            })
-            return;
-        }
-        try {
-            const response = await fetch('/api/admin/reserve/statusUpdate', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: id, newStatus: newStatus }),
-            });
-
-            if (!response.ok) {
-                throw new Error('An error occurred while updating the data.');
-            }
-
-            // Update the local state immediately after the checkbox is clicked
-            setreserve((prevreserve) =>
-                prevreserve.map((reserve) =>
-                    reserve.id === id ? { ...reserve, status: newStatus } : reserve
-                )
-            );
-        } catch (error: any) {
-            console.error(error.message);
-            // Handle any error or display an error message
-        }
-    };
-
-    const deletereserve = async (id: number, title: string, location: string, ordinal: number) => {
+    const deletereserve = async (item: Reserve) => {
         Swal.fire({
             title: `ต้องการลบ? `,
-            text: `รายการ ${title} สถานที่ ${location} ครั้งที่ ${ordinal}`,
+            text: `การจองของ ${item.name} ของวันที่ ${item.usedate} เวลาใช้สนาม ${item.start_time}  - ${item.end_time}`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -183,7 +162,7 @@ function holiday() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/admin/reserve/delete?id=${id}`, {
+                    const response = await fetch(`/api/admin/reserved/delete?id=${item.id}`, {
                         method: 'DELETE',
                     });
 
@@ -192,14 +171,14 @@ function holiday() {
                     } else {
                         Swal.fire(
                             'Deleted!',
-                            `ลบ รายการ ${title} สถานที่ ${location} ครั้งที่ ${ordinal} เรียบร้อย`,
+                            `ลบ การจองของ ${item.name} ของวันที่ ${item.usedate} เวลาใช้สนาม ${item.start_time}  - ${item.end_time} เรียบร้อย`,
                             'success'
                         )
                     }
 
                     // Update the local state to remove the deleted holiday
                     setreserve((prevreserve) =>
-                        prevreserve.filter((reserve) => reserve.id !== id)
+                        prevreserve.filter((reserve) => reserve.id !== item.id)
                     );
                 } catch (error: any) {
                     console.error(error.message);
@@ -211,62 +190,22 @@ function holiday() {
 
     };
 
-    const handleAddreserve = async () => {
-        if (title == '') {
-            Swal.fire({
-                icon: 'error',
-                title: 'กรอกหัวข้อ',
-                text: 'กรุณากรอกหัวข้อ',
-            })
-            return;
-        }
-
-        try {
-
-            const response = await fetch('/api/admin/reserve/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ title, ordinal, location, timebetween, max_team }),
-            });
-
-            if (!response.ok) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'มีข้อผิดพลาด',
-                    text: 'กรุณาลองใหม่อีกครั้ง',
-                })
-                throw new Error('Failed to add the data.');
-            }
-
-            // Reset the state and close the modal after successful addition
-            Swal.fire({
-                icon: 'success',
-                title: 'สำเร็จ',
-                text: 'เพิ่มการแข่งขันสำเร็จ',
-            })
-            setTitle('');
-            setOrdinal(0);
-            setTimebetween('');
-            setLocation('');
-            setTitle('');
-            setMax_team(0)
-            setShow(false);
-            getReserve();
-
-        } catch (error) {
-            console.error('An error occurred while adding the data:', error);
-            // Handle any error or display an error message
-        }
-    };
     const editSelecter = (item: Reserve) => {
-        setTitle2(item.title);
-        setID2(item.id);
-        setLocation2(item.location);
-        setOrdinal2(item.ordinal);
-        setTimebetween2(item.timebetween);
-        setMax_team2(item.max_team)
+        if (item.status === 0) {
+            const targetTime = new Date(item.reserved_date);
+            setTargetTime(targetTime)
+        }
+        setEditreserve(item);
+        const findCourt = courts.find((c) => c.id === item.court_id);
+        setSelectCourt(findCourt);
+        setName(item.name);
+        if (findCourt) {
+            setSelectedCourtTitle(findCourt?.title);
+        }
+        setUseDate(item.usedate);
+        setStartTime(item.start_time);
+        setEndTime(item.end_time);
+        setPrice(item.price);
         setShow2(true);
     }
 
@@ -302,7 +241,6 @@ function holiday() {
             setMax_team2(0)
             setShow2(false);
             getReserve(status);
-
         } catch (error) {
             console.error('An error occurred while updating the data:', error);
             throw error;
@@ -312,8 +250,17 @@ function holiday() {
 
         if (item) {
             setReservations1(item)
+            setSelectedOption(item.status);
             const findCourt = courts.find((c) => c.id === item.court_id);
             setSelectCourt(findCourt)
+            setName(item.name);
+            if (findCourt) {
+                setSelectedCourtTitle(findCourt?.title);
+            }
+            setUseDate(item.usedate);
+            setStartTime(item.start_time);
+            setEndTime(item.end_time);
+            setPrice(item.price);
         }
 
     }
@@ -379,8 +326,8 @@ function holiday() {
                                 <th scope="col">วันใช้คอร์ท</th>
                                 <th scope="col">เวลาใช้สนาม</th>
                                 <th scope="col">ราคารวม</th>
-                                <th scope="col">สลิป</th>
-                                <th scope="col">แก้ไข</th>
+                                <th scope="col">สถานะ</th>
+                                <th scope="col">สลิป/แก้ไข</th>
                                 <th scope="col">ลบ</th>
                             </tr>
                         </thead>
@@ -394,10 +341,11 @@ function holiday() {
                                     <td>{item.usedate}</td>
                                     <td>{item.start_time} - {item.end_time}</td>
                                     <td>{item.price}</td>
-                                    <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>ตรวจสอบ</Button></td>
-                                    {/* <td className='' style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
+                                    <td className='' style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
                                         {item.status === 1 ? 'ตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
-                                    </td> */}
+                                    </td>
+                                    <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>สลิป/แก้ไข</Button></td>
+
                                     {/* <td>
                                         <div className={styles.switch}>
                                             <input
@@ -409,21 +357,11 @@ function holiday() {
                                             <label htmlFor={`${item.id}`}>Toggle</label>
                                         </div>
                                     </td> */}
-                                    <td>
-                                        <Button
-                                            className="btn-sm"
-                                            onClick={() => {
-                                                setDetail(item);
 
-                                            }}
-                                        >
-                                            แก้ไข
-                                        </Button>
-                                    </td>
                                     <td>
                                         <Button
                                             className="btn-sm btn-danger"
-                                            onClick={() => deletereserve(item.id, item.title, item.location, item.ordinal)}
+                                            onClick={() => deletereserve(item)}
                                         >
                                             ลบ
                                         </Button></td>
@@ -455,43 +393,80 @@ function holiday() {
                     <div>
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
-                                <button onClick={() => { showslip() }}><img src={reservations1?.slip} alt="Qrcode" width="200" height="250" /></button>
+                                <button onClick={() => { showslip() }}><img src={reservations1?.slip === null ? '/No_image_available.png' : reservations1?.slip} alt="Qrcode" width="200" height="250" /></button>
                             </div>
+
                             <div className={styles.detail}>
                                 <div className={styles.wrapper}>
                                     <p>ชื่อผู้จอง</p>
-                                    <p>{reservations1?.name}</p>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                    />
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>คอร์ทที่จอง</p>
-                                    <p>{selectcourt?.title}</p>
+                                    <input
+                                        type="text"
+                                        value={selectedCourtTitle}
+                                        onChange={(e) => setSelectedCourtTitle(e.target.value)}
+                                    />
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>วันที่ใช้สนาม</p>
-                                    <p>{reservations1?.usedate}</p>
+                                    <input
+                                        type="text"
+                                        value={useDate}
+                                        onChange={(e) => setUseDate(e.target.value)}
+                                    />
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>เวลาใช้สนาม</p>
-                                    <p>{reservations1?.start_time} - {reservations1?.end_time}</p>
+                                    <input
+                                        type="text"
+                                        value={`${startTime} - ${endTime}`}
+                                        onChange={(e) => {
+                                            const [newStartTime, newEndTime] = e.target.value.split(' - ');
+                                            setStartTime(newStartTime);
+                                            setEndTime(newEndTime);
+                                        }}
+                                    />
                                 </div>
                                 <div className={styles.wrapper}>
-                                    <p>จำนวนเงินที่ต้องจ่าย</p>
-                                    <p>{reservations1?.price} บาท</p>
+                                    <p>ราคา</p>
+                                    <input
+                                        type="number"
+                                        value={price}
+                                        onChange={(e) => setPrice(parseFloat(e.target.value))}
+                                    />
                                 </div>
-                                {/* <h4 style={{ textAlign: "center" }}>
-                                    ทั้งหมด <span style={{ color: 'red' }}>{reservations1?.price}</span> บาท
-                                </h4> */}
 
                                 {/* <div><h5> สถานะ </h5></div> */}
                                 <div className={styles.container_radio}>
                                     <div className={styles.wrapper_radio}>
-                                        <label className={`${styles.option} ${styles.radio1} ${selectedOption === 'กำลังตรวจสอบ' ||  reservations1?.status === 1 ? styles.checked : ''}`}>
+                                        <label className={`${styles.option} ${selectedOption === 0 ? styles.checked : ''}`}>
                                             <input
                                                 style={{ display: "none" }}
                                                 type="radio"
-                                                value="กำลังตรวจสอบ"
+                                                value= {0}
+                                                id="option-0"
+                                                checked={selectedOption === 0}
+                                                onChange={handleOptionChange}
+                                            />
+                                            <div className={styles.dot}>
+                                                <div className={styles.innerDot}></div>
+                                            </div>
+                                            <span>ยังไม่แนบสลิป</span>
+                                        </label>
+
+                                        <label className={`${styles.option} ${selectedOption === 1 ? styles.checked : ''}`}>
+                                            <input
+                                                style={{ display: "none" }}
+                                                type="radio"
+                                                value={1}
                                                 id="option-1"
-                                                checked={selectedOption === 'กำลังตรวจสอบ' || reservations1?.status === 1}
+                                                checked={selectedOption === 1}
                                                 onChange={handleOptionChange}
                                             />
                                             <div className={styles.dot}>
@@ -500,14 +475,14 @@ function holiday() {
                                             <span>กำลังตรวจสอบ</span>
                                         </label>
 
-                                        <label className={`${styles.option} ${styles.radio2} ${selectedOption === 'ยืนยันสลิป' ? styles.checked : ''}`}>
+                                        <label className={`${styles.option}  ${selectedOption === 2 ? styles.checked2 : ''}`}>
                                             <input
                                                 style={{ display: "none" }}
 
                                                 type="radio"
-                                                value="ยืนยันสลิป"
+                                                value={2}
                                                 id="option-2"
-                                                checked={selectedOption === 'ยืนยันสลิป'}
+                                                checked={selectedOption === 2}
                                                 onChange={handleOptionChange}
                                             />
                                             <div className={styles.dot}>
@@ -518,26 +493,6 @@ function holiday() {
                                         </label>
                                     </div>
                                 </div>
-                                {/* {reservations1?.status !== 0 && (
-                                    <div style={{ textAlign: "center" }}>
-                                        {reservations1?.status === 1 && (
-                                            <div><h5> สถานะ  <span style={{ color: 'orange' }}>กำลังตรวจสอบสลิป</span></h5></div>
-
-                                        )}
-                                        {reservations1?.status === 2 && (
-
-                                            <div><h5> สถานะ   <span style={{ color: 'green' }}>ชำระเงินสำเร็จ</span></h5></div>
-
-                                        )}
-                                    </div>
-
-                                )} */}
-
-
-
-
-
-                                {/* <button  className={styles.slip}>แนบสลิป</button> */}
                             </div>
                         </div>
 
@@ -552,68 +507,136 @@ function holiday() {
             </Modal>
 
             <Modal show={show2} onHide={() => setShow2(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>แก้ไขงานแข่ง'</Modal.Title>
+                <Modal.Header closeButton className={`${loading ? styles.load : ''}`}>
+                    <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {editreserve?.usedate}</h6></Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    <div className={styles.addreserve}>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="title" className='mb-1'>ชื่อ</label>
-                            <input
-                                type="text"
-                                id='title'
-                                placeholder='ชื่องานแข่ง'
-                                value={title2}
-                                onChange={(e) => setTitle2(e.target.value)}
-                            />
+                <Modal.Body className={`${loading ? styles.load : ''}`}>
+                    <div>
+                        <div className={styles.wrapper1}>
+                            <div className={styles.img}>
+                                <img src={editreserve?.slip === null ? '/No_image_available.png' : '/QR5.jpg'} alt="Qrcode" width="200" height="250" />
+
+                            </div>
+                            <div className={styles.detail}>
+                                <div className={styles.wrapper}>
+                                    <p>ชื่อผู้จอง</p>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                    />
+                                </div>
+                                <div className={styles.wrapper}>
+                                    <p>คอร์ทที่จอง</p>
+                                    <input
+                                        type="text"
+                                        value={selectedCourtTitle}
+                                        onChange={(e) => setSelectedCourtTitle(e.target.value)}
+                                    />
+                                </div>
+                                <div className={styles.wrapper}>
+                                    <p>วันที่ใช้สนาม</p>
+                                    <input
+                                        type="text"
+                                        value={useDate}
+                                        onChange={(e) => setUseDate(e.target.value)}
+                                    />
+                                </div>
+                                <div className={styles.wrapper}>
+                                    <p>เวลาใช้สนาม</p>
+                                    <input
+                                        type="text"
+                                        value={`${startTime} - ${endTime}`}
+                                        onChange={(e) => {
+                                            const [newStartTime, newEndTime] = e.target.value.split(' - ');
+                                            setStartTime(newStartTime);
+                                            setEndTime(newEndTime);
+                                        }}
+                                    />
+                                </div>
+                                <div className={styles.wrapper}>
+                                    <p>ราคา</p>
+                                    <input
+                                        type="number"
+                                        value={price}
+                                        onChange={(e) => setPrice(parseFloat(e.target.value))}
+                                    />
+                                </div>
+
+                                {editreserve?.status === 0 && (
+                                    <div>
+                                        {minutesRemaining > 0 && (
+                                            <div style={{ textAlign: "center" }}>
+                                                <h6>
+                                                    <span >กรุณาชำระเงินภายใน </span>
+                                                    <span style={{ color: 'red' }} >
+                                                        <span>{minutesRemaining.toString().padStart(2, '0')}:{secondsRemaining.toString().padStart(2, '0')}</span>
+                                                    </span>
+                                                    <span> นาที </span>
+                                                </h6>
+                                            </div>
+                                        )}
+
+                                        {minutesRemaining < 0 && (
+                                            <div style={{ textAlign: "center" }}>
+                                                <div><h5>   <span style={{ color: 'red' }}>ข้อมูลถูกลบแล้วกรุณาจองใหม่</span></h5></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {editreserve?.status !== 0 && (
+                                    <div style={{ textAlign: "center" }}>
+                                        {editreserve?.status === 1 && (
+                                            <div><h5> สถานะ  <span style={{ color: 'orange' }}>กำลังตรวจสอบสลิป</span></h5></div>
+
+                                        )}
+                                        {editreserve?.status === 2 && (
+
+                                            <div><h5> สถานะ   <span style={{ color: 'green' }}>ชำระเงินสำเร็จ</span></h5></div>
+
+                                        )}
+                                    </div>
+
+                                )}
+
+
+
+
+
+                                {/* <button  className={styles.slip}>แนบสลิป</button> */}
+                            </div>
                         </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="location" className='mb-1'>สถานที่</label>
-                            <input
-                                type="text"
-                                id='location'
-                                placeholder='สถานที่'
-                                value={location2}
-                                onChange={(e) => setLocation2(e.target.value)}
-                            />
-                        </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="timebetween" className='mb-1'>วันจัด-วันสิ้นสุด</label>
-                            <input
-                                type="text"
-                                id='timebetween'
-                                placeholder='วันที่เริ่ม-วันที่สิ้นสุด'
-                                value={timebetween2}
-                                onChange={(e) => setTimebetween2(e.target.value)}
-                            />
-                        </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="ordinal" className='mb-1'>ครั้งที่</label>
-                            <input
-                                type="number"
-                                id="ordinal"
-                                value={ordinal2}
-                                onChange={(e) => setOrdinal2(parseInt(e.target.value))}
-                            />
-                        </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="max_team" className='mb-1'>จำนวนทีม</label>
-                            <input
-                                type="number"
-                                id="max_team"
-                                value={max_team2}
-                                onChange={(e) => setMax_team2(parseInt(e.target.value))}
-                            />
-                        </div>
+
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <div>
-                        <Button onClick={updateHoliday}>ยืนยัน</Button>
-                    </div>
-                    <div>
-                        <Button className='btn-danger' onClick={() => setShow2(false)}>ยกเลิก</Button>
-                    </div>
+                    {/* <div className={styles.footer1}>
+
+                        <div className={styles.btn1}><Button className='btn-info '><a href="/QR5.jpg" download="QR.jpg">โหลดสลิป</a></Button></div>
+                        <div className={styles.slipbtn}>
+                            <label htmlFor="file-input" className={styles.file_input}>
+                                เลือกภาพสลิป
+                            </label>
+                            <input
+                                style={{ display: 'none' }}
+                                id="file-input"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="file-input"
+                            />
+                            <button
+                                onClick={confirm}
+                                disabled={!selectedFile || loading}
+                                className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
+                                style={{ backgroundColor: loading ? 'red' : '' }}
+                            >
+                                {loading ? 'อัพโหลด...' : 'ส่งสลิป'}
+                            </button>
+                        </div>
+
+                    </div> */}
                 </Modal.Footer>
             </Modal>
         </>

@@ -81,6 +81,12 @@
   display: flex;
   justify-content: space-between;
 }
+.wrapper input {
+  width: 120px;
+  border-radius: 3px;
+  border: none;
+  text-align: end;
+}
 
 .img {
   display: flex;
@@ -125,7 +131,7 @@
   display: flex;
   flex-direction: column;
   background: #fff;
-  height: 125px;
+  height: 150px;
   width: 100%;
 
 }
@@ -160,7 +166,7 @@
   left: 4px;
   width: 12px;
   height: 12px;
-  background: #0069d9;
+  background: #d3a62a;
   border-radius: 50%;
   opacity: 0;
   transform: scale(1.5);
@@ -169,8 +175,8 @@
 
 
 .checked {
-  border-color: #0069d9;
-  background: #0069d9;
+  border-color: #d3a62a;
+  background: #d3a62a;
 }
 
 .checked .dot {
@@ -183,5 +189,25 @@
 }
 
 .checked span {
+  color: #fff;
+}
+
+.checked2 {
+  border-color: #2a73d3;
+  background: #2a73d3;
+}
+
+.checked2 .dot {
+  background: #fff;
+}
+
+.checked2 .innerDot {
+  opacity: 1;
+  transform: scale(1);
+  background: #2a73d3;
+
+}
+
+.checked2 span {
   color: #fff;
 }

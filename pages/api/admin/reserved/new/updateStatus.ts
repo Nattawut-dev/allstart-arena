@@ -16,6 +16,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             const query = 'UPDATE reserve SET status = ? WHERE id = ?;';
             const {id , newStatus} = req.body
             // Execute the SQL query to fetch time slots
+            console.log(newStatus)
             const [results] = await connection.query(query,[newStatus,id]);
             res.json({ results });
         } catch (error) {
