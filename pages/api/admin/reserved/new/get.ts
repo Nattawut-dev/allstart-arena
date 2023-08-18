@@ -17,8 +17,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         const maxGet = parseInt(page as string) * 25
 
         try {
-            // const query = 'SELECT * FROM reserve WHERE status = ?';
-            const query = 'SELECT * FROM reserve WHERE status = ? ORDER BY id DESC LIMIT 25 OFFSET ?;';
+            const query = status === '2' ? 'SELECT * FROM reserve WHERE status = ? ORDER BY id DESC LIMIT 25 OFFSET ?;' : 'SELECT * FROM reserve WHERE status = ?' 
 
             // Execute the SQL query to fetch time slots
             const [results] = await connection.query(query, [status, maxGet]);

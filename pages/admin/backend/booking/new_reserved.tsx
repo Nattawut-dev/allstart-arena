@@ -406,49 +406,54 @@ function holiday() {
             <div className={styles.container}>
 
                 <div className={styles.box}>
-                    <h5 className='fw-bold'>ตรวจสอบการโอนเงิน</h5>
-                    <div className='d-flex justify-content-end mb-2'>
-                        <Button
-                            onClick={() => {
-                                setCurrentPage(0);
-                                setFilter('Checked');
-                                getReserve(2, currentPage);
-                            }}
-                            style={{
-                                backgroundColor: filter === 'Checked' ? 'blue' : 'white',
-                                color: filter === 'Checked' ? 'white' : 'black',
-                            }}
-                        >
-                            ตรวจสอบแล้ว
-                        </Button>
-                        <Button
-                            className='mx-2'
-                            onClick={() => {
-                                setCurrentPage(0);
-                                setFilter('transferred');
-                                getReserve(1, currentPage);
-                            }}
-                            style={{
-                                backgroundColor: filter === 'transferred' ? 'green' : 'white',
-                                color: filter === 'transferred' ? 'white' : 'black',
-                            }}
-                        >
-                            โอนแล้ว
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                setCurrentPage(0);
-                                setFilter('notTransferred');
-                                getReserve(0, currentPage);
-                            }}
-                            style={{
-                                backgroundColor: filter === 'notTransferred' ? 'red' : 'white',
-                                color: filter === 'notTransferred' ? 'white' : 'black',
-                            }}
-                        >
-                            ยังไม่โอน
-                        </Button>
+                    <div className={styles.footer1}>
+                        <h5 className={`fw-bold ${styles.btn1}`}>ตรวจสอบการโอนเงิน</h5>
+                        <div className='d-flex justify-content-end mb-2'>
+
+                            <Button
+                                onClick={() => {
+                                    setCurrentPage(0);
+                                    setFilter('Checked');
+                                    getReserve(2, currentPage);
+                                }}
+                                style={{
+                                    backgroundColor: filter === 'Checked' ? 'blue' : 'white',
+                                    color: filter === 'Checked' ? 'white' : 'black',
+                                }}
+                            >
+                                ตรวจสอบแล้ว
+                            </Button>
+                            <Button
+                                className='mx-2'
+                                onClick={() => {
+                                    setCurrentPage(0);
+                                    setFilter('transferred');
+                                    getReserve(1, currentPage);
+                                }}
+                                style={{
+                                    backgroundColor: filter === 'transferred' ? 'green' : 'white',
+                                    color: filter === 'transferred' ? 'white' : 'black',
+                                }}
+                            >
+                                โอนแล้ว
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setCurrentPage(0);
+                                    setFilter('notTransferred');
+                                    getReserve(0, currentPage);
+                                }}
+                                style={{
+                                    backgroundColor: filter === 'notTransferred' ? 'red' : 'white',
+                                    color: filter === 'notTransferred' ? 'white' : 'black',
+                                }}
+                            >
+                                ยังไม่โอน
+                            </Button>
+                        </div>
                     </div>
+
+
                     <table className={`${styles.table} table table-bordered table-striped  table-sm`}>
                         <thead >
                             <tr>
@@ -477,7 +482,7 @@ function holiday() {
                                         <td className={styles.hide_on_mobile}>{item.start_time} - {item.end_time}</td>
                                         <td className={styles.hide_on_mobile}>{item.price}</td>
                                         <td className={styles.hide_on_mobile} style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
-                                            {item.status === 1 ? 'ตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
+                                            {item.status === 1 ? 'กำลังตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
                                         </td>
                                         <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>สลิป/แก้ไข</Button></td>
 
@@ -498,8 +503,9 @@ function holiday() {
                     </table>
 
                     {filter == "Checked" &&
-                        <div className="pagination">
+                        <div className="d-flex justify-content-end">
                             <Button
+                                className='mx-2'
                                 onClick={() => { setCurrentPage(currentPage - 1); }}
                                 disabled={currentPage === 0}
                             >
