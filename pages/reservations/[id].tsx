@@ -397,7 +397,6 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                     </Modal.Body>
                     <Modal.Footer>
                         <div className={styles.footer1}>
-
                             <div className={styles.btn1}><Button className='btn-info '><a href="/QR5.jpg" download="QR.jpg">โหลดสลิป</a></Button></div>
                             <div className={styles.slipbtn}>
                                 <label htmlFor="file-input" className={styles.file_input}>

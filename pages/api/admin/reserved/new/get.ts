@@ -13,7 +13,6 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             return;
         }
         const {status} = req.query
-        console.log(status)
         const connection = await pool.getConnection()
         try {
             const query = 'SELECT * FROM reserve WHERE status = ?';

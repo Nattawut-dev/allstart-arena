@@ -160,7 +160,6 @@ export default function Page() {
     const totalPrice = calculateTotalPrice(startTime, endTime);
     setPrice(totalPrice);
   };
-  console.log("startTime,endTime,totalhours", startTime, endTime, totalhours, price)
 
 
   const timeSlotOptions = timeSlots.map((timeSlot) => {

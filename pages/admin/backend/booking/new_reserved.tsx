@@ -38,27 +38,18 @@ function holiday() {
     const [selectcourt, setSelectCourt] = useState<Court>()
 
     const [editreserve, setEditreserve] = useState<Reserve | null>(null);
-    const [detail, setDetail] = useState<Reserve | null>(null);
     const [reservations1, setReservations1] = useState<Reserve>();
 
     const [filter, setFilter] = useState<string>("transferred");
 
     const [isreserve, setIsreserve] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date());
 
-    const [title, setTitle] = useState('');
-    const [timebetween, setTimebetween] = useState('');
-    const [location, setLocation] = useState('');
-    const [ordinal, setOrdinal] = useState(0);
-    const [max_team, setMax_team] = useState(0);
 
     const [id2, setID2] = useState(0);
     const [title2, setTitle2] = useState('');
     const [timebetween2, setTimebetween2] = useState('');
     const [location2, setLocation2] = useState('');
     const [ordinal2, setOrdinal2] = useState(0);
-    const [max_team2, setMax_team2] = useState(0);
-
 
     const [status, setStatus] = useState(1);
 
@@ -68,11 +59,13 @@ function holiday() {
     const [selectedOption, setSelectedOption] = useState(0); // State to track the selected option
 
     const [name, setName] = useState<string>('');
-    const [selectedCourtTitle, setSelectedCourtTitle] = useState<string>('');
+    const [selectedCourtID, setselectedCourtID] = useState<number>(0);
     const [useDate, setUseDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
     const [price, setPrice] = useState<number>(0);
+
+    const [ischange, setIschange] = useState(false);
 
 
     const [targetTime, setTargetTime] = useState(new Date());
@@ -84,6 +77,17 @@ function holiday() {
     const handleOptionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
         const value = parseInt(event.target.value)
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        })
         if (event) {
             try {
                 const response = await fetch('/api/admin/reserved/new/updateStatus', {
@@ -95,16 +99,21 @@ function holiday() {
                 });
 
                 if (!response.ok) {
+
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด'
+                    })
                     throw new Error('An error occurred while updating the data.');
                 }
 
-                // Update the local state immediately after the checkbox is clicked
                 setSelectedOption(value);
-                // setreserve((prevreserve) =>
-                //     prevreserve.map((reserve) =>
-                //         reserve.id === reservations1?.id ? { ...reserve, status: value } : reserve
-                //     )
-                // );
+
+
+                Toast.fire({
+                    icon: 'success',
+                    title: 'แก้ไขสถานะเรียบร้อย'
+                })
                 getReserve(status);
             } catch (error: any) {
                 console.error(error.message);
@@ -125,7 +134,7 @@ function holiday() {
             const response = await fetch(`/api/admin/reserved/new/get?status=${status}`);
             setStatus(status);
             const data = await response.json();
-            if (data.length >= 1) {
+            if (response.ok) {
                 setreserve(data);
                 setIsreserve(true);
             } else {
@@ -152,7 +161,7 @@ function holiday() {
 
     const deletereserve = async (item: Reserve) => {
         Swal.fire({
-            title: `ต้องการลบ? `,
+            title: `ต้องการลบการจอง? `,
             text: `การจองของ ${item.name} ของวันที่ ${item.usedate} เวลาใช้สนาม ${item.start_time}  - ${item.end_time}`,
             icon: 'warning',
             showCancelButton: true,
@@ -169,6 +178,7 @@ function holiday() {
                     if (!response.ok) {
                         throw new Error('An error occurred while deleting the data.');
                     } else {
+                        setShow(false);
                         Swal.fire(
                             'Deleted!',
                             `ลบ การจองของ ${item.name} ของวันที่ ${item.usedate} เวลาใช้สนาม ${item.start_time}  - ${item.end_time} เรียบร้อย`,
@@ -200,7 +210,7 @@ function holiday() {
         setSelectCourt(findCourt);
         setName(item.name);
         if (findCourt) {
-            setSelectedCourtTitle(findCourt?.title);
+            setselectedCourtID(findCourt?.id);
         }
         setUseDate(item.usedate);
         setStartTime(item.start_time);
@@ -238,7 +248,6 @@ function holiday() {
             setOrdinal2(0);
             setLocation2('');
             setTimebetween2('');
-            setMax_team2(0)
             setShow2(false);
             getReserve(status);
         } catch (error) {
@@ -255,7 +264,7 @@ function holiday() {
             setSelectCourt(findCourt)
             setName(item.name);
             if (findCourt) {
-                setSelectedCourtTitle(findCourt?.title);
+                setselectedCourtID(findCourt?.id);
             }
             setUseDate(item.usedate);
             setStartTime(item.start_time);
@@ -276,6 +285,33 @@ function holiday() {
         });
     }
 
+    const isChange = () => {
+        if (reservations1?.name != name ||
+            reservations1.usedate != useDate ||
+            reservations1.start_time != startTime ||
+            reservations1.end_time != endTime ||
+            reservations1.price != price ||
+            reservations1.court_id != selectedCourtID) {
+            return true;
+        }
+    }
+
+    const handleTimeSlotChange = (value: string) => {
+        const intValue = parseInt(value)
+        setselectedCourtID(intValue)
+    };
+
+    const CourtOption = courts.map((court) => {
+
+        return (
+            <option
+                key={court.id}
+                value={court.id}
+            >
+                {court.title}
+            </option>
+        );
+    });
     if (!isreserve) {
         return (
             <div>No reserve</div>
@@ -290,6 +326,18 @@ function holiday() {
                 <div className={styles.box}>
                     <h5 className='fw-bold'>ตรวจสอบการโอนเงิน</h5>
                     <div className='d-flex justify-content-end mb-2'>
+                        <Button
+                            onClick={() => {
+                                setFilter('Checked');
+                                getReserve(2);
+                            }}
+                            style={{
+                                backgroundColor: filter === 'Checked' ? 'blue' : 'white',
+                                color: filter === 'Checked' ? 'white' : 'black',
+                            }}
+                        >
+                            ตรวจสอบแล้ว
+                        </Button>
                         <Button
                             className='mx-2'
                             onClick={() => {
@@ -385,6 +433,7 @@ function holiday() {
                 keyboard={false}
                 centered
                 animation={false}
+                size='lg'
             >
                 <Modal.Header closeButton >
                     <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
@@ -394,6 +443,9 @@ function holiday() {
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
                                 <button onClick={() => { showslip() }}><img src={reservations1?.slip === null ? '/No_image_available.png' : reservations1?.slip} alt="Qrcode" width="200" height="250" /></button>
+                                <div className={styles.payment}>
+                                    <h4>{price} <span>บาท</span></h4>
+                                </div>
                             </div>
 
                             <div className={styles.detail}>
@@ -407,11 +459,15 @@ function holiday() {
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>คอร์ทที่จอง</p>
-                                    <input
+                                    <select className={styles.select} value={selectedCourtID} onChange={(e) => handleTimeSlotChange(e.target.value)}>
+                                    
+                                        {CourtOption}
+                                    </select>
+                                    {/* <input
                                         type="text"
-                                        value={selectedCourtTitle}
-                                        onChange={(e) => setSelectedCourtTitle(e.target.value)}
-                                    />
+                                        value={selectedCourtID}
+                                        onChange={(e) => setselectedCourtID(e.target.value)}
+                                    /> */}
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>วันที่ใช้สนาม</p>
@@ -436,6 +492,7 @@ function holiday() {
                                 <div className={styles.wrapper}>
                                     <p>ราคา</p>
                                     <input
+                                        className={styles.numberInput}
                                         type="number"
                                         value={price}
                                         onChange={(e) => setPrice(parseFloat(e.target.value))}
@@ -449,7 +506,7 @@ function holiday() {
                                             <input
                                                 style={{ display: "none" }}
                                                 type="radio"
-                                                value= {0}
+                                                value={0}
                                                 id="option-0"
                                                 checked={selectedOption === 0}
                                                 onChange={handleOptionChange}
@@ -501,7 +558,18 @@ function holiday() {
                 </Modal.Body>
                 <Modal.Footer>
 
-                    <Button onClick={() => setShow(false)} className='btn btn-secondary '>Close</Button>
+                    <div className={styles.footer1}>
+                        <div className={styles.btn1}><Button onClick={() => deletereserve(reservations1!)} className='btn btn-danger'>ลบข้อมูล</Button></div>
+                        <div className={styles.slipbtn}>
+                            <Button onClick={() => editSelecter} disabled={!isChange()} className='btn btn-success mx-2'>บันทึก</Button>
+                            <Button onClick={() => setShow(false)} className='btn btn-secondary'>Close</Button>
+                        </div>
+
+
+
+                    </div>
+
+
 
                 </Modal.Footer>
             </Modal>
@@ -530,8 +598,8 @@ function holiday() {
                                     <p>คอร์ทที่จอง</p>
                                     <input
                                         type="text"
-                                        value={selectedCourtTitle}
-                                        onChange={(e) => setSelectedCourtTitle(e.target.value)}
+                                        value={selectedCourtID}
+                                        onChange={(e) => setselectedCourtID(e.target.value)}
                                     />
                                 </div>
                                 <div className={styles.wrapper}>
