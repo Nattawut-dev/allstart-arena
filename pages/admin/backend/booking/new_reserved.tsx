@@ -12,7 +12,7 @@ import useCountdown from '../../../countdown';
 interface Reserve {
     id: number;
     name: string;
-    phone: number;
+    phone: string;
     court_id: number;
     time_slot_id: number;
     reserved_date: string;
@@ -30,12 +30,19 @@ interface Court {
     status: number;
 }
 
+interface TimeSlot {
+    id: number;
+    start_time: string;
+    end_time: string;
+    price: number;
+}
 
 
 function holiday() {
     const [reserve, setreserve] = useState<Reserve[]>([])
     const [courts, setCourts] = useState<Court[]>([])
     const [selectcourt, setSelectCourt] = useState<Court>()
+    const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
     const [editreserve, setEditreserve] = useState<Reserve | null>(null);
     const [reservations1, setReservations1] = useState<Reserve>();
@@ -59,19 +66,21 @@ function holiday() {
     const [selectedOption, setSelectedOption] = useState(0); // State to track the selected option
 
     const [name, setName] = useState<string>('');
+    const [phone, setPhone] = useState<string>('');
     const [selectedCourtID, setselectedCourtID] = useState<number>(0);
     const [useDate, setUseDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
     const [price, setPrice] = useState<number>(0);
+    const [reserve_date, setReserve_date] = useState<string>('');
 
     const [ischange, setIschange] = useState(false);
-
 
     const [targetTime, setTargetTime] = useState(new Date());
     const countdownMinutes = 15;
     const { minutesRemaining, secondsRemaining } = useCountdown(targetTime, countdownMinutes);
 
+    const [currentPage, setCurrentPage] = useState(0);
 
 
     const handleOptionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,13 +117,11 @@ function holiday() {
                 }
 
                 setSelectedOption(value);
-
-
                 Toast.fire({
                     icon: 'success',
                     title: 'แก้ไขสถานะเรียบร้อย'
                 })
-                getReserve(status);
+                getReserve(status, currentPage);
             } catch (error: any) {
                 console.error(error.message);
                 // Handle any error or display an error message
@@ -123,15 +130,34 @@ function holiday() {
 
 
     };
-    useEffect(() => {
-        getReserve(1);
-        getCourt();
-    }, []);
 
-
-    const getReserve = async (status: number) => {
+    const getTimeslot = async () => {
         try {
-            const response = await fetch(`/api/admin/reserved/new/get?status=${status}`);
+            // โหลดข้อมูล time slot จากแหล่งข้อมูล
+            const response = await fetch('/api/reserve/time-slots');
+            const data = await response.json();
+
+            // ตั้งค่า state สำหรับ time slots
+            setTimeSlots(data.timeSlots);
+
+            //   setPrice(data.timeSlots[timeID].price)
+
+        } catch (error) {
+            console.error('Error fetching time slots:', error);
+        }
+    };
+
+    useEffect(() => {
+        getReserve(status, currentPage);
+        getCourt();
+        getTimeslot();
+    }, [currentPage]);
+
+
+    const getReserve = async (status: number, currentPage: number) => {
+
+        try {
+            const response = await fetch(`/api/admin/reserved/new/get?status=${status}&page=${currentPage}`);
             setStatus(status);
             const data = await response.json();
             if (response.ok) {
@@ -200,43 +226,32 @@ function holiday() {
 
     };
 
-    const editSelecter = (item: Reserve) => {
-        if (item.status === 0) {
-            const targetTime = new Date(item.reserved_date);
-            setTargetTime(targetTime)
-        }
-        setEditreserve(item);
-        const findCourt = courts.find((c) => c.id === item.court_id);
-        setSelectCourt(findCourt);
-        setName(item.name);
-        if (findCourt) {
-            setselectedCourtID(findCourt?.id);
-        }
-        setUseDate(item.usedate);
-        setStartTime(item.start_time);
-        setEndTime(item.end_time);
-        setPrice(item.price);
-        setShow2(true);
-    }
-
-    async function updateHoliday() {
+    async function updateReserve() {
         try {
-            const response = await fetch(`/api/admin/reserve/update`, {
+            const response = await fetch(`/api/admin/reserved/new/update`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    id: id2,
-                    title: title2,
-                    ordinal: ordinal2,
-                    location: location2,
-                    timebetween: timebetween2
+                    id: reservations1?.id,
+                    name: name,
+                    phone: phone,
+                    court_id: selectedCourtID,
+                    start_time: startTime,
+                    end_time: endTime,
+                    usedate: useDate,
+                    price: price,
                 }),
             });
 
             if (!response.ok) {
-                throw new Error('An error occurred while updating the data.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ผิดพลาด',
+                    text: 'มีข้อผิดพลาดกรุณาลองใหม่อีกครั้ง',
+                })
+                return;
             }
             Swal.fire({
                 icon: 'success',
@@ -244,12 +259,8 @@ function holiday() {
                 text: 'แก้ไขสำเร็จ',
             })
 
-            setTitle2('');
-            setOrdinal2(0);
-            setLocation2('');
-            setTimebetween2('');
-            setShow2(false);
-            getReserve(status);
+            getReserve(status, currentPage);
+            setShow(false);
         } catch (error) {
             console.error('An error occurred while updating the data:', error);
             throw error;
@@ -257,12 +268,24 @@ function holiday() {
     }
     const checkslip = async (item: Reserve) => {
 
+
         if (item) {
+            const date = new Date(item.reserved_date)
+
+            const formattedDate = date.toLocaleString('th-TH', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
             setReservations1(item)
             setSelectedOption(item.status);
             const findCourt = courts.find((c) => c.id === item.court_id);
             setSelectCourt(findCourt)
             setName(item.name);
+            setPhone(item.phone);
             if (findCourt) {
                 setselectedCourtID(findCourt?.id);
             }
@@ -270,6 +293,7 @@ function holiday() {
             setStartTime(item.start_time);
             setEndTime(item.end_time);
             setPrice(item.price);
+            setReserve_date(formattedDate)
         }
 
     }
@@ -280,13 +304,14 @@ function holiday() {
             imageAlt: 'Image Alt Text',
             showCloseButton: true,
             focusConfirm: false,
-            title: `${reservations1?.price} บาท`,
+            title: `${price} บาท`,
             confirmButtonText: 'Close',
         });
     }
 
     const isChange = () => {
         if (reservations1?.name != name ||
+            reservations1.phone != phone ||
             reservations1.usedate != useDate ||
             reservations1.start_time != startTime ||
             reservations1.end_time != endTime ||
@@ -296,9 +321,20 @@ function holiday() {
         }
     }
 
-    const handleTimeSlotChange = (value: string) => {
-        const intValue = parseInt(value)
-        setselectedCourtID(intValue)
+    const handleCourtsChange = (value: string) => {
+        const intValue = parseInt(value);
+        setselectedCourtID(intValue);
+    };
+    const handleStart_timeChange = (value: string) => {
+        setStartTime(value);
+        setPrice(calculateTotalPrice(value, endTime))
+
+    };
+    const handleEnd_timeChange = (value: string) => {
+        setEndTime(value);
+        setPrice(calculateTotalPrice(startTime, value))
+
+
     };
 
     const CourtOption = courts.map((court) => {
@@ -312,6 +348,52 @@ function holiday() {
             </option>
         );
     });
+
+    const start_time_option = timeSlots.map((timeSlot) => {
+
+        return (
+            <option
+                key={timeSlot.id}
+                value={timeSlot.start_time}
+            >
+                {timeSlot.start_time}
+            </option>
+        );
+    });
+
+    const end_time_option = timeSlots.map((timeSlot) => {
+
+        return (
+            <option
+                key={timeSlot.id}
+                value={timeSlot.end_time}
+            >
+                {timeSlot.end_time}
+            </option>
+        );
+    });
+
+    const calculateTotalPrice = (startTime: string, endTime: string): number => {
+        let totalPrice = 0;
+        // ค้นหาช่วงเวลาที่มี start_time และ end_time ตรงกับ startTime และ endTime ที่เลือก
+        const startIndex = timeSlots.findIndex((timeSlot) => timeSlot.start_time === startTime);
+        const endIndex = timeSlots.findIndex((timeSlot) => timeSlot.end_time === endTime);
+
+        if (startIndex >= 0 && endIndex >= 0) {
+            for (let i = startIndex; i <= endIndex; i++) {
+                totalPrice += timeSlots[i].price;
+            }
+        }
+        return totalPrice;
+    };
+
+
+    // const handlePageChange = (newPage: number) => {
+    //     setCurrentPage(newPage);
+    //     getReserve(2);
+    // };
+
+
     if (!isreserve) {
         return (
             <div>No reserve</div>
@@ -328,8 +410,9 @@ function holiday() {
                     <div className='d-flex justify-content-end mb-2'>
                         <Button
                             onClick={() => {
+                                setCurrentPage(0);
                                 setFilter('Checked');
-                                getReserve(2);
+                                getReserve(2, currentPage);
                             }}
                             style={{
                                 backgroundColor: filter === 'Checked' ? 'blue' : 'white',
@@ -341,8 +424,9 @@ function holiday() {
                         <Button
                             className='mx-2'
                             onClick={() => {
+                                setCurrentPage(0);
                                 setFilter('transferred');
-                                getReserve(1);
+                                getReserve(1, currentPage);
                             }}
                             style={{
                                 backgroundColor: filter === 'transferred' ? 'green' : 'white',
@@ -353,8 +437,9 @@ function holiday() {
                         </Button>
                         <Button
                             onClick={() => {
+                                setCurrentPage(0);
                                 setFilter('notTransferred');
-                                getReserve(0);
+                                getReserve(0, currentPage);
                             }}
                             style={{
                                 backgroundColor: filter === 'notTransferred' ? 'red' : 'white',
@@ -364,62 +449,70 @@ function holiday() {
                             ยังไม่โอน
                         </Button>
                     </div>
-                    <table className="table table-bordered table-striped">
+                    <table className={`${styles.table} table table-bordered table-striped  table-sm`}>
                         <thead >
                             <tr>
-                                <th scope="col">#</th>
+                                <th scope="col" className={styles.hide_on_mobile}>#</th>
                                 <th scope="col">คอร์ท</th>
                                 <th scope="col">ชื่อ</th>
-                                <th scope="col">เบอร์โทร</th>
-                                <th scope="col">วันใช้คอร์ท</th>
-                                <th scope="col">เวลาใช้สนาม</th>
-                                <th scope="col">ราคารวม</th>
-                                <th scope="col">สถานะ</th>
+                                <th scope="col" className={styles.hide_on_mobile}>เบอร์โทร</th>
+                                <th scope="col" className={styles.hide_on_mobile}>วันใช้คอร์ท</th>
+                                <th scope="col" className={styles.hide_on_mobile}>เวลา</th>
+                                <th scope="col" className={styles.hide_on_mobile}>ราคารวม</th>
+                                <th scope="col" className={styles.hide_on_mobile}>สถานะ</th>
                                 <th scope="col">สลิป/แก้ไข</th>
                                 <th scope="col">ลบ</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {reserve.map((item, index) => (
-                                <tr key={item.id}>
-                                    <td>{index + 1}</td>
-                                    <td>{item.court_id}</td>
-                                    <td>{item.name}</td>
-                                    <td>{item.phone}</td>
-                                    <td>{item.usedate}</td>
-                                    <td>{item.start_time} - {item.end_time}</td>
-                                    <td>{item.price}</td>
-                                    <td className='' style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
-                                        {item.status === 1 ? 'ตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
-                                    </td>
-                                    <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>สลิป/แก้ไข</Button></td>
+                            {reserve.map((item, index) => {
+                                const findCourt = courts.find((c) => c.id === item.court_id);
+                                return (
+                                    <tr key={item.id}>
+                                        <td className={styles.hide_on_mobile}>{index + 1}</td>
+                                        <td>{findCourt?.title}</td>
+                                        <td>{item.name}</td>
+                                        <td className={styles.hide_on_mobile} >{item.phone}</td>
+                                        <td className={styles.hide_on_mobile}>{item.usedate}</td>
+                                        <td className={styles.hide_on_mobile}>{item.start_time} - {item.end_time}</td>
+                                        <td className={styles.hide_on_mobile}>{item.price}</td>
+                                        <td className={styles.hide_on_mobile} style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
+                                            {item.status === 1 ? 'ตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
+                                        </td>
+                                        <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>สลิป/แก้ไข</Button></td>
 
-                                    {/* <td>
-                                        <div className={styles.switch}>
-                                            <input
-                                                type="checkbox"
-                                                id={`${item.id}`}
-                                                checked={item.status === 1}
-                                                onChange={() => handleCheckboxChange(item.id, item.status)}
-                                            />
-                                            <label htmlFor={`${item.id}`}>Toggle</label>
-                                        </div>
-                                    </td> */}
+                                        <td>
+                                            <Button
+                                                className="btn-sm btn-danger"
+                                                onClick={() => deletereserve(item)}
+                                            >
+                                                ลบ
+                                            </Button></td>
 
-                                    <td>
-                                        <Button
-                                            className="btn-sm btn-danger"
-                                            onClick={() => deletereserve(item)}
-                                        >
-                                            ลบ
-                                        </Button></td>
-
-                                </tr>
-                            ))}
+                                    </tr>
+                                );
+                            })}
 
 
                         </tbody>
                     </table>
+
+                    {filter == "Checked" &&
+                        <div className="pagination">
+                            <Button
+                                onClick={() => { setCurrentPage(currentPage - 1); }}
+                                disabled={currentPage === 0}
+                            >
+                                ก่อนหน้า
+                            </Button>
+                            <Button
+                                onClick={() => { setCurrentPage(currentPage + 1); }}
+                            >
+                                ถัดไป
+                            </Button>
+                        </div>
+                    }
+
 
 
                 </div>
@@ -433,7 +526,7 @@ function holiday() {
                 keyboard={false}
                 centered
                 animation={false}
-                size='lg'
+            // size='lg'
             >
                 <Modal.Header closeButton >
                     <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
@@ -445,6 +538,9 @@ function holiday() {
                                 <button onClick={() => { showslip() }}><img src={reservations1?.slip === null ? '/No_image_available.png' : reservations1?.slip} alt="Qrcode" width="200" height="250" /></button>
                                 <div className={styles.payment}>
                                     <h4>{price} <span>บาท</span></h4>
+                                </div>
+                                <div>
+                                    <span>จองเมื่อ {reserve_date}</span>
                                 </div>
                             </div>
 
@@ -458,16 +554,21 @@ function holiday() {
                                     />
                                 </div>
                                 <div className={styles.wrapper}>
+                                    <p>เบอร์โทร</p>
+                                    <input
+                                        className={styles.numberInput}
+                                        type="tel"
+                                        maxLength={10}
+                                        pattern="[0-9]+"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                    />
+                                </div>
+                                <div className={styles.wrapper}>
                                     <p>คอร์ทที่จอง</p>
-                                    <select className={styles.select} value={selectedCourtID} onChange={(e) => handleTimeSlotChange(e.target.value)}>
-                                    
+                                    <select className={styles.select} value={selectedCourtID} onChange={(e) => handleCourtsChange(e.target.value)}>
                                         {CourtOption}
                                     </select>
-                                    {/* <input
-                                        type="text"
-                                        value={selectedCourtID}
-                                        onChange={(e) => setselectedCourtID(e.target.value)}
-                                    /> */}
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>วันที่ใช้สนาม</p>
@@ -477,9 +578,19 @@ function holiday() {
                                         onChange={(e) => setUseDate(e.target.value)}
                                     />
                                 </div>
-                                <div className={styles.wrapper}>
-                                    <p>เวลาใช้สนาม</p>
-                                    <input
+                                <div className={styles.footer1}>
+                                    <p className={styles.btn1}>เวลาใช้สนาม</p>
+                                    <div className={styles.slipbtn}>
+                                        <select value={startTime} onChange={(e) => handleStart_timeChange(e.target.value)}>
+                                            {start_time_option}
+                                        </select>
+                                        <span> - </span>
+                                        <select value={endTime} onChange={(e) => handleEnd_timeChange(e.target.value)}>
+                                            {end_time_option}
+                                        </select>
+                                    </div>
+
+                                    {/* <input
                                         type="text"
                                         value={`${startTime} - ${endTime}`}
                                         onChange={(e) => {
@@ -487,7 +598,7 @@ function holiday() {
                                             setStartTime(newStartTime);
                                             setEndTime(newEndTime);
                                         }}
-                                    />
+                                    /> */}
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>ราคา</p>
@@ -561,7 +672,7 @@ function holiday() {
                     <div className={styles.footer1}>
                         <div className={styles.btn1}><Button onClick={() => deletereserve(reservations1!)} className='btn btn-danger'>ลบข้อมูล</Button></div>
                         <div className={styles.slipbtn}>
-                            <Button onClick={() => editSelecter} disabled={!isChange()} className='btn btn-success mx-2'>บันทึก</Button>
+                            <Button onClick={() => updateReserve()} disabled={!isChange()} className='btn btn-success mx-2'>บันทึก</Button>
                             <Button onClick={() => setShow(false)} className='btn btn-secondary'>Close</Button>
                         </div>
 
@@ -574,139 +685,6 @@ function holiday() {
                 </Modal.Footer>
             </Modal>
 
-            <Modal show={show2} onHide={() => setShow2(false)} centered>
-                <Modal.Header closeButton className={`${loading ? styles.load : ''}`}>
-                    <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {editreserve?.usedate}</h6></Modal.Title>
-                </Modal.Header>
-                <Modal.Body className={`${loading ? styles.load : ''}`}>
-                    <div>
-                        <div className={styles.wrapper1}>
-                            <div className={styles.img}>
-                                <img src={editreserve?.slip === null ? '/No_image_available.png' : '/QR5.jpg'} alt="Qrcode" width="200" height="250" />
-
-                            </div>
-                            <div className={styles.detail}>
-                                <div className={styles.wrapper}>
-                                    <p>ชื่อผู้จอง</p>
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                    />
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <p>คอร์ทที่จอง</p>
-                                    <input
-                                        type="text"
-                                        value={selectedCourtID}
-                                        onChange={(e) => setselectedCourtID(e.target.value)}
-                                    />
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <p>วันที่ใช้สนาม</p>
-                                    <input
-                                        type="text"
-                                        value={useDate}
-                                        onChange={(e) => setUseDate(e.target.value)}
-                                    />
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <p>เวลาใช้สนาม</p>
-                                    <input
-                                        type="text"
-                                        value={`${startTime} - ${endTime}`}
-                                        onChange={(e) => {
-                                            const [newStartTime, newEndTime] = e.target.value.split(' - ');
-                                            setStartTime(newStartTime);
-                                            setEndTime(newEndTime);
-                                        }}
-                                    />
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <p>ราคา</p>
-                                    <input
-                                        type="number"
-                                        value={price}
-                                        onChange={(e) => setPrice(parseFloat(e.target.value))}
-                                    />
-                                </div>
-
-                                {editreserve?.status === 0 && (
-                                    <div>
-                                        {minutesRemaining > 0 && (
-                                            <div style={{ textAlign: "center" }}>
-                                                <h6>
-                                                    <span >กรุณาชำระเงินภายใน </span>
-                                                    <span style={{ color: 'red' }} >
-                                                        <span>{minutesRemaining.toString().padStart(2, '0')}:{secondsRemaining.toString().padStart(2, '0')}</span>
-                                                    </span>
-                                                    <span> นาที </span>
-                                                </h6>
-                                            </div>
-                                        )}
-
-                                        {minutesRemaining < 0 && (
-                                            <div style={{ textAlign: "center" }}>
-                                                <div><h5>   <span style={{ color: 'red' }}>ข้อมูลถูกลบแล้วกรุณาจองใหม่</span></h5></div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {editreserve?.status !== 0 && (
-                                    <div style={{ textAlign: "center" }}>
-                                        {editreserve?.status === 1 && (
-                                            <div><h5> สถานะ  <span style={{ color: 'orange' }}>กำลังตรวจสอบสลิป</span></h5></div>
-
-                                        )}
-                                        {editreserve?.status === 2 && (
-
-                                            <div><h5> สถานะ   <span style={{ color: 'green' }}>ชำระเงินสำเร็จ</span></h5></div>
-
-                                        )}
-                                    </div>
-
-                                )}
-
-
-
-
-
-                                {/* <button  className={styles.slip}>แนบสลิป</button> */}
-                            </div>
-                        </div>
-
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    {/* <div className={styles.footer1}>
-
-                        <div className={styles.btn1}><Button className='btn-info '><a href="/QR5.jpg" download="QR.jpg">โหลดสลิป</a></Button></div>
-                        <div className={styles.slipbtn}>
-                            <label htmlFor="file-input" className={styles.file_input}>
-                                เลือกภาพสลิป
-                            </label>
-                            <input
-                                style={{ display: 'none' }}
-                                id="file-input"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="file-input"
-                            />
-                            <button
-                                onClick={confirm}
-                                disabled={!selectedFile || loading}
-                                className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
-                                style={{ backgroundColor: loading ? 'red' : '' }}
-                            >
-                                {loading ? 'อัพโหลด...' : 'ส่งสลิป'}
-                            </button>
-                        </div>
-
-                    </div> */}
-                </Modal.Footer>
-            </Modal>
         </>
 
     )

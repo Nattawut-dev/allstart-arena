@@ -57,6 +57,7 @@ export default function Page() {
     setStartvalue((startTime as string))
     setEndvalue((endTime as string))
     setTimeID(parseInt(timeSlot as string))
+
     const fetchData = async () => {
       try {
         // โหลดข้อมูล time slot จากแหล่งข้อมูล
@@ -72,6 +73,7 @@ export default function Page() {
         console.error('Error fetching time slots:', error);
       }
     };
+    
     const fetchReservations = async () => {
       try {
         const response = await fetch('/api/reserve/reservations');

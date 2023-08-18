@@ -2,9 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 
 
-
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'GET') {
+    if (req.method === 'PUT') {
         // Get the session token from the request cookies
         const sessionToken = req.cookies.sessionToken;
 
@@ -12,20 +11,16 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             res.status(401).json({ message: 'Not authenticated' });
             return;
         }
-        const { status, page } = req.query
         const connection = await pool.getConnection()
-        const maxGet = parseInt(page as string) * 25
-
         try {
-            // const query = 'SELECT * FROM reserve WHERE status = ?';
-            const query = 'SELECT * FROM reserve WHERE status = ? ORDER BY id DESC LIMIT 25 OFFSET ?;';
-
+            const query = 'UPDATE reserve SET name = ? , phone = ? , court_id = ? ,start_time = ? ,end_time = ? ,usedate = ? ,price = ?  WHERE id = ?;';
+            const { id, name, phone, court_id, start_time, end_time, usedate, price } = req.body
             // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query, [status, maxGet]);
-            res.json(results);
+            const [results] = await connection.query(query, [name, phone, court_id, start_time, end_time, usedate, price, id]);
+            res.json({ results });
         } catch (error) {
-            console.error('Error fetching reserve:', error);
-            res.status(500).json({ error: 'Error fetching reserve' });
+            console.error('Error fetching holidays:', error);
+            res.status(500).json({ error: 'Error fetching holidays' });
         } finally {
             connection.release(); // Release the connection back to the pool when done
         }
