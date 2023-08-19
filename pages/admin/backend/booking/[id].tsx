@@ -160,7 +160,6 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     // Calculate the difference in days
     const daysDiff = differenceInCalendarDays(Sdate, diff);
     setbtn(daysDiff)
-    console.log('Days difference:', daysDiff);
   };
 
   if (timeSlots.length < 1 || courts.length < 1) {

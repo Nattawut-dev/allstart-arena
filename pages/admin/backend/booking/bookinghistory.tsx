@@ -8,6 +8,7 @@ import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
 import useCountdown from '../../../countdown';
 import { useRouter } from 'next/router';
+import { utcToZonedTime } from 'date-fns-tz';
 
 
 interface Reserve {
@@ -44,28 +45,12 @@ function holiday() {
     const [courts, setCourts] = useState<Court[]>([])
     const [selectcourt, setSelectCourt] = useState<Court>()
     const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-
-    const [editreserve, setEditreserve] = useState<Reserve | null>(null);
     const [reservations1, setReservations1] = useState<Reserve>();
-
     const [filter, setFilter] = useState<string>("transferred");
-
     const [isreserve, setIsreserve] = useState(false);
-
-
-    const [id2, setID2] = useState(0);
-    const [title2, setTitle2] = useState('');
-    const [timebetween2, setTimebetween2] = useState('');
-    const [location2, setLocation2] = useState('');
-    const [ordinal2, setOrdinal2] = useState(0);
-
     const [status, setStatus] = useState(1);
-
     const [show, setShow] = useState(false);
-    const [show2, setShow2] = useState(false);
-
     const [selectedOption, setSelectedOption] = useState(0); // State to track the selected option
-
     const [name, setName] = useState<string>('');
     const [phone, setPhone] = useState<string>('');
     const [selectedCourtID, setselectedCourtID] = useState<number>(0);
@@ -74,15 +59,14 @@ function holiday() {
     const [endTime, setEndTime] = useState<string>('');
     const [price, setPrice] = useState<number>(0);
     const [reserve_date, setReserve_date] = useState<string>('');
-
     const [ischange, setIschange] = useState(false);
-
     const [targetTime, setTargetTime] = useState(new Date());
     const countdownMinutes = 15;
     const { minutesRemaining, secondsRemaining } = useCountdown(targetTime, countdownMinutes);
-
     const [currentPage, setCurrentPage] = useState(0);
 
+    const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
+    const [selectedDate, setSelectedDate] = useState(dateInBangkok);
 
 
 
@@ -164,7 +148,7 @@ function holiday() {
     const getReserve = async (status: number, currentPage: number) => {
 
         try {
-            const response = await fetch(`/api/admin/reserved/new/get?status=${status}&page=${currentPage}`);
+            const response = await fetch(`/api/admin/reserved/history?search=${searchTerm}`);
             setStatus(status);
             const data = await response.json();
             if (response.ok) {
@@ -290,7 +274,6 @@ function holiday() {
             setReservations1(item)
             setSelectedOption(item.status);
             const findCourt = courts.find((c) => c.id === item.court_id);
-            setSelectCourt(findCourt)
             setName(item.name);
             setPhone(item.phone);
             if (findCourt) {
@@ -400,6 +383,22 @@ function holiday() {
     //     getReserve(2);
     // };
 
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        getReserve(0, 0)
+    };
+
+    const handleDateChange = (date: Date) => {
+        setSelectedDate(date)
+    };
+    const [searchby, setSearchby] = useState(true);
+
 
     if (!isreserve) {
         return (
@@ -413,54 +412,45 @@ function holiday() {
             <div className={styles.container}>
 
                 <div className={styles.box}>
-                    <div className={styles.footer1}>
-                        <h5 className={`fw-bold ${styles.btn1}`}>ตรวจสอบการโอนเงิน</h5>
-                        <div className='d-flex justify-content-end mb-2'>
+                    <div>
+                        <h5 className={`fw-bold `}>ค้นหาการจองด้วย
+                            <Button className={`btn btn-sm  ms-2 ${searchby ? 'btn-dark' : ''}`} onClick={() => setSearchby(true)}>ชื่อ/เบอร์</Button>
+                            <Button className={`btn btn-sm mx-2  ${!searchby ? 'btn-dark' : ''}`} onClick={() => setSearchby(false)}>วันที่</Button>
+                        </h5>
+                        <div className='d-flex justify-content-center text-center'>
+                            {searchby &&
+                                <>
+                                    <h5 className='mt-1 mx-1'>ชื่อ/เบอร์ </h5>
+                                    <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
+                                        <input
+                                            className={styles.searchInput}
+                                            type="text"
+                                            placeholder="Search by name or phone..."
+                                            value={searchTerm}
+                                            onChange={handleSearch}
+                                        />
+                                        <button className={styles.searchButton} type="submit">
+                                            Search
+                                        </button>
+                                    </form>
+                                </>
 
-                            <Button
-                                onClick={() => {
-                                    setCurrentPage(0);
-                                    setFilter('2');
-                                    router.replace(`/admin/backend/booking/new_reserved?state=2`)
-                                    // getReserve(2, currentPage);
-                                }}
-                                style={{
-                                    backgroundColor: filter === '2' ? 'blue' : 'white',
-                                    color: filter === '2' ? 'white' : 'black',
-                                }}
-                            >
-                                ตรวจสอบแล้ว
-                            </Button>
-                            <Button
-                                className='mx-2'
-                                onClick={() => {
-                                    setCurrentPage(0);
-                                    setFilter('1');
-                                    router.replace(`/admin/backend/booking/new_reserved?state=1`)
-                                    // getReserve(status, currentPage);
-                                }}
-                                style={{
-                                    backgroundColor: filter === '1' ? 'green' : 'white',
-                                    color: filter === '1' ? 'white' : 'black',
-                                }}
-                            >
-                                โอนแล้ว
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    setCurrentPage(0);
-                                    setFilter('0');
-                                    router.replace(`/admin/backend/booking/new_reserved?state=0`)
+                            }
+                            {!searchby &&
+                                <>
+                                    <h5>วันที่ </h5>
+                                    <DatePicker
+                                        selected={selectedDate}
+                                        onChange={handleDateChange}
+                                        className={styles.DatePicker}
+                                    />
+                                </>
 
-                                    // getReserve(0, currentPage);
-                                }}
-                                style={{
-                                    backgroundColor: filter === '0' ? 'red' : 'white',
-                                    color: filter === '0' ? 'white' : 'black',
-                                }}
-                            >
-                                ยังไม่โอน
-                            </Button>
+
+
+                            }
+
+
                         </div>
                     </div>
 
@@ -532,9 +522,9 @@ function holiday() {
 
 
 
-                </div>
+                </div >
 
-            </div>
+            </div >
             <Modal
 
                 show={show}
