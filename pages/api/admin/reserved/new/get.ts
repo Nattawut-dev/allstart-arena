@@ -3,7 +3,7 @@ import pool from '@/db/db';
 
 
 
-export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
+export default async function get(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'GET') {
         // Get the session token from the request cookies
         const sessionToken = req.cookies.sessionToken;
@@ -14,10 +14,10 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const { status, page } = req.query
         const connection = await pool.getConnection()
-        const maxGet = parseInt(page as string) * 25
+        const maxGet = parseInt(page as string) * 20
 
         try {
-            const query = status === '2' ? 'SELECT * FROM reserve WHERE status = ? ORDER BY id DESC LIMIT 25 OFFSET ?;' : 'SELECT * FROM reserve WHERE status = ?' 
+            const query = status === '2' ? 'SELECT * FROM reserve WHERE status = ? ORDER BY id DESC LIMIT 20 OFFSET ?;' : 'SELECT * FROM reserve WHERE status = ?' 
 
             // Execute the SQL query to fetch time slots
             const [results] = await connection.query(query, [status, maxGet]);

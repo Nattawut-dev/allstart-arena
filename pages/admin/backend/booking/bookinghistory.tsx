@@ -63,11 +63,12 @@ function holiday() {
     const [targetTime, setTargetTime] = useState(new Date());
     const countdownMinutes = 15;
     const { minutesRemaining, secondsRemaining } = useCountdown(targetTime, countdownMinutes);
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
     const [selectedDate, setSelectedDate] = useState(dateInBangkok);
 
+    const [disNextPage, setDisNextPage] = useState(false);
 
 
 
@@ -109,7 +110,7 @@ function holiday() {
                     icon: 'success',
                     title: 'แก้ไขสถานะเรียบร้อย'
                 })
-                getReserve(status, currentPage);
+                getReserve();
             } catch (error: any) {
                 console.error(error.message);
                 // Handle any error or display an error message
@@ -134,22 +135,25 @@ function holiday() {
             console.error('Error fetching time slots:', error);
         }
     };
-    const router = useRouter();
-    const { state } = router.query;
     useEffect(() => {
-        setFilter(state as string);
-        setStatus(parseInt(state as string));
-        getReserve(parseInt(state as string), currentPage);
+        getReserve();
         getCourt();
         getTimeslot();
-    }, [currentPage, state]);
+    }, []);
 
 
-    const getReserve = async (status: number, currentPage: number) => {
+    const getReserve = async () => {
 
+        let url = `/api/admin/reserved/history?`
+        if (searchTerm != '') {
+            url += `search=${searchTerm}`
+        }
+        if (usedateSearch != '') {
+            url += `search=${usedateSearch}`
+        }
         try {
-            const response = await fetch(`/api/admin/reserved/history?search=${searchTerm}`);
-            setStatus(status);
+            console.log(usedateSearch)
+            const response = await fetch(url);
             const data = await response.json();
             if (response.ok) {
                 setreserve(data);
@@ -161,6 +165,28 @@ function holiday() {
             console.log('error');
         }
     };
+
+    const searchByText = async (searchTerm: string) => {
+
+        let url = `/api/admin/reserved/history?`
+        if (searchTerm != '') {
+            url += `search=${searchTerm}`
+        }
+        try {
+            console.log(usedateSearch)
+            const response = await fetch(url);
+            const data = await response.json();
+            if (response.ok) {
+                setreserve(data);
+                setIsreserve(true);
+            } else {
+                setIsreserve(false);
+            }
+        } catch {
+            console.log('error');
+        }
+    };
+
     const getCourt = async () => {
         try {
             const courts = await fetch(`/api/reserve/courts`);
@@ -250,7 +276,7 @@ function holiday() {
                 text: 'แก้ไขสำเร็จ',
             })
 
-            getReserve(status, currentPage);
+            getReserve();
             setShow(false);
         } catch (error) {
             console.error('An error occurred while updating the data:', error);
@@ -384,21 +410,39 @@ function holiday() {
     // };
 
     const [searchTerm, setSearchTerm] = useState('');
+    const [usedateSearch, setUsedateSearch] = useState('');
+
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
+        searchByText(event.target.value);
     };
 
     const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        getReserve(0, 0)
+        setCurrentPage(1);
+        getReserve()
     };
 
     const handleDateChange = (date: Date) => {
-        setSelectedDate(date)
+        setSelectedDate(date);
+        setUsedateSearch(format(date, 'dd MMMM yyyy'))
+        setCurrentPage(1);
+        searchByText(format(date, 'dd MMMM yyyy'));
     };
     const [searchby, setSearchby] = useState(true);
 
+    const itemsPerPage = 30; // จำนวนรายการต่อหน้า
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+
+    const nextPage = () => {
+        setCurrentPage((prevPage) => prevPage + 1);
+    };
+
+    const prevPage = () => {
+        setCurrentPage((prevPage) => prevPage - 1);
+    };
 
     if (!isreserve) {
         return (
@@ -414,13 +458,15 @@ function holiday() {
                 <div className={styles.box}>
                     <div>
                         <h5 className={`fw-bold `}>ค้นหาการจองด้วย
-                            <Button className={`btn btn-sm  ms-2 ${searchby ? 'btn-dark' : ''}`} onClick={() => setSearchby(true)}>ชื่อ/เบอร์</Button>
-                            <Button className={`btn btn-sm mx-2  ${!searchby ? 'btn-dark' : ''}`} onClick={() => setSearchby(false)}>วันที่</Button>
+                            <Button className={`btn btn-sm  ms-2 ${searchby ? 'btn-dark' : ''}`} onClick={() => { setSearchby(true); searchByText('') }}>ชื่อ/เบอร์</Button>
+                            <Button className={`btn btn-sm mx-2  ${!searchby ? 'btn-dark' : ''}`} onClick={() => {
+                                setSearchby(false); searchByText(format(selectedDate, 'dd MMMM yyyy'));
+                            }}>วันใช้คอร์ท</Button>
                         </h5>
                         <div className='d-flex justify-content-center text-center'>
                             {searchby &&
                                 <>
-                                    <h5 className='mt-1 mx-1'>ชื่อ/เบอร์ </h5>
+                                    <h5 className='mt-1 mx-1'>ชื่อ/เบอร์  </h5>
                                     <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
                                         <input
                                             className={styles.searchInput}
@@ -438,7 +484,7 @@ function holiday() {
                             }
                             {!searchby &&
                                 <>
-                                    <h5>วันที่ </h5>
+                                    <h5 className='mt-1 mx-1'> วันที่  </h5>
                                     <DatePicker
                                         selected={selectedDate}
                                         onChange={handleDateChange}
@@ -471,54 +517,66 @@ function holiday() {
                             </tr>
                         </thead>
                         <tbody>
-                            {reserve.map((item, index) => {
-                                const findCourt = courts.find((c) => c.id === item.court_id);
-                                return (
-                                    <tr key={item.id}>
-                                        <td className={styles.hide_on_mobile}>{index + 1}</td>
-                                        <td>{findCourt?.title}</td>
-                                        <td>{item.name}</td>
-                                        <td className={styles.hide_on_mobile} >{item.phone}</td>
-                                        <td className={styles.hide_on_mobile}>{item.usedate}</td>
-                                        <td className={styles.hide_on_mobile}>{item.start_time} - {item.end_time}</td>
-                                        <td className={styles.hide_on_mobile}>{item.price}</td>
-                                        <td className={styles.hide_on_mobile} style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
-                                            {item.status === 1 ? 'กำลังตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
-                                        </td>
-                                        <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>สลิป/แก้ไข</Button></td>
+                            {reserve
+                                .slice(startIndex, startIndex + itemsPerPage)
+                                .map((item, index) => {
+                                    const findCourt = courts.find((c) => c.id === item.court_id);
+                                    return (
+                                        <tr key={item.id}>
+                                            <td className={styles.hide_on_mobile}>{index + 1}</td>
+                                            <td>{findCourt?.title}</td>
+                                            <td>{item.name}</td>
+                                            <td className={styles.hide_on_mobile} >{item.phone}</td>
+                                            <td className={styles.hide_on_mobile}>{item.usedate}</td>
+                                            <td className={styles.hide_on_mobile}>{item.start_time} - {item.end_time}</td>
+                                            <td className={styles.hide_on_mobile}>{item.price}</td>
+                                            <td className={styles.hide_on_mobile} style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
+                                                {item.status === 1 ? 'กำลังตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
+                                            </td>
+                                            <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>สลิป/แก้ไข</Button></td>
 
-                                        <td>
-                                            <Button
-                                                className="btn-sm btn-danger"
-                                                onClick={() => deletereserve(item)}
-                                            >
-                                                ลบ
-                                            </Button></td>
+                                            <td>
+                                                <Button
+                                                    className="btn-sm btn-danger"
+                                                    onClick={() => deletereserve(item)}
+                                                >
+                                                    ลบ
+                                                </Button></td>
 
-                                    </tr>
-                                );
-                            })}
-
+                                        </tr>
+                                    );
+                                })}
+                            {reserve.length <= 0 &&
+                                <tr>
+                                    <td colSpan={10}>ไม่พบการจอง</td>
+                                </tr>
+                            }
 
                         </tbody>
                     </table>
 
-                    {filter == "2" &&
-                        <div className="d-flex justify-content-end">
+                    <div className="d-flex justify-content-end">
+                        {currentPage > 1 && (
+
                             <Button
                                 className='mx-2'
-                                onClick={() => { setCurrentPage(currentPage - 1); }}
+                                onClick={() => { prevPage() }}
                                 disabled={currentPage === 0}
                             >
                                 ก่อนหน้า
-                            </Button>
+                            </Button>)}
+                        {reserve.length > startIndex + itemsPerPage && (
+
                             <Button
-                                onClick={() => { setCurrentPage(currentPage + 1); }}
+                                onClick={() => { nextPage() }}
+                                disabled={disNextPage}
                             >
                                 ถัดไป
-                            </Button>
-                        </div>
-                    }
+                            </Button>)}
+
+
+                    </div>
+
 
 
 
