@@ -1,12 +1,10 @@
-import { differenceInCalendarDays, format } from 'date-fns';
-import { GetServerSideProps } from 'next';
+import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react'
 import { Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
-import useCountdown from '../../../countdown';
 import { useRouter } from 'next/router';
 import { utcToZonedTime } from 'date-fns-tz';
 
@@ -41,14 +39,12 @@ interface TimeSlot {
 
 
 function holiday() {
+    const [message, setMessage] = useState('');
     const [reserve, setreserve] = useState<Reserve[]>([])
     const [courts, setCourts] = useState<Court[]>([])
-    const [selectcourt, setSelectCourt] = useState<Court>()
     const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
     const [reservations1, setReservations1] = useState<Reserve>();
-    const [filter, setFilter] = useState<string>("transferred");
     const [isreserve, setIsreserve] = useState(false);
-    const [status, setStatus] = useState(1);
     const [show, setShow] = useState(false);
     const [selectedOption, setSelectedOption] = useState(0); // State to track the selected option
     const [name, setName] = useState<string>('');
@@ -59,21 +55,13 @@ function holiday() {
     const [endTime, setEndTime] = useState<string>('');
     const [price, setPrice] = useState<number>(0);
     const [reserve_date, setReserve_date] = useState<string>('');
-    const [ischange, setIschange] = useState(false);
-    const [targetTime, setTargetTime] = useState(new Date());
-    const countdownMinutes = 15;
-    const { minutesRemaining, secondsRemaining } = useCountdown(targetTime, countdownMinutes);
     const [currentPage, setCurrentPage] = useState(1);
-
     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
     const [selectedDate, setSelectedDate] = useState(dateInBangkok);
-
-    const [disNextPage, setDisNextPage] = useState(false);
 
 
 
     const handleOptionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-
         const value = parseInt(event.target.value)
         const Toast = Swal.mixin({
             toast: true,
@@ -86,6 +74,7 @@ function holiday() {
                 toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
         })
+
         if (event) {
             try {
                 const response = await fetch('/api/admin/reserved/new/updateStatus', {
@@ -110,7 +99,7 @@ function holiday() {
                     icon: 'success',
                     title: 'แก้ไขสถานะเรียบร้อย'
                 })
-                getReserve();
+                getReserve('');
             } catch (error: any) {
                 console.error(error.message);
                 // Handle any error or display an error message
@@ -135,38 +124,39 @@ function holiday() {
             console.error('Error fetching time slots:', error);
         }
     };
-    useEffect(() => {
-        getReserve();
-        getCourt();
-        getTimeslot();
-    }, []);
 
-
-    const getReserve = async () => {
-
-        let url = `/api/admin/reserved/history?`
-        if (searchTerm != '') {
-            url += `search=${searchTerm}`
-        }
-        if (usedateSearch != '') {
-            url += `search=${usedateSearch}`
-        }
+    const router = useRouter();
+    const checkAuthentication = async () => {
         try {
-            console.log(usedateSearch)
-            const response = await fetch(url);
+            const response = await fetch('/api/admin/check-auth', {
+                method: 'GET',
+                credentials: 'include', // Include cookies in the request
+            });
+
             const data = await response.json();
             if (response.ok) {
-                setreserve(data);
-                setIsreserve(true);
+                setMessage(data.message);
             } else {
-                setIsreserve(false);
+                // Redirect to the login page if the user is not authenticated
+                router.push('/admin/login')
+                return;
             }
-        } catch {
-            console.log('error');
+
+        } catch (error) {
+            console.error('Error while checking authentication', error);
+            setMessage('An error occurred. Please try again later.');
         }
     };
 
-    const searchByText = async (searchTerm: string) => {
+    useEffect(() => {
+        getReserve('');
+        getCourt();
+        getTimeslot();
+        checkAuthentication();
+    }, []);
+
+
+    const getReserve = async (searchTerm: string) => {
 
         let url = `/api/admin/reserved/history?`
         if (searchTerm != '') {
@@ -180,6 +170,7 @@ function holiday() {
                 setreserve(data);
                 setIsreserve(true);
             } else {
+                setMessage(data.message);
                 setIsreserve(false);
             }
         } catch {
@@ -276,7 +267,7 @@ function holiday() {
                 text: 'แก้ไขสำเร็จ',
             })
 
-            getReserve();
+            getReserve('');
             setShow(false);
         } catch (error) {
             console.error('An error occurred while updating the data:', error);
@@ -404,31 +395,26 @@ function holiday() {
     };
 
 
-    // const handlePageChange = (newPage: number) => {
-    //     setCurrentPage(newPage);
-    //     getReserve(2);
-    // };
-
     const [searchTerm, setSearchTerm] = useState('');
     const [usedateSearch, setUsedateSearch] = useState('');
 
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
-        searchByText(event.target.value);
+        getReserve(event.target.value);
     };
 
     const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setCurrentPage(1);
-        getReserve()
+        getReserve('');
     };
 
     const handleDateChange = (date: Date) => {
         setSelectedDate(date);
         setUsedateSearch(format(date, 'dd MMMM yyyy'))
         setCurrentPage(1);
-        searchByText(format(date, 'dd MMMM yyyy'));
+        getReserve(format(date, 'dd MMMM yyyy'));
     };
     const [searchby, setSearchby] = useState(true);
 
@@ -444,12 +430,26 @@ function holiday() {
         setCurrentPage((prevPage) => prevPage - 1);
     };
 
-    if (!isreserve) {
+
+    if (message === 'Not authenticated') {
         return (
-            <div>No reserve</div>
-        )
+            <>
+                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+                    <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
+                </div>
+            </>
+        );
     }
 
+    if (!isreserve || message != "Authenticated") {
+        return (
+            <>
+                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+                    <h5 >loading....</h5>
+                </div>
+            </>
+        );
+    }
     return (
         <>
 
@@ -458,20 +458,20 @@ function holiday() {
                 <div className={styles.box}>
                     <div>
                         <h5 className={`fw-bold `}>ค้นหาการจองด้วย
-                            <Button className={`btn btn-sm  ms-2 ${searchby ? 'btn-dark' : ''}`} onClick={() => { setSearchby(true); searchByText('') }}>ชื่อ/เบอร์</Button>
-                            <Button className={`btn btn-sm mx-2  ${!searchby ? 'btn-dark' : ''}`} onClick={() => {
-                                setSearchby(false); searchByText(format(selectedDate, 'dd MMMM yyyy'));
+                            <Button className={`btn btn-sm  ms-2 border ${searchby ? '' : 'btn-light'}`} onClick={() => { setSearchby(true); getReserve('') }}>ชื่อ/เบอร์</Button>
+                            <Button className={`btn btn-sm mx-2 border ${!searchby ? '' : 'btn-light'}`} onClick={() => {
+                                setSearchby(false); getReserve(format(selectedDate, 'dd MMMM yyyy'));
                             }}>วันใช้คอร์ท</Button>
                         </h5>
                         <div className='d-flex justify-content-center text-center'>
                             {searchby &&
                                 <>
-                                    <h5 className='mt-1 mx-1'>ชื่อ/เบอร์  </h5>
+                                    {/* <h5 className='mt-1 mx-1'>ชื่อ/เบอร์  </h5> */}
                                     <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
                                         <input
                                             className={styles.searchInput}
                                             type="text"
-                                            placeholder="Search by name or phone..."
+                                            placeholder="ชื่อ/เบอร์/วันที่ใช้คอร์ท"
                                             value={searchTerm}
                                             onChange={handleSearch}
                                         />
@@ -491,19 +491,14 @@ function holiday() {
                                         className={styles.DatePicker}
                                     />
                                 </>
-
-
-
                             }
-
-
                         </div>
                     </div>
 
 
                     <table className={`${styles.table} table table-bordered table-striped  table-sm`}>
-                        <thead >
-                            <tr>
+                        <thead className='table-primary'>
+                            <tr >
                                 <th scope="col" className={styles.hide_on_mobile}>#</th>
                                 <th scope="col">คอร์ท</th>
                                 <th scope="col">ชื่อ</th>
@@ -561,17 +556,15 @@ function holiday() {
                             <Button
                                 className='mx-2'
                                 onClick={() => { prevPage() }}
-                                disabled={currentPage === 0}
                             >
-                                ก่อนหน้า
+                                หน้าก่อนหน้า
                             </Button>)}
                         {reserve.length > startIndex + itemsPerPage && (
 
                             <Button
                                 onClick={() => { nextPage() }}
-                                disabled={disNextPage}
                             >
-                                ถัดไป
+                                หน้าถัดไป
                             </Button>)}
 
 

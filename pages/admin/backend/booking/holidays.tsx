@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/holidays.module.css'
 import Swal from 'sweetalert2'
+import { useRouter } from 'next/router';
 
 
 interface Holidays {
@@ -22,6 +23,7 @@ interface Props {
 
 
 function holiday() {
+  const [message, setMessage] = useState('');
   const [holidays, setHolidays] = useState<Holidays[]>([])
   const [editholiday, setEditholiday] = useState<Holidays | null>(null);
 
@@ -39,10 +41,33 @@ function holiday() {
   const [show, setShow] = useState(false);
   const [show2, setShow2] = useState(false);
 
+  const router = useRouter();
+  const checkAuthentication = async () => {
+    try {
+      const response = await fetch('/api/admin/check-auth', {
+        method: 'GET',
+        credentials: 'include', // Include cookies in the request
+      });
 
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(data.message);
+      } else {
+        // Redirect to the login page if the user is not authenticated
+        router.push('/admin/login')
+        return;
+      }
+
+    } catch (error) {
+      console.error('Error while checking authentication', error);
+      setMessage('An error occurred. Please try again later.');
+    }
+  };
   useEffect(() => {
     getHoliday();
+    checkAuthentication();
   }, []);
+
   // Function to handle date change
   const handleDateChange = (date: Date) => {
     setSelectedDate(date);
@@ -57,16 +82,15 @@ function holiday() {
       const data = await response.json();
       if (data.results.length >= 1) {
         setHolidays(data.results);
-        setIsHoliday(true)
+        setIsHoliday(true);
       } else {
-        setIsHoliday(false)
+        setMessage(data.message)
+        setIsHoliday(false);
       }
     } catch {
       console.log('error');
     }
   };
-  const [loading, setLoading] = useState(false);
-
 
   const handleCheckboxChange = async (id: number, currentStatus: number) => {
     const newStatus = currentStatus === 1 ? 0 : 1;
@@ -216,11 +240,24 @@ function holiday() {
       throw error;
     }
   }
-
-  if (!isHoliday) {
+  if (message === 'Not authenticated') {
     return (
-      <div>No holidays</div>
-    )
+      <>
+        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+          <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
+        </div>
+      </>
+    );
+  }
+
+  if (!isHoliday || message != "Authenticated") {
+    return (
+      <>
+        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+          <h5 >loading....</h5>
+        </div>
+      </>
+    );
   }
 
   return (
@@ -231,7 +268,7 @@ function holiday() {
         <div className={styles.box}>
           <h5 className='fw-bold'>จัดการวันหยุด</h5>
           <table className="table table-bordered">
-            <thead>
+            <thead className='table-primary'>
               <tr>
                 <th scope="col">#</th>
                 <th scope="col">หัวข้อ</th>

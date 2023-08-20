@@ -80,6 +80,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [foundHoliday, setFoundHoliday] = useState<Holidays[]>([])
   const [isHoliday, setIsHoliday] = useState(false);
+  const [message, setMessage] = useState('');
 
   const getReservations = async () => {
     const response = await fetch(`/api/reserve/reservations`);
@@ -94,6 +95,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     getHoliday();
     getReservations();
     selectDate(parsedId);
+    checkAuthentication();
   }, [parsedId]);
 
   const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
@@ -162,11 +164,54 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     setbtn(daysDiff)
   };
 
-  if (timeSlots.length < 1 || courts.length < 1) {
+  const checkAuthentication = async () => {
+    try {
+      const response = await fetch('/api/admin/check-auth', {
+        method: 'GET',
+        credentials: 'include', // Include cookies in the request
+      });
 
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(data.message);
+      } else {
+        // Redirect to the login page if the user is not authenticated
+        router.push('/admin/login')
+        return;
+      }
+
+    } catch (error) {
+      console.error('Error while checking authentication', error);
+      setMessage('An error occurred. Please try again later.');
+    }
+  };
+
+
+  if (message === 'Not authenticated') {
+    return (
+      <>
+        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+          <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
+        </div>
+      </>
+    );
+  }
+
+  if (message != "Authenticated") {
+    return (
+      <>
+        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+          <h5 >loading....</h5>
+        </div>
+      </>
+    );
+  }
+  
+  if (timeSlots.length < 1 || courts.length < 1) {
     return (
       <NotFoundPage />
     );
+
   } else {
     return (
 
@@ -179,7 +224,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                 )} */}
 
         <div>
-          
+
           <div className={styles.tableWrapper}>
             <table className={`${styles.table}  ${isLoading ? styles.load : ''}`} >
               <thead>
@@ -295,7 +340,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
           </div>
         </div>
 
-    
+
       </div >
 
     );

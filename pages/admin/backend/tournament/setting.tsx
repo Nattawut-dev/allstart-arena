@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/tournament/setting.module.css'
 import Swal from 'sweetalert2'
+import { useRouter } from 'next/router';
 
 
 interface Tournament {
@@ -24,32 +25,46 @@ interface Tournament {
 
 function holiday() {
     const [tournament, setTournament] = useState<Tournament[]>([])
-    const [editholiday, setEditholiday] = useState<Tournament | null>(null);
-
     const [isTournament, setIsTournament] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-
     const [title, setTitle] = useState('');
     const [timebetween, setTimebetween] = useState('');
     const [location, setLocation] = useState('');
     const [ordinal, setOrdinal] = useState(0);
     const [max_team, setMax_team] = useState(0);
-
     const [id2, setID2] = useState(0);
     const [title2, setTitle2] = useState('');
     const [timebetween2, setTimebetween2] = useState('');
     const [location2, setLocation2] = useState('');
     const [ordinal2, setOrdinal2] = useState(0);
     const [max_team2, setMax_team2] = useState(0);
-
-
-    const [status, setStatus] = useState(false);
-
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
 
+    const [message, setMessage] = useState('');
+    const router = useRouter();
+    const checkAuthentication = async () => {
+        try {
+            const response = await fetch('/api/admin/check-auth', {
+                method: 'GET',
+                credentials: 'include', // Include cookies in the request
+            });
 
+            const data = await response.json();
+            if (response.ok) {
+                setMessage(data.message);
+            } else {
+                // Redirect to the login page if the user is not authenticated
+                router.push('/admin/login')
+                return;
+            }
+
+        } catch (error) {
+            console.error('Error while checking authentication', error);
+            setMessage('An error occurred. Please try again later.');
+        }
+    };
     useEffect(() => {
+        checkAuthentication();
         getHoliday();
     }, []);
 
@@ -68,8 +83,6 @@ function holiday() {
             console.log('error');
         }
     };
-    const [loading, setLoading] = useState(false);
-
 
     const handleCheckboxChange = async (id: number, currentStatus: number) => {
         const newStatus = currentStatus === 1 ? 0 : 1;
@@ -163,7 +176,7 @@ function holiday() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ title, ordinal, location, timebetween ,max_team}),
+                body: JSON.stringify({ title, ordinal, location, timebetween, max_team }),
             });
 
             if (!response.ok) {
@@ -243,13 +256,26 @@ function holiday() {
             throw error;
         }
     }
-
-    if (!isTournament) {
+    if (message === 'Not authenticated') {
         return (
-            <div>No Tournament</div>
-        )
+            <>
+                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+                    <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
+                </div>
+            </>
+        );
     }
 
+    if (!isTournament || message != "Authenticated") {
+        return (
+            <>
+                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+                    <h5 >loading....</h5>
+                </div>
+            </>
+        );
+
+    }
     return (
         <>
 
@@ -258,7 +284,7 @@ function holiday() {
                 <div className={styles.box}>
                     <h5 className='fw-bold'>จัดการ รายการแข่งขัน</h5>
                     <table className="table table-bordered">
-                        <thead>
+                        <thead className='table-primary'>
                             <tr>
                                 <th scope="col">#</th>
                                 <th scope="col">ชื่อ</th>

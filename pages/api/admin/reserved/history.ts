@@ -41,7 +41,6 @@ export default async function get(req: NextApiRequest, res: NextApiResponse) {
         }
         const { search } = req.query;
         const connection = await pool.getConnection()
-            console.log(search)
 
         try {
             const query = search === undefined ? 'SELECT  * FROM reserve ORDER BY id DESC LIMIT 1000 ' :

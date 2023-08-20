@@ -1,12 +1,9 @@
-import { differenceInCalendarDays, format } from 'date-fns';
-import { GetServerSideProps } from 'next';
+
 import React, { useEffect, useState } from 'react'
 import { Button, Modal } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
-import useCountdown from '../../../countdown';
 import { useRouter } from 'next/router';
 
 
@@ -42,27 +39,17 @@ interface TimeSlot {
 function holiday() {
     const [reserve, setreserve] = useState<Reserve[]>([])
     const [courts, setCourts] = useState<Court[]>([])
-    const [selectcourt, setSelectCourt] = useState<Court>()
     const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
-    const [editreserve, setEditreserve] = useState<Reserve | null>(null);
     const [reservations1, setReservations1] = useState<Reserve>();
 
     const [filter, setFilter] = useState<string>("transferred");
 
     const [isreserve, setIsreserve] = useState(false);
 
-
-    const [id2, setID2] = useState(0);
-    const [title2, setTitle2] = useState('');
-    const [timebetween2, setTimebetween2] = useState('');
-    const [location2, setLocation2] = useState('');
-    const [ordinal2, setOrdinal2] = useState(0);
-
     const [status, setStatus] = useState(1);
 
     const [show, setShow] = useState(false);
-    const [show2, setShow2] = useState(false);
 
     const [selectedOption, setSelectedOption] = useState(0); // State to track the selected option
 
@@ -75,20 +62,32 @@ function holiday() {
     const [price, setPrice] = useState<number>(0);
     const [reserve_date, setReserve_date] = useState<string>('');
 
-    const [ischange, setIschange] = useState(false);
-
-    const [targetTime, setTargetTime] = useState(new Date());
-    const countdownMinutes = 15;
-    const { minutesRemaining, secondsRemaining } = useCountdown(targetTime, countdownMinutes);
-
     const [currentPage, setCurrentPage] = useState(0);
+    const [message, setMessage] = useState('');
 
+    const checkAuthentication = async () => {
+        try {
+            const response = await fetch('/api/admin/check-auth', {
+                method: 'GET',
+                credentials: 'include', // Include cookies in the request
+            });
 
+            const data = await response.json();
+            if (response.ok) {
+                setMessage(data.message);
+            } else {
+                // Redirect to the login page if the user is not authenticated
+                router.push('/admin/login')
+                return;
+            }
 
-
+        } catch (error) {
+            console.error('Error while checking authentication', error);
+            setMessage('An error occurred. Please try again later.');
+        }
+    };
 
     const handleOptionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-
         const value = parseInt(event.target.value)
         const Toast = Swal.mixin({
             toast: true,
@@ -140,12 +139,9 @@ function holiday() {
             // โหลดข้อมูล time slot จากแหล่งข้อมูล
             const response = await fetch('/api/reserve/time-slots');
             const data = await response.json();
-
             // ตั้งค่า state สำหรับ time slots
             setTimeSlots(data.timeSlots);
-
             //   setPrice(data.timeSlots[timeID].price)
-
         } catch (error) {
             console.error('Error fetching time slots:', error);
         }
@@ -153,6 +149,7 @@ function holiday() {
     const router = useRouter();
     const { state } = router.query;
     useEffect(() => {
+        checkAuthentication();
         setFilter(state as string);
         setStatus(parseInt(state as string));
         getReserve(parseInt(state as string), currentPage);
@@ -290,7 +287,6 @@ function holiday() {
             setReservations1(item)
             setSelectedOption(item.status);
             const findCourt = courts.find((c) => c.id === item.court_id);
-            setSelectCourt(findCourt)
             setName(item.name);
             setPhone(item.phone);
             if (findCourt) {
@@ -394,18 +390,25 @@ function holiday() {
         return totalPrice;
     };
 
-
-    // const handlePageChange = (newPage: number) => {
-    //     setCurrentPage(newPage);
-    //     getReserve(2);
-    // };
-
-
-    if (!isreserve) {
+    if (message === 'Not authenticated') {
         return (
-            <div>No reserve</div>
-        )
+            <>
+                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+                    <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
+                </div>
+            </>
+        );
     }
+    if (!isreserve || message != "Authenticated") {
+        return (
+            <>
+                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+                    <h5 >loading....</h5>
+                </div>
+            </>
+        );
+    }
+
 
     return (
         <>
@@ -466,7 +469,7 @@ function holiday() {
 
 
                     <table className={`${styles.table} table table-bordered table-striped  table-sm`}>
-                        <thead >
+                        <thead className='table-primary'>
                             <tr>
                                 <th scope="col" className={styles.hide_on_mobile}>#</th>
                                 <th scope="col">คอร์ท</th>

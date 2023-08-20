@@ -4,6 +4,12 @@ import pool from '@/db/db';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const sessionToken = req.cookies.sessionToken;
+
+    if (!sessionToken) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
+    }
     const { title, date, status } = req.body;
     const connection = await pool.getConnection();
     try {
