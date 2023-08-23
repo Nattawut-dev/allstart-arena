@@ -53,11 +53,11 @@ export default function Page() {
       router.push('/booking')
       return;
     }
+
     setSelectedDate(addDays(dateInBangkok, parsedId))
     setStartvalue((startTime as string))
     setEndvalue((endTime as string))
     setTimeID(parseInt(timeSlot as string))
-
     const fetchData = async () => {
       try {
         // โหลดข้อมูล time slot จากแหล่งข้อมูล
@@ -66,14 +66,14 @@ export default function Page() {
 
         // ตั้งค่า state สำหรับ time slots
         setTimeSlots(data.timeSlots);
-
-        setPrice(data.timeSlots[timeID].price)
+        let time_slot_id = parseInt(timeSlot as string)
+        setPrice(data.timeSlots[time_slot_id].price)
 
       } catch (error) {
         console.error('Error fetching time slots:', error);
       }
     };
-    
+
     const fetchReservations = async () => {
       try {
         const response = await fetch('/api/reserve/reservations');
@@ -83,9 +83,9 @@ export default function Page() {
         console.error('Error fetching reservations:', error);
       }
     };
-    console.log("totalPrice", price)
     fetchReservations();
     fetchData();
+
   }, [router.isReady, id, timeSlot, startTime, endTime, usedate]);
 
   const [name, setName] = useState('');

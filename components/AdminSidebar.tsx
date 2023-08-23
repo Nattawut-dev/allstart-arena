@@ -72,6 +72,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             {selectedSubMenu2 === true && (
               <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
                 <Link href="/admin/backend/tournament/setting" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/setting' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>การตั้งค่า</span></div> </li></Link>
+                <Link href="/admin/backend/tournament/protest" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/protest' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>การประท้วง</span></div></li></Link>
+
                 <Link href="/Tournament/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '0' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ N</span></div></li></Link>
                 <Link href="/Tournament/1" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '1' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ S</span></div></li></Link>
                 <Link href="/Tournament/2" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '2' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ P-/P</span></div> </li></Link>

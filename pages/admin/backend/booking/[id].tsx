@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '@/styles/admin/ReserveBadmintonCourt.module.css';
-import { format, addDays, isAfter, differenceInCalendarDays, parse } from 'date-fns';
+import { format, addDays, isAfter, differenceInCalendarDays, parse, differenceInHours } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import { InferGetServerSidePropsType, GetServerSideProps } from 'next';
 import NotFoundPage from '../../../404'
@@ -9,6 +9,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import Swal from 'sweetalert2';
 
 interface TimeSlot {
   id: number;
@@ -81,6 +82,19 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   const [foundHoliday, setFoundHoliday] = useState<Holidays[]>([])
   const [isHoliday, setIsHoliday] = useState(false);
   const [message, setMessage] = useState('');
+  const [show, setShow] = useState(false);
+  const [price, setPrice] = useState<number>();
+  const [startvalue, setStartvalue] = useState('');
+  const [endvalue, setEndvalue] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [courtID, setCourtID] = useState(0);
+  const [time_slot_id, setTime_slot_id] = useState(0);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
+  const handleClose = () => {
+    setShow(false);
+  }
 
   const getReservations = async () => {
     const response = await fetch(`/api/reserve/reservations`);
@@ -136,8 +150,13 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     endTime: string,
     usedate: number
   ) => {
-    router.push(`/booking/Reserve/${courtId}?timeSlot=${timeSlotId}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&usedate=${encodeURIComponent(usedate)}`
-    );
+    setPrice(timeSlots[timeSlotId - 1].price)
+    setStartTime(startTime);
+    setTime_slot_id(timeSlotId);
+    setCourtID(courtId);
+    setStartvalue(startTime)
+    setEndvalue(endTime)
+    setShow(true);
   };
   const getCurrentDate = () => {
     const id = parseInt(router.query.id as string)
@@ -185,7 +204,132 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
       setMessage('An error occurred. Please try again later.');
     }
   };
+  const calculateTotalPrice = (startTime: string, endTime: string): number => {
+    let totalPrice = 0;
+    // ค้นหาช่วงเวลาที่มี start_time และ end_time ตรงกับ startTime และ endTime ที่เลือก
+    const startIndex = timeSlots.findIndex((timeSlot) => timeSlot.start_time === startTime);
+    const endIndex = timeSlots.findIndex((timeSlot) => timeSlot.end_time === endTime);
 
+    if (startIndex >= 0 && endIndex >= 0) {
+      for (let i = startIndex; i <= endIndex; i++) {
+        totalPrice += timeSlots[i].price;
+      }
+    }
+
+    return totalPrice;
+  };
+
+  const handleTimeSlotChange = (value: string) => {
+    const [startTime, endTime] = value.split('+');
+    setStartvalue(startTime)
+    setEndvalue(endTime)
+    const totalPrice = calculateTotalPrice(startTime, endTime);
+    setPrice(totalPrice);
+  };
+
+  const timeSlotOptions = timeSlots.map((timeSlot) => {
+    const hours = differenceInHours(new Date(`2000-01-01T${timeSlot.end_time}`), new Date(`2000-01-01T${startTime}`));
+    if (hours >= 1) {
+      const isTimeSlotReserved = reservations.some(
+        (reservation) =>
+          reservation.court_id === courtID &&
+          reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
+          (
+            (reservation.start_time <= (startTime as string) && reservation.end_time > (startTime as string)) ||
+            (reservation.start_time < timeSlot.end_time && reservation.end_time >= timeSlot.end_time)
+          )
+      );
+
+      if (isTimeSlotReserved) {
+        return null; // ไม่สร้างตัวเลือก
+      }
+
+      // แสดงตัวเลือกเมื่อไม่มีการจอง
+      return (
+        <option
+          key={timeSlot.id}
+          value={`${startTime}+${timeSlot.end_time}`}
+        >
+          {startTime} - {timeSlot.end_time} ({hours} ชั่วโมง)
+        </option>
+      );
+    }
+
+  });
+  // ตัดตัวเลือกที่ไม่ถูกสร้างจากผลลัพธ์ของ map
+  const lastOptionIndex = timeSlotOptions.findIndex(option => option === null);
+  const filteredTimeSlotOptions = lastOptionIndex === -1 ? timeSlotOptions : timeSlotOptions.slice(0, lastOptionIndex);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const date = format(selectedDate, 'dd MMMM yyyy')
+    if (name == '' || phone == '') {
+      setError("กรุณากรอกฟิลให้ครบ")
+      return;
+    }
+    else if (phone.length < 10) {
+      setError("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 ตัว")
+      return;
+    }
+    else {
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+      })
+      try {
+        const response = await fetch('/api/reserve/reservations', {
+          method: 'POST',
+          body: JSON.stringify({
+            name,
+            phone,
+            court_id: courtID,
+            time_slot_id: time_slot_id,
+            startvalue,
+            endvalue,
+            usedate: date,
+            price: price
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          // Reset form fields if needed
+          setName('');
+          setPhone('');
+          getReservations();
+          setShow(false);
+
+          Toast.fire({
+            icon: 'success',
+            title: 'บันทึกสำเร็จ'
+          })
+
+        } else {
+          Toast.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด'
+          }).then(() => {
+            getReservations();
+
+          })
+          console.error('Error submitting data');
+
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+  };
 
   if (message === 'Not authenticated') {
     return (
@@ -206,7 +350,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
       </>
     );
   }
-  
+
   if (timeSlots.length < 1 || courts.length < 1) {
     return (
       <NotFoundPage />
@@ -339,7 +483,45 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
             }
           </div>
         </div>
+        <Modal
 
+          show={show}
+          onHide={handleClose}
+          backdrop="static"
+          keyboard={false}
+          centered
+        >
+          <Modal.Header closeButton >
+            <Modal.Title><h6>จองใช้สนาม วันที่ <span style={{ color: 'red' }}>{selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span></h6></Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div className={styles['reserve-form-container']}>
+              <h2>จองสนามแบดมินตันคอร์ท {courtID} </h2>
+              <h3>ราคารวม {price} บาท</h3>
+              <h6>
+                เวลา{' '}
+                <select className={styles.select} onChange={(e) => handleTimeSlotChange(e.target.value)}>
+                  {filteredTimeSlotOptions}
+                </select>
+              </h6>
+              <form id="myForm" onSubmit={handleSubmit}>
+                <label>
+                  Name:
+                  <input type="text" maxLength={16} value={name} onChange={(e) => setName(e.target.value)} placeholder='ชื่อ (ไม่เกิน 16 ตัวอักษร)' required />
+                </label>
+                <label>
+                  Phone:
+                  <input type="tel" maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='เบอร์โทร' required />
+                </label>
+                <div><p style={{ color: "red" }}>{error}</p></div>
+              </form>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button form="myForm" type="submit">Submit</Button>
+            <Button onClick={handleClose} className='btn-secondary'>Close</Button>
+          </Modal.Footer>
+        </Modal>
 
       </div >
 

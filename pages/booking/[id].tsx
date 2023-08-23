@@ -142,7 +142,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         endTime: string,
         usedate: number
     ) => {
-        router.push(`/booking/Reserve/${courtId}?timeSlot=${timeSlotId}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&usedate=${encodeURIComponent(usedate)}`
+        router.push(`/booking/Reserve/${courtId}?timeSlot=${timeSlotId-1}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&usedate=${encodeURIComponent(usedate)}`
         );
     };
 

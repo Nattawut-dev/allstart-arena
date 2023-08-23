@@ -114,6 +114,8 @@
   color: #ffffff;
   border: #ffffff;
 }
+
+
 /* Adjustments for smaller screens */
 @media screen and (max-width: 768px) {
   .table {
