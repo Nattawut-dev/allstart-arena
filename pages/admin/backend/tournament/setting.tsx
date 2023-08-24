@@ -1,8 +1,5 @@
-import { differenceInCalendarDays, format } from 'date-fns';
-import { GetServerSideProps } from 'next';
 import React, { useEffect, useState } from 'react'
 import { Button, Modal } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/tournament/setting.module.css'
 import Swal from 'sweetalert2'

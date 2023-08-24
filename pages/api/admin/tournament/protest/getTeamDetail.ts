@@ -13,17 +13,17 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             return;
         }
         const connection = await pool.getConnection()
+        const { id } = req.query
         try {
-            const query = `SELECT P.*, T.team_name
-            FROM protest P
-            JOIN tournament T ON P.tournament_id = T.id;`;
+            const query = 'SELECT * FROM tournament WHERE id = ?';
 
             // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query);
+            const [results] = await connection.query(query, [id]);
             res.json(results);
+
         } catch (error) {
-            console.error('Error fetching lisTournament:', error);
-            res.status(500).json({ error: 'Error fetching lisTournament' });
+            console.error('Error fetching tournament:', error);
+            res.status(500).json({ error: 'Error fetching tournament' });
         } finally {
             connection.release(); // Release the connection back to the pool when done
         }

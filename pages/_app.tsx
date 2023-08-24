@@ -22,8 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       if (response.ok) {
         setMessage(data.message);
       } else {
-        // Redirect to the login page if the user is not authenticated
-        router.push('/admin/login')
+        setMessage(data.message);
         return;
       }
 

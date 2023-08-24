@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
 interface Detail {
     id: number;
-    listT_id : number
+    listT_id: number
     team_name: string;
     Name_1: string;
     Nickname_1: string;
@@ -31,7 +31,7 @@ interface Listtournament {
     ordinal: number;
     location: string;
     timebetween: string;
-    max_team : number;
+    max_team: number;
     status: number;
 }
 interface Props {
@@ -159,7 +159,7 @@ const DetailPage = ({ listtournament, detail }: Props) => {
 
 
 
-    const note = async (id: number) => {
+    const note = async (id: number, listTournament_id: number) => {
         const findData2 = detail.find((d) => d.id === id);
 
         if (findData2) {
@@ -201,7 +201,8 @@ const DetailPage = ({ listtournament, detail }: Props) => {
                                         },
                                         body: JSON.stringify({
                                             id: findData2.id,
-                                            postnote: text
+                                            postnote: text,
+                                            listTournament_id: listTournament_id,
                                         })
                                     });
 
@@ -281,8 +282,8 @@ const DetailPage = ({ listtournament, detail }: Props) => {
                         <tbody>
 
                             {detail
-                            
-                                .filter(item => item.level === level) 
+
+                                .filter(item => item.level === level)
                                 .map((item, index) => (
                                     <tr key={item.id}>
                                         <td>{index + 1}</td>
@@ -305,10 +306,10 @@ const DetailPage = ({ listtournament, detail }: Props) => {
                                                 รายละเอียด
                                             </Button>
                                         </td>
-                                        <td><Button variant="danger btn-sm" onClick={() => note(item.id)} className={styles.btn}>
+                                        <td><Button variant="danger btn-sm" onClick={() => note(item.id, item.listT_id)} className={styles.btn}>
                                             ประท้วง
                                         </Button></td>
-                                        <td className='fw-bold'>{listtournament[0].max_team > index ? <span className='text-success'>ทีมหลัก</span> : <span className='text-warning'>ทีมสำรอง</span> }</td>
+                                        <td className='fw-bold'>{listtournament[0].max_team > index ? <span className='text-success'>ทีมหลัก</span> : <span className='text-warning'>ทีมสำรอง</span>}</td>
 
                                     </tr>
                                 ))}
