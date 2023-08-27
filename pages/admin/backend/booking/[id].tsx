@@ -166,9 +166,6 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     return `${year}-${month}-${day}`;
   };
 
-  // State to manage the date input value
-  const [startDate, setStartDate] = useState<string>(getCurrentDate());
-
   // Function to handle date change
   const handleDateChange = (date: Date) => {
     const day = date.getDate();

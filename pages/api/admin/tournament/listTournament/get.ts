@@ -1,8 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 
-
-
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'GET') {
         // Get the session token from the request cookies
@@ -13,15 +11,11 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             return;
         }
         const connection = await pool.getConnection()
-        const {listTourID} = req.query
         try {
-            const query = `SELECT P.*, T.team_name
-            FROM protest P
-            JOIN tournament T ON P.tournament_id = T.id
-            WHERE P.listT_id = ?;`;
+            const query = `SELECT * FROM listtournament ORDER BY id DESC`;
 
             // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query , [listTourID]);
+            const [results] = await connection.query(query);
             res.json(results);
         } catch (error) {
             console.error('Error fetching lisTournament:', error);

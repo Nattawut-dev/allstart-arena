@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import styles from '@/styles/admin/tournament/Tournament.module.css';
+import Swal from 'sweetalert2';
+import { useRouter } from 'next/router';
 
 interface ProtestData {
   id: number;
@@ -27,12 +29,14 @@ interface Detail {
   age_1: number;
   gender_1: string;
   affiliation_1: string;
+  tel_1: string;
   image_1: string;
   Name_2: string;
   Nickname_2: string;
   age_2: number;
   gender_2: string;
   affiliation_2: string;
+  tel_2: string;
   image_2: string;
   level: string;
   status: number;
@@ -43,13 +47,15 @@ const ProtestPage: React.FC = () => {
   const [listtournamentData, setListtournamentData] = useState<Listtournament[]>([]);
   const [detail_data, setDetail_data] = useState<Detail>();
   const [loading, setLoading] = useState(false);
-
+  const [selectedStatus, setSelectedStatus] = useState(0);
+  const [checkDisabled, setCheckDisabled] = useState(true);
   const [isTournament, setIsTournament] = useState(false);
   const [show, setShow] = useState(false);
+  const [List_T_ID, setList_T_ID] = useState(0);
 
-  async function fetchProtest() {
+  async function fetchProtest(id: number) {
     try {
-      const response = await fetch('/api/admin/tournament/protest/get');
+      const response = await fetch(`/api/admin/tournament/protest/get?listTourID=${id}`);
       const data = await response.json();
       setProtestData(data);
 
@@ -57,23 +63,69 @@ const ProtestPage: React.FC = () => {
       console.error('Error fetching data:', error);
     }
   }
+
   async function fetchTournamentdata() {
     try {
-      const response1 = await fetch('/api/tournament/listtournament');
+      const response1 = await fetch('/api/admin/tournament/listTournament/get');
       const listtournament = await response1.json();
-      setListtournamentData(listtournament.results);
+      setListtournamentData(listtournament);
       if (response1.ok) {
         setIsTournament(true);
+        const listTourID = listtournament[0].id
+        setList_T_ID(listTourID);
+        fetchProtest(listTourID);
+        checkAuthentication();
+      }
+      else {
+        setIsTournament(false);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   }
 
+
+  const [message, setMessage] = useState('');
+  const router = useRouter();
+
+  const checkAuthentication = async () => {
+    try {
+      const response = await fetch('/api/admin/check-auth', {
+        method: 'GET',
+        credentials: 'include', // Include cookies in the request
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(data.message);
+      } else {
+        // Redirect to the login page if the user is not authenticated
+        router.push('/admin/login');
+        return;
+      }
+
+    } catch (error) {
+      console.error('Error while checking authentication', error);
+      setMessage('An error occurred. Please try again later.');
+    }
+  };
+
   useEffect(() => {
-    fetchProtest();
-    // fetchTournamentdata();
+    checkAuthentication();
+    fetchTournamentdata();
   }, []);
+
+
+  const ListournamentOptions = listtournamentData.map((item) => {
+    return (
+      <option
+        key={item.id}
+        value={`${item.id}`}
+      >
+        {item.title}
+      </option>
+    );
+  });
 
   const showDetail = async (id: number) => {
     try {
@@ -81,6 +133,8 @@ const ProtestPage: React.FC = () => {
       const tournament_data = await response.json();
       if (response.ok) {
         setDetail_data(tournament_data[0]);
+        setSelectedStatus(tournament_data[0].status);
+        setCheckDisabled(true);
         setShow(true);
       }
 
@@ -89,11 +143,134 @@ const ProtestPage: React.FC = () => {
     }
   }
 
+  const deleteProtest = (item: ProtestData) => {
+
+    Swal.fire({
+      title: `ต้องการลบการประท้วง? `,
+      text: `เนื้อหา "${item.content}"`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/api/admin/tournament/protest/delete?id=${item.id}`, {
+            method: 'DELETE',
+          });
+
+          if (!response.ok) {
+            throw new Error('An error occurred while deleting the data.');
+          } else {
+            setShow(false);
+            Swal.fire(
+              'Deleted!',
+              `ลบการประท้วงเนื้อหา "${item.content}"  เรียบร้อย`,
+              'success'
+            )
+          }
+
+          fetchProtest(List_T_ID);
+        } catch (error: any) {
+          console.error(error.message);
+          // Handle any error or display an error message
+        }
+
+      }
+    })
+
+  }
+  const updateStatus = () => {
+    const text = detail_data?.status === 0 ? "ระหว่างพิจารณา" : detail_data?.status === 1 ? "ไม่ผ่าน" : "ผ่าน"
+    const text2 = selectedStatus === 0 ? "ระหว่างพิจารณา" : selectedStatus === 1 ? "ไม่ผ่าน" : "ผ่าน"
+
+    Swal.fire({
+      title: `ต้องการบันทึกสถานะ ? `,
+      text: `"${text}" เปลี่ยนเป็น "${text2}" `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'บันทึก'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/api/admin/tournament/protest/updateStatus`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: detail_data?.id, newStatus: selectedStatus }),
+          });
+
+          if (!response.ok) {
+            Swal.fire(
+              'มีข้อผิดพลาด',
+              ``,
+              'error'
+            )
+
+            throw new Error('An error occurred while deleting the data.');
+
+          } else {
+            setShow(false);
+            Swal.fire(
+              'สำเร็จ!',
+              `เปลี่ยนสถานะเป็น "${text2}" เรียบร้อย`,
+              'success'
+            )
+          }
+
+          fetchProtest(List_T_ID);
+        } catch (error: any) {
+          console.error(error.message);
+          // Handle any error or display an error message
+        }
+
+      }
+    })
+  }
+
+  if (message === 'Not authenticated') {
+    return (
+      <>
+        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+          <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
+        </div>
+      </>
+    );
+  }
+
+  if ( !isTournament ||  message != "Authenticated") {
+    return (
+      <>
+        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
+          <h5 >loading....</h5>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
 
       <div style={{ maxWidth: '1200px', textAlign: 'center', margin: 'auto' }}>
-        <h1>Protest Data</h1>
+        <h4 className='d-flex flex-row ' style={{ width: 'fit-content' }}>
+          <label htmlFor="status" className='text-nowrap mx-2 '>การประท้วง  : </label>
+          <select
+            className={`text-center form-select `}
+            id="status"
+            name="status"
+            onChange={(e) => {
+              const ID = parseInt(e.target.value);
+              setList_T_ID(ID);
+              fetchProtest(ID);
+            }}
+          >
+            {ListournamentOptions}
+
+          </select></h4>
 
         <table className="table table-bordered table-striped  table-sm">
           <thead className='table-primary'>
@@ -115,7 +292,7 @@ const ProtestPage: React.FC = () => {
                     <Button
                       className="btn-sm btn-danger"
                       style={{ width: "100%" }}
-                      onClick={() => deletereserve(protest)}
+                      onClick={() => deleteProtest(protest)}
                     >
                       ลบ
                     </Button></td>
@@ -150,42 +327,49 @@ const ProtestPage: React.FC = () => {
                 <div> <span>ชื่อ {detail_data?.Name_1} ({detail_data?.Nickname_1})</span></div>
                 <div><span>อายุ {detail_data?.age_1} ปี  : เพศ {detail_data?.gender_1}</span></div>
                 <div> <span>สังกัด {detail_data?.affiliation_1}</span></div>
+                <div> <span>เบอร์: {detail_data?.tel_1}</span></div>
+
               </div>
               <div className={styles.detail}>
                 <img src={detail_data?.image_2} alt="photo" width="200" height="250" />
                 <div><span>ชื่อ {detail_data?.Name_2} ({detail_data?.Nickname_2})</span></div>
                 <div><span>อายุ {detail_data?.age_2} ปี  : เพศ {detail_data?.gender_2}</span></div>
                 <div><span>สังกัด {detail_data?.affiliation_2}</span></div>
+                <div> <span>เบอร์: {detail_data?.tel_2}</span></div>
+
               </div>
             </div>
 
           </Modal.Body>
           <Modal.Footer className={styles.wrapper2}>
             <div className={styles.wrapper2}>
+
               <div >
-                {detail_data?.status === 0 && (
-                  <h5>ผลการพิจารณา : <span style={{ color: 'orange' }}>ระหว่างพิจารณา</span>  </h5>
-                )}
-                {detail_data?.status === 2 && (
-                  <h5>ผลการพิจารณา :  <span style={{ color: 'green' }}>ผ่าน</span> </h5>
-                )}
-                {detail_data?.status === 1 && (
-                  <h5>ผลการพิจารณา :  <span style={{ color: 'red' }}>ไม่ผ่าน</span></h5>
-                )}
+                <h5 className={styles.wrapper3} >
+                  <label htmlFor="status" className='text-nowrap mx-2 p-1'>เลือกสถานะ : </label>
+                  <select
+                    className={`text-center form-select text-dark ${selectedStatus === 0 ? 'bg-warning' : selectedStatus === 1 ? 'bg-danger text-white' : 'bg-info'} `}
+                    id="status"
+                    name="status"
+                    value={selectedStatus}
+                    onChange={(e) => {
+                      const selectedStatus = e.target.value;
+                      setCheckDisabled(parseInt(selectedStatus) === detail_data?.status)
+                      setSelectedStatus(parseInt(selectedStatus));
+
+                    }}
+                  >
+                    <option className='bg-white text-dark' value={0}>ระหว่างพิจารณา</option>
+                    <option className='bg-white text-dark' value={1}>ไม่ผ่าน</option>
+                    <option className='bg-white text-dark' value={2}>ผ่าน</option>
+
+                  </select></h5>
+
               </div>
-              {detail_data?.status === 0 && (
-                <Button variant="primary" disabled={true} onClick={() => Payment()}>ระหว่างพิจารณา</Button>
-              )}
-              {detail_data?.status === 1 && (
-                <Button variant="primary" disabled={true} onClick={() => Payment()}>ไม่ผ่านการพิจารณา</Button>
-              )}
-              {detail_data?.status === 2 && detail_data?.paymentStatus !== 1 && (
-                <Button variant="primary" disabled={false} onClick={() => Payment()}>ชำระเงิน</Button>
-              )}
-              {detail_data?.paymentStatus === 1 && (
-                <Button variant="primary" disabled={true} onClick={() => Payment()}>กำลังตรวจสอบการชำระ</Button>
-              )
-              }
+              { }
+              <Button variant="primary" disabled={checkDisabled} onClick={() => updateStatus()}>บันทึกสถานะ</Button>
+
+
 
 
 

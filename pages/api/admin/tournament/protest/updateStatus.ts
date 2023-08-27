@@ -2,9 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 
 
-
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'GET') {
+    if (req.method === 'PUT') {
         // Get the session token from the request cookies
         const sessionToken = req.cookies.sessionToken;
 
@@ -13,19 +12,14 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             return;
         }
         const connection = await pool.getConnection()
-        const {listTourID} = req.query
         try {
-            const query = `SELECT P.*, T.team_name
-            FROM protest P
-            JOIN tournament T ON P.tournament_id = T.id
-            WHERE P.listT_id = ?;`;
-
-            // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query , [listTourID]);
-            res.json(results);
+            const query = 'UPDATE tournament SET status = ? WHERE id = ?;';
+            const { id, newStatus } = req.body
+            const [results] = await connection.query(query, [newStatus, id]);
+            res.json({ results });
         } catch (error) {
-            console.error('Error fetching lisTournament:', error);
-            res.status(500).json({ error: 'Error fetching lisTournament' });
+            console.error('Error updating tournament:', error);
+            res.status(500).json({ error: 'Error updating tournament' });
         } finally {
             connection.release(); // Release the connection back to the pool when done
         }
