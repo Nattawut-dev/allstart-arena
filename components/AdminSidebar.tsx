@@ -6,7 +6,6 @@ import { FiLogOut } from 'react-icons/fi';
 import { FaChalkboard, FaChevronCircleRight, FaChevronCircleDown, FaCalendarPlus, FaCalendarDay, FaCalendarAlt, FaPencilAlt, FaHandPointRight, FaRegClock, FaTh } from "react-icons/fa";
 interface SidebarProps {
   isOpen: boolean;
-
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
@@ -36,7 +35,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       setMessage('An error occurred. Please try again later.');
     }
   };
-
 
   return (
     <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
@@ -74,10 +72,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                 <Link href="/admin/backend/tournament/setting" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/setting' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>การตั้งค่า</span></div> </li></Link>
                 <Link href="/admin/backend/tournament/protest" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/protest' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>การประท้วง</span></div></li></Link>
 
-                <Link href="/Tournament/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '0' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ N</span></div></li></Link>
-                <Link href="/Tournament/1" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '1' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ S</span></div></li></Link>
-                <Link href="/Tournament/2" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '2' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ P-/P</span></div> </li></Link>
-                <Link href="/Tournament/3" className={styles.link} ><li className={`${styles['sub-menu-item']} ${id === '3' && router.pathname === '/Tournament/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ P+/C</span></div> </li></Link>
+                <Link href="/admin/backend/tournament/detail?level=N" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.query.level == "N" && router.pathname === '/admin/backend/tournament/detail' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ N</span></div></li></Link>
+                <Link href="/admin/backend/tournament/detail?level=S" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.query.level == "S" && router.pathname === '/admin/backend/tournament/detail' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ S</span></div></li></Link>
+                <Link href="/admin/backend/tournament/detail?level=P-/P" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.query.level == "P-/P" && router.pathname === '/admin/backend/tournament/detail' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ P-/P</span></div> </li></Link>
+                <Link href="/admin/backend/tournament/detail?level=P%2B/C" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.query.level == "P+/C" && router.pathname === '/admin/backend/tournament/detail' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ P+/C</span></div> </li></Link>
               </ul>
             )}
           </li>

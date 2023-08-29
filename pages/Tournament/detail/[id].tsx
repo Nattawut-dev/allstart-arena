@@ -78,6 +78,7 @@ const DetailPage = ({ listtournament, detail }: Props) => {
     //         setListtournament([]);
     //     }
     // };
+    
     useEffect(() => {
 
         if (parsedId < 0 || parsedId > 3) {

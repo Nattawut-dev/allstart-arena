@@ -20,6 +20,7 @@ interface Listtournament {
   timebetween: string;
   status: number;
 }
+
 interface Detail {
   id: number;
   listT_id: number
