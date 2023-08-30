@@ -13,9 +13,8 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         const connection = await pool.getConnection()
         const { level, listT_id } = req.query
         if (level || listT_id) {
-            console.log("listT_id" , level ,listT_id)
             try {
-                const query = `SELECT * FROM tournament WHERE level = ? AND listT_id = ? ORDER BY id DESC`;
+                const query = `SELECT * FROM tournament WHERE level = ? AND listT_id = ? `;
 
                 // Execute the SQL query to fetch time slots
                 const [results] = await connection.query(query, [level, listT_id]);

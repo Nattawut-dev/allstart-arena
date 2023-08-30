@@ -315,7 +315,7 @@ const ProtestPage: React.FC = () => {
           <Modal.Header closeButton>
             <Modal.Title>
               <div className={styles.titleM}>
-                <h5>รายละเอียดทีม <span style={{ fontWeight: 'bolder' }}> {detail_data?.team_name}  </span>ระดับมือ</h5>
+                <h5>รายละเอียดทีม <span style={{ fontWeight: 'bolder' }}> {detail_data?.team_name}  </span>ระดับมือ  {detail_data?.level}</h5>
               </div>
 
             </Modal.Title>
