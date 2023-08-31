@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (err) {
       console.error('Error while processing login request', err);
       res.status(500).json({ message: 'Internal server error' });
-    }
+    } 
   } else {
     res.status(405).json({ message: 'Method not allowed' });
   }

@@ -10,12 +10,11 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             res.status(401).json({ message: 'Not authenticated' });
             return;
         }
-        const connection = await pool.getConnection()
         const { level, listT_id } = req.query
         if (level || listT_id) {
+            const connection = await pool.getConnection()
             try {
                 const query = `SELECT * FROM tournament WHERE level = ? AND listT_id = ? `;
-
                 // Execute the SQL query to fetch time slots
                 const [results] = await connection.query(query, [level, listT_id]);
                 res.json(results);
@@ -23,7 +22,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 console.error('Error fetching lisTournament:', error);
                 res.status(500).json({ error: 'Error fetching lisTournament' });
             } finally {
-                connection.release(); // Release the connection back to the pool when done
+                connection.release();
             }
         }
 

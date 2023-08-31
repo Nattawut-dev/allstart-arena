@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '@/styles/detailTornament.module.css';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2';
+import { AiFillEdit } from "react-icons/ai";
 
 interface Detail {
     id: number;
@@ -56,6 +57,11 @@ function detail() {
     const [List_T_ID, setList_T_ID] = useState(0);
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
+
+    const [editTeam_type, setEditTeam_type] = useState(false);
+    const [selectEdit_team_type, setSelectEdit_team_type] = useState(0);
+    const [newTeam_type, setNewTeam_type] = useState('');
+
     const [targetSlip, setTargetSlip] = useState<Detail>();
     const [slipBtnDisabled, setSlipBtnDisabled] = useState(true);
 
@@ -308,7 +314,53 @@ function detail() {
             setShow2(true);
         }
     }
+    const saveteam_type = (item: Detail) => {
+        Swal.fire({
+            title: `เปลี่ยนสถานะทีม`,
+            text: `จาก "${item.team_type}" เป็น "${newTeam_type}"`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'บันทึก'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/api/admin/tournament/detail/updateTeam_type`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: item.id, newStatus: newTeam_type }),
+                    });
 
+                    if (!response.ok) {
+                        Swal.fire(
+                            'มีข้อผิดพลาด',
+                            ``,
+                            'error'
+                        )
+
+                        throw new Error('An error occurred while deleting the data.');
+
+                    } else {
+                        setEditTeam_type(false)
+                        Swal.fire(
+                            'สำเร็จ!',
+                            `เปลี่ยนสถานะเป็น "${newTeam_type}" เรียบร้อย`,
+                            'success'
+                        )
+                    }
+
+                    fetchDetail(level, List_T_ID);
+                } catch (error: any) {
+                    console.error(error.message);
+                    // Handle any error or display an error message
+                }
+
+            }
+        })
+    }
     if (!isTournament || message != "Authenticated" || level == undefined || loading) {
         return (
             <>
@@ -320,12 +372,12 @@ function detail() {
     }
     return (
         <>
-            <div className={styles.headers1}>
-                <div className='d-flex flex-row'>
-                    <label htmlFor="status" className='text-nowrap mx-2'>ผู้สมัครแข่ง  <span> ระดับมือ {level}</span> :</label>
+            <div style={{ textAlign: 'center', margin: 'auto' }}>
+                <div className='mb-1' style={{ justifyContent: 'center', textAlign: 'center', display: 'flex' }}>
+                    <label htmlFor="status" className='text-nowrap mx-2 mt-1' >ผู้สมัครแข่ง :</label>
                     <select
-                        className={``}
-                        style={{width:'auto'}}
+                        className={`text-center form-select form-select-sm`}
+                        style={{ maxWidth: 'fit-content' }}
                         id="status"
                         name="status"
                         onChange={(e) => {
@@ -338,187 +390,214 @@ function detail() {
 
                     </select>
                 </div>
-                <div>
-                    <span className='text-nowrap mx-5 fs-6 my-2'> ทีมหลัก {main_team()} / {max_team()}</span>
+                <div className='bg-primary text-white mb-1'>
+                    <span className='text-nowrap mx-2 fs-6 my-2'> ระดับมือ {level} </span>
+                    <span className='text-nowrap mx-2 fs-6 my-2'> ทีมหลัก {main_team()} / {max_team()}</span>
                     <span className='text-nowrap mx-2 fs-6 my-2'> ทีมสำรอง {reserve_team()} </span>
                 </div>
 
 
-            </div>
-            <div className={styles.container}>
-                <table className={`table table-bordered table-striped  ${styles.table}`}>
-                    <thead className='table-info'>
-                        <tr>
-                            <th>#</th>
-                            <th>ชื่อทีม</th>
-                            <th>ชื่อนักกีฬา 1</th>
-                            <th>ชื่อนักกีฬา 2</th>
-                            <th>ผลการพิจารณา</th>
-                            <th>สถานะการชำระ</th>
-                            <th>รายละเอียด/การโอน</th>
-                            <th>หมายเหตุ</th>
-                            <th>ลบ</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                        {detail_data.map((item, index) => (
-                            <tr key={item.id}>
-                                <td>{index + 1}</td>
-                                <td>{item.team_name}</td>
-                                <td>{item.Name_1} ({item.Nickname_1})</td>
-                                <td>{item.Name_2}  ({item.Nickname_2})</td>
-
-                                {item.status === 0 && (
-                                    <td className="table-warning">ระหว่างพิจารณา</td>
-                                )}
-                                {item.status === 2 && <td className="table-success">ผ่าน</td>}
-                                {item.status === 1 && <td className="table-danger">ไม่ผ่าน</td>}
-
-
-                                {item.paymentStatus === 0 && <td className="table-danger">ยังไม่ชำระ</td>}
-                                {item.paymentStatus === 1 && <td className="table-warning">รอตรวจสอบ</td>}
-                                {item.paymentStatus === 2 && <td className="table-success">ชำระแล้ว</td>}
-                                {item.paymentStatus === 3 && <td className="bg-danger text-white">ปฎิเสธสลิป</td>}
-
-                                <td>
-                                    <Button variant="primary btn-sm" onClick={() => showDetail(item.id)} className={styles.btn}>
-                                        รายละเอียด
-                                    </Button>
-
-                                    <Button variant="warning btn-sm btn  ms-2" disabled={item.paymentStatus === 0} onClick={() => checkSlip(item.id)} className={styles.btn}>
-                                        สลิป
-                                    </Button>
-                                </td>
-                                <td className='fw-bold'>{item.team_type === "ทีมหลัก" ? <span className='text-success'>ทีมหลัก</span> : <span className='text-warning'>ทีมสำรอง</span>}</td>
-                                <td>
-                                    <Button
-                                        className="btn-sm btn-danger"
-                                        style={{ width: "100%" }}
-                                        onClick={() => deleteTeam(item)}
-                                    >
-                                        ลบ
-                                    </Button>
-                                </td>
-
-                            </tr>
-                        ))}
-                        {detail_data.filter(item => item.level === level).length === 0 &&
+                <div className={styles.container} >
+                    <table className={`table table-sm  table-bordered table-striped ${styles.table}`}>
+                        <thead className='table-info'>
                             <tr>
-                                <td colSpan={9} >ยังไม่มีผู้สมัคร</td>
+                                <th className={styles.onMobile}>#</th>
+                                <th>ชื่อทีม</th>
+                                <th className={styles.onMobile}>ชื่อนักกีฬา 1</th>
+                                <th className={styles.onMobile}>ชื่อนักกีฬา 2</th>
+                                <th>ผล</th>
+                                <th>ชำระเงิน</th>
+                                <th>รายละเอียด</th>
+                                <th >หมายเหตุ </th>
+                                <th>ลบ</th>
+
                             </tr>
-                        }
+                        </thead>
+                        <tbody>
 
-                    </tbody>
-                </table>
-            </div >
+                            {detail_data.map((item, index) => (
+                                <tr key={item.id}>
+                                    <td className={styles.onMobile}>{index + 1}</td>
+                                    <td>{item.team_name}</td>
+                                    <td className={styles.onMobile}>{item.Name_1} ({item.Nickname_1})</td>
+                                    <td className={styles.onMobile}>{item.Name_2}  ({item.Nickname_2})</td>
 
-            <Modal
-                show={show}
-                onHide={() => setShow(false)}
-                backdrop="static"
-                keyboard={false}
-                aria-hidden="true"
-                centered
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        <div className={styles.titleM}>
-                            <h5>รายละเอียดทีม <span style={{ fontWeight: 'bolder' }}> {team_detail?.team_name}  </span>ระดับมือ  {team_detail?.level}</h5>
+                                    {item.status === 0 && (
+                                        <td className="table-warning">พิจารณา</td>
+                                    )}
+                                    {item.status === 2 && <td className="table-success">ผ่าน</td>}
+                                    {item.status === 1 && <td className="table-danger">ไม่ผ่าน</td>}
+
+
+                                    {item.paymentStatus === 0 && <td className="table-danger">ยังไม่ชำระ</td>}
+                                    {item.paymentStatus === 1 && <td className="table-warning">รอตรวจสอบ</td>}
+                                    {item.paymentStatus === 2 && <td className="table-success">ชำระแล้ว</td>}
+                                    {item.paymentStatus === 3 && <td className="bg-danger text-white">ปฎิเสธสลิป</td>}
+
+                                    <td>
+                                        <Button variant="primary btn-sm me-1" onClick={() => showDetail(item.id)} className={styles.btn}>
+                                            ข้อมูล
+                                        </Button>
+
+                                        <Button variant="warning btn-sm btn " disabled={item.paymentStatus === 0} onClick={() => checkSlip(item.id)} className={styles.btn}>
+                                            สลิป
+                                        </Button>
+                                    </td>
+                                    <td className='fw-bold' style={{ width: '0 ', margin: '0' }}>
+                                        {editTeam_type && selectEdit_team_type === item.id ? (
+                                            <div className='d-flex flex-row' >
+                                                <select
+                                                    className='form-select form-select-sm'
+                                                    style={{ width: 'fit-content' }}
+                                                    value={newTeam_type}
+                                                    onChange={(e) => {
+                                                        const newValue = e.target.value;
+                                                        setNewTeam_type(newValue);
+                                                    }}
+                                                >
+                                                    <option value="ทีมหลัก">ทีมหลัก</option>
+                                                    <option value="ทีมสำรอง">ทีมสำรอง</option>
+                                                </select>
+                                                <Button className='btn-sm ms-1 ' disabled={newTeam_type === item.team_type} onClick={() => saveteam_type(item)}>Save</Button>
+                                                <Button className='btn-sm btn-danger ms-1' onClick={() => setEditTeam_type(false)}>C</Button>
+
+                                            </div>
+
+                                        ) : (
+                                            item.team_type === "ทีมหลัก" ? (
+                                                <span className='text-success'>ทีมหลัก <Button className='btn-sm fs-6' style={{padding : '0 5px'}} onClick={() => { setEditTeam_type(true); setSelectEdit_team_type(item.id); setNewTeam_type(item.team_type) }}><AiFillEdit style={{fontSize : '10px' }}/></Button></span>
+                                            ) : (
+                                                <span className='text-warning'>ทีมสำรอง <Button className='btn-sm fs-6' style={{padding : '0 5px'}}  onClick={() => { setEditTeam_type(true); setSelectEdit_team_type(item.id); setNewTeam_type(item.team_type) }}><AiFillEdit style={{fontSize : '10px' }}/></Button></span>
+                                            )
+                                        )}
+                                    </td>
+                                    <td>
+                                        <Button
+                                            className="btn-sm btn-danger"
+                                            style={{ width: "100%" }}
+                                            onClick={() => deleteTeam(item)}
+                                        >
+                                            ลบ
+                                        </Button>
+                                    </td>
+
+                                </tr>
+                            ))}
+                            {detail_data.filter(item => item.level === level).length === 0 &&
+                                <tr>
+                                    <td colSpan={9} >ยังไม่มีผู้สมัคร</td>
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div >
+
+                <Modal
+                    show={show}
+                    onHide={() => setShow(false)}
+                    backdrop="static"
+                    keyboard={false}
+                    aria-hidden="true"
+                    centered
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>
+                            <div className={styles.titleM}>
+                                <h5>รายละเอียดทีม <span style={{ fontWeight: 'bolder' }}> {team_detail?.team_name}  </span>ระดับมือ  {team_detail?.level}</h5>
+                            </div>
+
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+
+                        <div className={styles.wrapper}>
+                            <div className={styles.detail}>
+                                <img src={team_detail?.image_1} alt="photo" width="200" height="250" />
+                                <div> <span>ชื่อ {team_detail?.Name_1} ({team_detail?.Nickname_1})</span></div>
+                                <div><span>อายุ {team_detail?.age_1} ปี  : เพศ {team_detail?.gender_1}</span></div>
+                                <div> <span>สังกัด {team_detail?.affiliation_1}</span></div>
+                                <div> <span>เบอร์: {team_detail?.tel_1}</span></div>
+
+                            </div>
+                            <div className={styles.detail}>
+                                <img src={team_detail?.image_2} alt="photo" width="200" height="250" />
+                                <div><span>ชื่อ {team_detail?.Name_2} ({team_detail?.Nickname_2})</span></div>
+                                <div><span>อายุ {team_detail?.age_2} ปี  : เพศ {team_detail?.gender_2}</span></div>
+                                <div><span>สังกัด {team_detail?.affiliation_2}</span></div>
+                                <div> <span>เบอร์: {team_detail?.tel_2}</span></div>
+
+                            </div>
                         </div>
 
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
+                    </Modal.Body>
+                    <Modal.Footer className={styles.wrapper2}>
+                        <div className={styles.wrapper2}>
 
-                    <div className={styles.wrapper}>
-                        <div className={styles.detail}>
-                            <img src={team_detail?.image_1} alt="photo" width="200" height="250" />
-                            <div> <span>ชื่อ {team_detail?.Name_1} ({team_detail?.Nickname_1})</span></div>
-                            <div><span>อายุ {team_detail?.age_1} ปี  : เพศ {team_detail?.gender_1}</span></div>
-                            <div> <span>สังกัด {team_detail?.affiliation_1}</span></div>
-                            <div> <span>เบอร์: {team_detail?.tel_1}</span></div>
+                            <div >
+                                <h5 className={styles.wrapper3} >
+                                    <label htmlFor="status" className='text-nowrap mx-2 p-1'>เลือกสถานะ : </label>
+                                    <select
+                                        className={`text-center form-select text-dark ${selectedStatus === 0 ? 'bg-warning' : selectedStatus === 1 ? 'bg-danger text-white' : 'bg-info'} `}
+                                        id="status"
+                                        name="status"
+                                        value={selectedStatus}
+                                        onChange={(e) => {
+                                            const selectedStatus = e.target.value;
+                                            setCheckDisabled(parseInt(selectedStatus) === team_detail?.status)
+                                            setSelectedStatus(parseInt(selectedStatus));
 
-                        </div>
-                        <div className={styles.detail}>
-                            <img src={team_detail?.image_2} alt="photo" width="200" height="250" />
-                            <div><span>ชื่อ {team_detail?.Name_2} ({team_detail?.Nickname_2})</span></div>
-                            <div><span>อายุ {team_detail?.age_2} ปี  : เพศ {team_detail?.gender_2}</span></div>
-                            <div><span>สังกัด {team_detail?.affiliation_2}</span></div>
-                            <div> <span>เบอร์: {team_detail?.tel_2}</span></div>
+                                        }}
+                                    >
+                                        <option className='bg-white text-dark' value={0}>ระหว่างพิจารณา</option>
+                                        <option className='bg-white text-dark' value={1}>ไม่ผ่าน</option>
+                                        <option className='bg-white text-dark' value={2}>ผ่าน</option>
 
-                        </div>
-                    </div>
+                                    </select></h5>
 
-                </Modal.Body>
-                <Modal.Footer className={styles.wrapper2}>
-                    <div className={styles.wrapper2}>
-
-                        <div >
-                            <h5 className={styles.wrapper3} >
-                                <label htmlFor="status" className='text-nowrap mx-2 p-1'>เลือกสถานะ : </label>
-                                <select
-                                    className={`text-center form-select text-dark ${selectedStatus === 0 ? 'bg-warning' : selectedStatus === 1 ? 'bg-danger text-white' : 'bg-info'} `}
-                                    id="status"
-                                    name="status"
-                                    value={selectedStatus}
-                                    onChange={(e) => {
-                                        const selectedStatus = e.target.value;
-                                        setCheckDisabled(parseInt(selectedStatus) === team_detail?.status)
-                                        setSelectedStatus(parseInt(selectedStatus));
-
-                                    }}
-                                >
-                                    <option className='bg-white text-dark' value={0}>ระหว่างพิจารณา</option>
-                                    <option className='bg-white text-dark' value={1}>ไม่ผ่าน</option>
-                                    <option className='bg-white text-dark' value={2}>ผ่าน</option>
-
-                                </select></h5>
-
-                        </div>
-                        <Button variant="primary" disabled={checkDisabled} onClick={() => updateStatus()}>บันทึกสถานะ</Button>
-                    </div>
-
-                </Modal.Footer>
-            </Modal>
-
-            <Modal
-                show={show2}
-                onHide={() => setShow2(false)}
-                backdrop="static"
-                keyboard={false}
-                aria-hidden="true"
-                centered
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        <div className={styles.titleM}>
-                            <h5>หลักฐานการโอนเงินทีม <span style={{ fontWeight: 'bolder' }}> {targetSlip?.team_name}  </span></h5>
+                            </div>
+                            <Button variant="primary" disabled={checkDisabled} onClick={() => updateStatus()}>บันทึกสถานะ</Button>
                         </div>
 
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className='d-flex justify-content-center'>
-                        {targetSlip?.slipurl ? <img src={targetSlip?.slipurl} alt="slip" width={364} height={512} style={{ borderRadius: "13px" }} /> :
-                            <h5>Not found Slip</h5>
-                        }
-                    </div>
-                    <h5 className='d-flex justify-content-center my-2'>ยอดชำระ {targetSlip?.price} บาท </h5>
-                    <h5 className='d-flex justify-content-center my-2'>สถานะ :
-                        <span className='text-white'>
-                            {targetSlip?.paymentStatus === 0 && <span className="bg-danger bg-gradient p-1 mx-2 rounded"> ยังไม่ชำระ</span>}
-                            {targetSlip?.paymentStatus === 1 && <span className="bg-warning mx-2 p-1 rounded"> รอตรวจสอบ</span>}
-                            {targetSlip?.paymentStatus === 2 && <span className="bg-primary  mx-2  p-1 rounded"> ชำระแล้ว</span>}
-                            {targetSlip?.paymentStatus === 3 && <span className="bg-danger bg-gradient p-1 mx-2 rounded"> ปฎิเสธสลิป</span>}
+                    </Modal.Footer>
+                </Modal>
 
-                        </span>
+                <Modal
+                    show={show2}
+                    onHide={() => setShow2(false)}
+                    backdrop="static"
+                    keyboard={false}
+                    aria-hidden="true"
+                    centered
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>
+                            <div className={styles.titleM}>
+                                <h5>หลักฐานการโอนเงินทีม <span style={{ fontWeight: 'bolder' }}> {targetSlip?.team_name}  </span></h5>
+                            </div>
 
-                    </h5>
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div className='d-flex justify-content-center'>
+                            {targetSlip?.slipurl ? <img src={targetSlip?.slipurl} alt="slip" width={364} height={512} style={{ borderRadius: "13px" }} /> :
+                                <h5>Not found Slip</h5>
+                            }
+                        </div>
+                        <h5 className='d-flex justify-content-center my-2'>ยอดชำระ {targetSlip?.price} บาท </h5>
+                        <h5 className='d-flex justify-content-center my-2'>สถานะ :
+                            <span className='text-white'>
+                                {targetSlip?.paymentStatus === 0 && <span className="bg-danger bg-gradient p-1 mx-2 rounded"> ยังไม่ชำระ</span>}
+                                {targetSlip?.paymentStatus === 1 && <span className="bg-warning mx-2 p-1 rounded"> รอตรวจสอบ</span>}
+                                {targetSlip?.paymentStatus === 2 && <span className="bg-primary  mx-2  p-1 rounded"> ชำระแล้ว</span>}
+                                {targetSlip?.paymentStatus === 3 && <span className="bg-danger bg-gradient p-1 mx-2 rounded"> ปฎิเสธสลิป</span>}
 
-                    <div className={`${styles.footer1} d-flex justify-content-center my-2`}>
-                        {/* <div >
+                            </span>
+
+                        </h5>
+
+                        <div className={`${styles.footer1} d-flex justify-content-center my-2`}>
+                            {/* <div >
                             <h5 className='d-flex flex-row' >
                                 <label htmlFor="status" className='text-nowrap mx-2 p-1'>เลือกสถานะ : </label>
                                 <select
@@ -539,24 +618,25 @@ function detail() {
 
                         </div> */}
 
-                    </div>
-                </Modal.Body>
-                <Modal.Footer >
-                    <div className={styles.footer1}>
-                        <div className={styles.btn1}>
-                            <Button className='btn-primary ' disabled={targetSlip?.paymentStatus === 2} onClick={() => updatePaymentStatus(2)}>อนุมัติ</Button>
-                            <Button variant="danger mx-2" disabled={targetSlip?.paymentStatus === 3} onClick={() => updatePaymentStatus(3)}>ปฎิเสธ</Button>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer >
+                        <div className={styles.footer1}>
+                            <div className={styles.btn1}>
+                                <Button className='btn-primary ' disabled={targetSlip?.paymentStatus === 2} onClick={() => updatePaymentStatus(2)}>อนุมัติ</Button>
+                                <Button variant="danger mx-2" disabled={targetSlip?.paymentStatus === 3} onClick={() => updatePaymentStatus(3)}>ปฎิเสธ</Button>
+                            </div>
+
+                            <div className={styles.slipbtn}>
+                                <Button variant="secondary" onClick={() => setShow2(false)}>Close</Button>
+                            </div>
+
                         </div>
 
-                        <div className={styles.slipbtn}>
-                            <Button variant="secondary" onClick={() => setShow2(false)}>Close</Button>
-                        </div>
 
-                    </div>
-
-
-                </Modal.Footer>
-            </Modal>
+                    </Modal.Footer>
+                </Modal>
+            </div>
 
         </>
     )
