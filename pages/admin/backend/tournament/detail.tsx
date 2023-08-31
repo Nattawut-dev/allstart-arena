@@ -24,8 +24,8 @@ interface Detail {
     image_2: string;
     level: string;
     status: number;
-    price : number;
-    slipurl:string;
+    price: number;
+    slipurl: string;
     team_type: string;
     paymentStatus: number;
 }
@@ -57,6 +57,7 @@ function detail() {
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
     const [targetSlip, setTargetSlip] = useState<Detail>();
+    const [slipBtnDisabled, setSlipBtnDisabled] = useState(true);
 
 
     const { level } = router.query;
@@ -144,7 +145,6 @@ function detail() {
             const tournament_data = await response.json();
             if (response.ok) {
                 setTeam_detail(tournament_data[0]);
-                setSelectedStatus(tournament_data[0].paymentStatus);
                 setCheckDisabled(true);
                 setShow(true);
             }
@@ -187,6 +187,56 @@ function detail() {
 
                     } else {
                         setShow(false);
+                        Swal.fire(
+                            'สำเร็จ!',
+                            `เปลี่ยนสถานะเป็น "${text2}" เรียบร้อย`,
+                            'success'
+                        )
+                    }
+
+                    fetchDetail(level, List_T_ID);
+                } catch (error: any) {
+                    console.error(error.message);
+                    // Handle any error or display an error message
+                }
+
+            }
+        })
+    }
+    const updatePaymentStatus = (status: number) => {
+        const text = targetSlip?.paymentStatus === 0 ? "ยังไม่ชำระ" : targetSlip?.paymentStatus === 1 ? "รอตรวจสอบ" : targetSlip?.paymentStatus === 2 ? "ชำระแล้ว" : "ปฎิเสธสลิป"
+        const text2 = status === 0 ? "ยังไม่ชำระ" : status === 1 ? "รอตรวจสอบ" : status === 2 ? "ชำระแล้ว" : "ปฎิเสธสลิป"
+
+        Swal.fire({
+            title: `เปลี่ยนสถานะการชำระเงิน ? `,
+            text: `ทีม ${targetSlip?.team_name}  จาก "${text}" เปลี่ยนเป็น "${text2}" `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'บันทึก'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/api/admin/tournament/detail/payment/updateStatus`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: targetSlip?.id, newStatus: status }),
+                    });
+
+                    if (!response.ok) {
+                        Swal.fire(
+                            'มีข้อผิดพลาด',
+                            ``,
+                            'error'
+                        )
+
+                        throw new Error('An error occurred while deleting the data.');
+
+                    } else {
+                        setShow2(false);
                         Swal.fire(
                             'สำเร็จ!',
                             `เปลี่ยนสถานะเป็น "${text2}" เรียบร้อย`,
@@ -270,20 +320,12 @@ function detail() {
     }
     return (
         <>
-            <div className={styles.header}>
-                {/* {listtournament.length >= 1 && (
-                    <div>
-                        <h6>รายการแข่งแบดมินตัน <span>{listtournament[0].title}</span> ครั้งที่ <span> {listtournament[0].ordinal}</span></h6>
-                        <h6>ณ สถานที่ <span> {listtournament[0].location}</span></h6>
-                        <h6>ระหว่างวันที่ <span>{listtournament[0].timebetween}</span></h6>
-                        <h6>ระดับมือ <span style={{ fontWeight: 'bolder' }}>{level}</span> </h6>
-                    </div>
-                )
-                } */}
-                <h4 className='d-flex flex-row ' style={{ width: 'fit-content' }}>
-                    <label htmlFor="status" className='text-nowrap mx-2 '>ผู้สมัครแข่ง  <span> ระดับมือ {level}</span> :</label>
+            <div className={styles.headers1}>
+                <div className='d-flex flex-row'>
+                    <label htmlFor="status" className='text-nowrap mx-2'>ผู้สมัครแข่ง  <span> ระดับมือ {level}</span> :</label>
                     <select
-                        className={`text-center form-select `}
+                        className={``}
+                        style={{width:'auto'}}
                         id="status"
                         name="status"
                         onChange={(e) => {
@@ -295,10 +337,12 @@ function detail() {
                         {ListournamentOptions}
 
                     </select>
+                </div>
+                <div>
                     <span className='text-nowrap mx-5 fs-6 my-2'> ทีมหลัก {main_team()} / {max_team()}</span>
                     <span className='text-nowrap mx-2 fs-6 my-2'> ทีมสำรอง {reserve_team()} </span>
+                </div>
 
-                </h4>
 
             </div>
             <div className={styles.container}>
@@ -336,12 +380,14 @@ function detail() {
                                 {item.paymentStatus === 0 && <td className="table-danger">ยังไม่ชำระ</td>}
                                 {item.paymentStatus === 1 && <td className="table-warning">รอตรวจสอบ</td>}
                                 {item.paymentStatus === 2 && <td className="table-success">ชำระแล้ว</td>}
+                                {item.paymentStatus === 3 && <td className="bg-danger text-white">ปฎิเสธสลิป</td>}
+
                                 <td>
                                     <Button variant="primary btn-sm" onClick={() => showDetail(item.id)} className={styles.btn}>
                                         รายละเอียด
                                     </Button>
 
-                                    <Button variant="primary btn-sm btn  ms-2" onClick={() => checkSlip(item.id)} className={styles.btn}>
+                                    <Button variant="warning btn-sm btn  ms-2" disabled={item.paymentStatus === 0} onClick={() => checkSlip(item.id)} className={styles.btn}>
                                         สลิป
                                     </Button>
                                 </td>
@@ -455,13 +501,24 @@ function detail() {
                 </Modal.Header>
                 <Modal.Body>
                     <div className='d-flex justify-content-center'>
-                        {targetSlip?.slipurl ? <img src={targetSlip?.slipurl} alt="slip" width={364} height={512} style={{borderRadius : "13px"}}/> :
+                        {targetSlip?.slipurl ? <img src={targetSlip?.slipurl} alt="slip" width={364} height={512} style={{ borderRadius: "13px" }} /> :
                             <h5>Not found Slip</h5>
                         }
                     </div>
                     <h5 className='d-flex justify-content-center my-2'>ยอดชำระ {targetSlip?.price} บาท </h5>
+                    <h5 className='d-flex justify-content-center my-2'>สถานะ :
+                        <span className='text-white'>
+                            {targetSlip?.paymentStatus === 0 && <span className="bg-danger bg-gradient p-1 mx-2 rounded"> ยังไม่ชำระ</span>}
+                            {targetSlip?.paymentStatus === 1 && <span className="bg-warning mx-2 p-1 rounded"> รอตรวจสอบ</span>}
+                            {targetSlip?.paymentStatus === 2 && <span className="bg-primary  mx-2  p-1 rounded"> ชำระแล้ว</span>}
+                            {targetSlip?.paymentStatus === 3 && <span className="bg-danger bg-gradient p-1 mx-2 rounded"> ปฎิเสธสลิป</span>}
+
+                        </span>
+
+                    </h5>
+
                     <div className={`${styles.footer1} d-flex justify-content-center my-2`}>
-                        <div >
+                        {/* <div >
                             <h5 className='d-flex flex-row' >
                                 <label htmlFor="status" className='text-nowrap mx-2 p-1'>เลือกสถานะ : </label>
                                 <select
@@ -480,15 +537,23 @@ function detail() {
 
                                 </select></h5>
 
-                        </div>
+                        </div> */}
 
                     </div>
                 </Modal.Body>
                 <Modal.Footer >
+                    <div className={styles.footer1}>
+                        <div className={styles.btn1}>
+                            <Button className='btn-primary ' disabled={targetSlip?.paymentStatus === 2} onClick={() => updatePaymentStatus(2)}>อนุมัติ</Button>
+                            <Button variant="danger mx-2" disabled={targetSlip?.paymentStatus === 3} onClick={() => updatePaymentStatus(3)}>ปฎิเสธ</Button>
+                        </div>
 
-                    <Button variant="primary" disabled={checkDisabled} onClick={() => updateStatus()}>บันทึกสถานะ</Button>
+                        <div className={styles.slipbtn}>
+                            <Button variant="secondary" onClick={() => setShow2(false)}>Close</Button>
+                        </div>
 
-                    <Button variant="secondary"  onClick={() => setShow2(false)}>Close</Button>
+                    </div>
+
 
                 </Modal.Footer>
             </Modal>

@@ -24,6 +24,11 @@
   .titleM h5 {
     font-size: 15px;
   }
+
+  .headers1 {
+    font-size: 14px;
+  }
+  
 }
 
 /* การปรับแต่งสีพื้นหลัง ขอบ และตัวอักษร */
@@ -76,6 +81,17 @@
   background-color: #e64a19;
 }
 
+
+.headers1 {
+  font-size: 18px;
+}
+.headers1 div label{
+  font-size: 10px;
+}
+.headers1 div label select{
+  border: none;
+  font-size: 1px;
+}
 .header {
   text-align: center;
   margin: 10px;
