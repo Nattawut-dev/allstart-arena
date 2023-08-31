@@ -216,3 +216,23 @@
   font-size: 1.2rem;
   line-height: 1.6;
 }
+
+.footer1{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.btn1{
+  display: flex;
+  justify-content: flex-start;
+}
+.btn1 a {
+ color: white;
+ text-decoration: none;
+}
+.slipbtn {
+  display: flex;
+}
+.slipbtn button{
+  margin-left: 1rem;
+}
