@@ -62,6 +62,8 @@ function holiday() {
     const [price, setPrice] = useState<number>(0);
     const [reserve_date, setReserve_date] = useState<string>('');
 
+
+
     const [currentPage, setCurrentPage] = useState(0);
     const [message, setMessage] = useState('');
 
