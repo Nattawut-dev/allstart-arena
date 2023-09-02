@@ -94,10 +94,12 @@ function detail() {
     };
     useEffect(() => {
         checkAuthentication();
+        setStatus1(status as string);
+        setPaymentStatus1(paymentStatus as string);
         if (status !== undefined && typeof status === 'string') {
             fetchTournamentdata();
         }
-    }, [status, paymentStatus, listT_id])
+    }, [status, paymentStatus])
 
     async function fetchTournamentdata() {
         try {
@@ -105,9 +107,12 @@ function detail() {
             const listtournament = await response1.json();
             if (response1.ok) {
                 setListtournament(listtournament);
-                const listTourID = listtournament[0].id
+                let listTourID = listtournament[0].id
+                if (listT_id !== undefined) {
+                    listTourID = listT_id
+                }
                 // setList_T_ID(listTourID);
-                fetchDetail(status, paymentStatus, listT_id);
+                fetchDetail(status, paymentStatus, listTourID);
                 setIsTournament(true);
 
             }
@@ -131,9 +136,20 @@ function detail() {
         );
     });
 
-    const fetchDetail = async (status: any, paymentStatus: any, listT_id: any) => {
+    const fetchDetail = async (status: any, payment_Status: any, listT_id: any) => {
+        let url = `/api/admin/tournament/detail/getByStatus?`
+        if (status != undefined) {
+            url += `status=${status}&`;
+        }
+        if (payment_Status != undefined) {
+            url += `paymentStatus=${payment_Status}&`
+        }
+        if (listT_id != undefined) {
+            url += `listT_id=${listT_id}&`
+        }
+        // url += listT_id !== undefined ? `listT_id=${listT_id}&` : `listT_id=${}&`
         try {
-            const response = await fetch(`/api/admin/tournament/detail/getByStatus?status=${status}&payment_status=${paymentStatus}&listT_id=${listT_id}`);
+            const response = await fetch(url);
             const data = await response.json();
             if (response.ok) {
                 setDetail_data(data);
@@ -208,9 +224,9 @@ function detail() {
             }
         })
     }
-    const updatePaymentStatus = (status: number) => {
+    const updatePaymentStatus = (newStatus: number) => {
         const text = targetSlip?.paymentStatus === 0 ? "ยังไม่ชำระ" : targetSlip?.paymentStatus === 1 ? "รอตรวจสอบ" : targetSlip?.paymentStatus === 2 ? "ชำระแล้ว" : "ปฎิเสธสลิป"
-        const text2 = status === 0 ? "ยังไม่ชำระ" : status === 1 ? "รอตรวจสอบ" : status === 2 ? "ชำระแล้ว" : "ปฎิเสธสลิป"
+        const text2 = newStatus === 0 ? "ยังไม่ชำระ" : newStatus === 1 ? "รอตรวจสอบ" : newStatus === 2 ? "ชำระแล้ว" : "ปฎิเสธสลิป"
 
         Swal.fire({
             title: `เปลี่ยนสถานะการชำระเงิน ? `,
@@ -228,7 +244,7 @@ function detail() {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ id: targetSlip?.id, newStatus: status }),
+                        body: JSON.stringify({ id: targetSlip?.id, newStatus: newStatus }),
                     });
 
                     if (!response.ok) {
@@ -362,6 +378,7 @@ function detail() {
     }
 
     const statusOptions = [
+        { label: 'ทั้งหมด', value: 'all' },
         { label: 'รอพิจารณา', value: '0' },
         { label: 'ไม่ผ่าน', value: '1' },
         { label: 'ผ่าน', value: '2' },
@@ -369,6 +386,7 @@ function detail() {
 
     // ตัวเลือกสำหรับสถานะการชำระเงิน
     const paymentStatusOptions = [
+        { label: 'ทั้งหมด', value: 'all' },
         { label: 'ยังไม่ชำระ', value: '0' },
         { label: 'รอตรวจสอบ', value: '1' },
         { label: 'ชำระแล้ว', value: '2' },
@@ -382,6 +400,7 @@ function detail() {
             value={status1}
             onChange={(e) => {
                 setStatus1(e.target.value);
+                // fetchDetail(status, paymentStatus, listT_id);
                 router.query.status = `${e.target.value}`;
                 router.push(router);;
             }}
@@ -435,6 +454,7 @@ function detail() {
                         value={listT_id === undefined ? '' : listT_id}
                         onChange={(e) => {
                             const ID = parseInt(e.target.value);
+                            fetchDetail(status, paymentStatus, ID);
                             router.query.listT_id = `${ID}`
                             router.push(router);
                         }}
@@ -541,7 +561,7 @@ function detail() {
 
                                 </tr>
                             ))}
-                            {detail_data.filter(item => item.status === parseInt(status as string)).length === 0 &&
+                            {detail_data.length === 0 &&
                                 <tr>
                                     <td colSpan={9} >ยังไม่มีผู้สมัคร</td>
                                 </tr>
