@@ -58,9 +58,9 @@ function Tournament({ listtournament }: Props) {
     fetchData();
     if (listtournament.length >= 1) {
       setIsTournament(true)
-  } else {
+    } else {
       setIsTournament(false)
-  }
+    }
   }, [parsedId]);
 
   const fetchData = async () => {
@@ -110,8 +110,12 @@ function Tournament({ listtournament }: Props) {
     e.preventDefault();
     fetchData();
     checkTeamname(title);
-    { otherGender1 === 'อื่นๆ' ? setGender_1(gender_1) : setGender_1(otherGender1) }
-    { otherGender2 === 'อื่นๆ' ? setGender_2(gender_2) : setGender_2(otherGender2) }
+    const formData = new FormData(e.target);
+    const otherGender1 = formData.get('gender_1');
+    const otherGender2 = formData.get('gender_2');
+
+    const gender1Value = otherGender1 === 'อื่นๆ' ? gender_1 : otherGender1 || ''; // Ensure it's not null
+    const gender2Value = otherGender2 === 'อื่นๆ' ? gender_2 : otherGender2 || ''; // Ensure it's not null
 
     if (team_name_1 != true && team_name_1 != null) {
       Swal.fire({
@@ -119,26 +123,27 @@ function Tournament({ listtournament }: Props) {
         text: 'ชื่อทีมนี้มีผู้ใช้แล้วกรุณาเปลี่ยนชื่อทีม',
       })
     }
-    else if (gender_1 === '' || gender_2 === '') {
+    else if (gender1Value === '' || gender2Value === '') {
       Swal.fire({
         icon: 'error',
         text: 'กรุณาเลือกเพศ',
       })
     }
+
     else if (
       listtournament &&
       title &&
       Name_1 &&
       Nickname_1 &&
       age_1 &&
-      gender_1 &&
+      gender1Value &&
       affiliation_1 &&
       tel_1 &&
       image_1 &&
       Name_2 &&
       Nickname_2 &&
       age_2 &&
-      gender_2 &&
+      gender2Value &&
       affiliation_2 &&
       tel_2 &&
       image_2 &&
@@ -155,14 +160,14 @@ function Tournament({ listtournament }: Props) {
         formData.append('Name_1', Name_1);
         formData.append('Nickname_1', Nickname_1);
         formData.append('age_1', age_1);
-        formData.append('gender_1', gender_1);
+        formData.append('gender_1', gender1Value);
         formData.append('affiliation_1', affiliation_1);
         formData.append('tel_1', tel_1);
         formData.append('image_1', image_1);
         formData.append('Name_2', Name_2);
         formData.append('Nickname_2', Nickname_2);
         formData.append('age_2', age_2);
-        formData.append('gender_2', gender_2);
+        formData.append('gender_2', gender2Value);
         formData.append('affiliation_2', affiliation_2);
         formData.append('tel_2', tel_2);
         formData.append('image_2', image_2);
@@ -202,6 +207,11 @@ function Tournament({ listtournament }: Props) {
           })
           setMessage('Post added successfully!');
         } else {
+          setIsLoading(false);
+          Swal.fire({
+            icon: 'error',
+            text: 'เกิดข้อผิดพลาด',
+          })
           throw new Error('Something went wrong');
         }
       } catch (error: any) {
@@ -245,7 +255,7 @@ function Tournament({ listtournament }: Props) {
       </div>
     );
   }
-  
+
   else {
     return (
 
@@ -274,6 +284,7 @@ function Tournament({ listtournament }: Props) {
                     placeholder="ชื่อทีม"
                     onChange={(e) => checkTeamname(e.target.value)}
                     value={title}
+                    required
                   />
                   {message ? (
                     <div style={{ color: 'red' }}>{message}</div>
@@ -293,6 +304,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="ชื่อ-สกุล"
                       onChange={(e) => setName_1(e.target.value)}
                       value={Name_1}
+                      required
                     />
                   </div>
 
@@ -304,6 +316,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="ชื่อเล่น"
                       onChange={(e) => setNickname_1(e.target.value)}
                       value={Nickname_1}
+                      required
                     />
                   </div>
 
@@ -315,14 +328,16 @@ function Tournament({ listtournament }: Props) {
                       placeholder="อายุ"
                       onChange={(e) => setAge_1(e.target.value)}
                       value={age_1}
+                      required
                     />
                   </div>
                   <div className={styles['form-row']}>
                     <label htmlFor="gender_1">เพศ </label>
                     <select
                       name="gender_1"
-                      onChange={(e) => setOtherGender1(e.target.value)}
+                      onChange={(e) => { setOtherGender1(e.target.value); }}
                       value={otherGender1}
+                      required
                     >
                       <option value="">เลือกเพศ</option>
                       <option value="ชาย">ชาย</option>
@@ -340,6 +355,7 @@ function Tournament({ listtournament }: Props) {
                         placeholder="เพศอื่นๆ"
                         onChange={(e) => setGender_1(e.target.value)}
                         value={gender_1}
+                        required
                       />
                     </div>
                   )}
@@ -351,6 +367,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="สังกัด"
                       onChange={(e) => setAffiliation_1(e.target.value)}
                       value={affiliation_1}
+                      required
                     />
                   </div>
                   <div className={styles['form-row']}>
@@ -363,6 +380,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="เบอร์ติดต่อ"
                       onChange={(e) => setTel_1(e.target.value)}
                       value={tel_1}
+                      required
                     />
                   </div>
                   <div className={styles['form-row']}>
@@ -378,6 +396,7 @@ function Tournament({ listtournament }: Props) {
                       onChange={handleImageChange_1}
                       id="file-input-1"
                       className={styles.file_input}
+                      required
                     />
                   </div>
                 </div>
@@ -401,6 +420,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="ชื่อ-สกุล"
                       onChange={(e) => setName_2(e.target.value)}
                       value={Name_2}
+                      required
                     />
                   </div>
 
@@ -412,6 +432,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="ชื่อเล่น"
                       onChange={(e) => setNickname_2(e.target.value)}
                       value={Nickname_2}
+                      required
                     />
                   </div>
 
@@ -423,6 +444,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="อายุ"
                       onChange={(e) => setAge_2(e.target.value)}
                       value={age_2}
+                      required
                     />
                   </div>
                   <div className={styles['form-row']}>
@@ -431,6 +453,7 @@ function Tournament({ listtournament }: Props) {
                       name="gender_2"
                       onChange={(e) => setOtherGender2(e.target.value)}
                       value={otherGender2}
+                      required
                     >
                       <option value="">เลือกเพศ</option>
                       <option value="ชาย">ชาย</option>
@@ -448,6 +471,7 @@ function Tournament({ listtournament }: Props) {
                         placeholder="เพศอื่นๆ"
                         onChange={(e) => setGender_2(e.target.value)}
                         value={gender_2}
+                        required
                       />
                     </div>
                   )}
@@ -459,6 +483,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="สังกัด"
                       onChange={(e) => setAffiliation_2(e.target.value)}
                       value={affiliation_2}
+                      required
                     />
                   </div>
                   <div className={styles['form-row']}>
@@ -471,6 +496,7 @@ function Tournament({ listtournament }: Props) {
                       placeholder="เบอร์ติดต่อ"
                       onChange={(e) => setTel_2(e.target.value)}
                       value={tel_2}
+                      required
                     />
                   </div>
                   <div className={styles['form-row']}>
@@ -486,6 +512,7 @@ function Tournament({ listtournament }: Props) {
                       onChange={handleImageChange_2}
                       id="file-input-2"
                       className={styles.file_input}
+                      required
                     />
                   </div>
 
