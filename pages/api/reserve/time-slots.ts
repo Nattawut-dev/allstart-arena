@@ -5,7 +5,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const connection= await pool.getConnection()
 
   try {
-    const query = 'SELECT * FROM time';
+    const query = 'SELECT * FROM time WHERE status = 1';
     // Execute the SQL query to fetch time slots
     const [results] = await connection.query(query);
     res.json({ timeSlots: results });

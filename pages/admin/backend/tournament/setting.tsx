@@ -227,7 +227,8 @@ function holiday() {
                     title: title2,
                     ordinal: ordinal2,
                     location: location2,
-                    timebetween: timebetween2
+                    timebetween: timebetween2,
+                    max_team :max_team2
                 }),
             });
 

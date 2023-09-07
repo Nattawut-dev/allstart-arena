@@ -79,8 +79,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               </ul>
             )}
           </li>
-          <Link href="/Rules" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Rules' ? styles.activeMenuItem : ''}`}> <div> <FaTh /> <span>คอร์ท</span></div> </li></Link>
-          <Link href="/Rules" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/Rules' ? styles.activeMenuItem : ''}`}> <div><FaRegClock /> <span>เวลา</span></div>  </li></Link>
+          <Link href="/admin/backend/setting/courts" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/setting/courts' ? styles.activeMenuItem : ''}`}> <div> <FaTh /> <span>คอร์ท</span></div> </li></Link>
+          <Link href="//admin/backend/setting/timeSlots" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/setting/timeSlots' ? styles.activeMenuItem : ''}`}> <div><FaRegClock /> <span>เวลา</span></div>  </li></Link>
 
           <Link onClick={handleLogout} href="" className={styles.link} ><li className={`${styles['sub-menu-item']}`} > <div><FiLogOut /> <span>ออกจากระบบ</span></div>    </li></Link>
         </ul>

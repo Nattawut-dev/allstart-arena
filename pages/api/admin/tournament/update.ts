@@ -13,10 +13,10 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const connection = await pool.getConnection()
         try {
-            const query = 'UPDATE listtournament SET title = ? , ordinal = ? , location = ? , timebetween = ? WHERE id = ?';
-            const { id, title, ordinal, location, timebetween } = req.body
+            const query = 'UPDATE listtournament SET title = ? , ordinal = ? , location = ? , timebetween = ? ,max_team = ? WHERE id = ?';
+            const { id, title, ordinal, location, timebetween , max_team} = req.body
             // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query, [title, ordinal, location, timebetween, id]);
+            const [results] = await connection.query(query, [title, ordinal, location, timebetween, max_team ,id]);
 
             if ((results as any).affectedRows > 0) {
                 res.status(200).json({ success: true, message: 'Data UPDATING successfully' });

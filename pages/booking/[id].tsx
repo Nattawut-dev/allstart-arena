@@ -168,12 +168,12 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                         <table className={`${styles.table}  ${isLoading ? styles.load : ''}`} >
                             <thead>
                                 <tr >
-                                    <td colSpan={7} className={styles.reserveDate}>
+                                    <td colSpan={courts.length +1} className={styles.reserveDate}>
                                         Reservation for {selectedDate && format(selectedDate, 'dd MMMM yyyy')}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colSpan={7} className={styles.reserveDate}>
+                                    <td colSpan={courts.length +1} className={styles.reserveDate}>
                                         <button className={`${styles.btn} ${parsedId == 0 ? styles.active : ''}`} onClick={() => setbtn(0)}>{format((dateInBangkok), 'dd MMMM ')}</button>
                                         <button className={`${styles.btn} ${parsedId == 1 ? styles.active : ''}`} onClick={() => setbtn(1)}>{format(addDays(dateInBangkok, 1), 'dd MMMM ')}</button>
                                         <button className={`${styles.btn} ${parsedId == 2 ? styles.active : ''}`} onClick={() => setbtn(2)}>{format(addDays(dateInBangkok, 2), 'dd MMMM ')}</button>
