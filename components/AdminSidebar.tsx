@@ -3,6 +3,7 @@ import Link from 'next/link';
 import styles from './styles/admin/AdminSidebar.module.css';
 import { useRouter } from 'next/router';
 import { FiLogOut } from 'react-icons/fi';
+import { MdFiberNew } from 'react-icons/md';
 import { FaChalkboard, FaChevronCircleRight, FaChevronCircleDown, FaCalendarPlus, FaCalendarDay, FaCalendarAlt, FaPencilAlt, FaHandPointRight, FaRegClock, FaTh } from "react-icons/fa";
 interface SidebarProps {
   isOpen: boolean;
@@ -10,11 +11,8 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const router = useRouter();
-  const { id } = router.query
   const [selectedSubMenu1, setSelectedSubMenu1] = useState(true);
   const [selectedSubMenu2, setSelectedSubMenu2] = useState(true);
-  const [selectedSubMenu3, setSelectedSubMenu3] = useState(true);
-  const [message, setMessage] = useState('');
 
   const handleLogout = async () => {
     try {
@@ -28,11 +26,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         // Redirect to the login page after successful logout
         router.push('/admin/login');
       } else {
-        setMessage('Logout failed. Please try again.');
+        alert("Error")
       }
     } catch (error) {
       console.error('Error while logging out', error);
-      setMessage('An error occurred. Please try again later.');
+      alert("Error")
     }
   };
 
@@ -54,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
                 <Link href="/admin/backend/booking/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} > <div><FaCalendarPlus /> <span> จองสนาม</span></div></li></Link>
                 <Link href="/admin/backend/booking/holidays" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/holidays' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay /> <span>วันหยุด</span> </div></li></Link>
-                <Link href="/admin/backend/booking/new_reserved?state=1" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/new_reserved' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay /> <span>การจองใหม่</span> </div></li></Link>
+                <Link href="/admin/backend/booking/new_reserved?state=1" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/new_reserved' ? styles.activeSubMenu : ''}`} ><div><MdFiberNew /> <span>การจองใหม่</span> </div></li></Link>
                 <Link href="/admin/backend/booking/bookinghistory" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/bookinghistory' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt /> <span>ค้นหาการจอง</span></div></li></Link>
               </ul>
             )}
@@ -71,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
               <ul className={styles['sub-menu']} onClick={(e) => e.stopPropagation()}>
                 <Link href="/admin/backend/tournament/setting" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/setting' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>การตั้งค่า</span></div> </li></Link>
                 <Link href="/admin/backend/tournament/protest" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/protest' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>การประท้วง</span></div></li></Link>
-                <Link href="/admin/backend/tournament/newregis?status=all&paymentStatus=all" className={styles.link} ><li className={`${styles['sub-menu-item']} ${ router.pathname === '/admin/backend/tournament/newregis' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>อนุมัติ/สลิป</span></div></li></Link>
+                <Link href="/admin/backend/tournament/newregis?status=all&paymentStatus=all" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/newregis' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>อนุมัติ/สลิป</span></div></li></Link>
                 <Link href="/admin/backend/tournament/detail?level=N" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.query.level == "N" && router.pathname === '/admin/backend/tournament/detail' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ N</span></div></li></Link>
                 <Link href="/admin/backend/tournament/detail?level=S" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.query.level == "S" && router.pathname === '/admin/backend/tournament/detail' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ S</span></div></li></Link>
                 <Link href="/admin/backend/tournament/detail?level=P-/P" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.query.level == "P-/P" && router.pathname === '/admin/backend/tournament/detail' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>มือ P-/P</span></div> </li></Link>

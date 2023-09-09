@@ -4,7 +4,6 @@ import pool from '@/db/db';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   const connection= await pool.getConnection()
   const {date} = req.query
-  console.log("date" , date)
   try {
     const query = `SELECT * FROM holidays WHERE date = ?`;
     // Execute the SQL query to fetch holidays

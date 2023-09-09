@@ -4,6 +4,7 @@ import styles from '@/styles/detailTornament.module.css';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { AiFillEdit } from "react-icons/ai";
+import AdminLayout from '@/components/AdminLayout';
 
 interface Detail {
     id: number;
@@ -41,7 +42,7 @@ interface Listtournament {
     price: number;
 }
 
-function detail() {
+function Detail() {
     const router = useRouter();
 
     const [message, setMessage] = useState('');
@@ -371,7 +372,7 @@ function detail() {
         );
     }
     return (
-        <>
+        <AdminLayout>
             <div style={{ textAlign: 'center', margin: 'auto' }}>
                 <div className='mb-1' style={{ justifyContent: 'center', textAlign: 'center', display: 'flex' }}>
                     <label htmlFor="status" className='text-nowrap mx-2 mt-1' >ผู้สมัครแข่ง :</label>
@@ -465,9 +466,9 @@ function detail() {
 
                                         ) : (
                                             item.team_type === "ทีมหลัก" ? (
-                                                <span className='text-success'>ทีมหลัก <Button className='btn-sm fs-6' style={{padding : '0 5px'}} onClick={() => { setEditTeam_type(true); setSelectEdit_team_type(item.id); setNewTeam_type(item.team_type) }}><AiFillEdit style={{fontSize : '10px' }}/></Button></span>
+                                                <span className='text-success'>ทีมหลัก <Button className='btn-sm fs-6' style={{ padding: '0 5px' }} onClick={() => { setEditTeam_type(true); setSelectEdit_team_type(item.id); setNewTeam_type(item.team_type) }}><AiFillEdit style={{ fontSize: '10px' }} /></Button></span>
                                             ) : (
-                                                <span className='text-warning'>ทีมสำรอง <Button className='btn-sm fs-6' style={{padding : '0 5px'}}  onClick={() => { setEditTeam_type(true); setSelectEdit_team_type(item.id); setNewTeam_type(item.team_type) }}><AiFillEdit style={{fontSize : '10px' }}/></Button></span>
+                                                <span className='text-warning'>ทีมสำรอง <Button className='btn-sm fs-6' style={{ padding: '0 5px' }} onClick={() => { setEditTeam_type(true); setSelectEdit_team_type(item.id); setNewTeam_type(item.team_type) }}><AiFillEdit style={{ fontSize: '10px' }} /></Button></span>
                                             )
                                         )}
                                     </td>
@@ -593,31 +594,8 @@ function detail() {
                                 {targetSlip?.paymentStatus === 3 && <span className="bg-danger bg-gradient p-1 mx-2 rounded"> ปฎิเสธสลิป</span>}
 
                             </span>
-
                         </h5>
-
                         <div className={`${styles.footer1} d-flex justify-content-center my-2`}>
-                            {/* <div >
-                            <h5 className='d-flex flex-row' >
-                                <label htmlFor="status" className='text-nowrap mx-2 p-1'>เลือกสถานะ : </label>
-                                <select
-                                    className={`text-center form-select text-dark ${selectedStatus === 0 ? 'bg-warning' :  'bg-info'} `}
-                                    id="status"
-                                    name="status"
-                                    value={selectedStatus}
-                                    onChange={(e) => {
-                                        const selectedStatus = e.target.value;
-                                        setCheckDisabled(parseInt(selectedStatus) === targetSlip?.paymentStatus)
-                                        setSelectedStatus(parseInt(selectedStatus));
-                                    }}
-                                >
-                                    <option className='bg-white text-dark' value={0}>ยังไม่ตรวจสอบ</option>
-                                    <option className='bg-white text-dark' value={1}>ตรวจสอบแล้ว</option>
-
-                                </select></h5>
-
-                        </div> */}
-
                         </div>
                     </Modal.Body>
                     <Modal.Footer >
@@ -638,8 +616,8 @@ function detail() {
                 </Modal>
             </div>
 
-        </>
+        </AdminLayout>
     )
 }
 
-export default detail
+export default Detail

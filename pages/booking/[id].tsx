@@ -155,15 +155,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     } else {
         return (
             <div className={`${styles.container} `}>
-                {/* {isLoading && (
-                    <div className={styles.loading}>
-                        <div className={styles.spinner}></div>
-                    </div>
-                )} */}
-
                 <div>
-                    {/* <h2 className={styles.h2}>จองสนามแบดมินตัน</h2> */}
-
                     <div className={styles.tableWrapper}>
                         <table className={`${styles.table}  ${isLoading ? styles.load : ''}`} >
                             <thead>

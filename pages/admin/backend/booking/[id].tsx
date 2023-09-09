@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '@/styles/admin/ReserveBadmintonCourt.module.css';
 import { format, addDays, isAfter, differenceInCalendarDays, parse, differenceInHours } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
-import { InferGetServerSidePropsType, GetServerSideProps } from 'next';
+import { GetServerSideProps } from 'next';
 import NotFoundPage from '../../../404'
 import AdminLayout from '@/components/AdminLayout';
 import { Button, Modal } from 'react-bootstrap';
@@ -355,173 +355,175 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
   } else {
     return (
+      <AdminLayout>
 
-      <div className={`${styles.container} `}>
 
-        {/* {isLoading && (
+        <div className={`${styles.container} `}>
+
+          {/* {isLoading && (
                     <div className={styles.loading}>
                         <div className={styles.spinner}></div>
                     </div>
                 )} */}
 
-        <div>
+          <div>
 
-          <div className={styles.tableWrapper}>
-            <table className={`${styles.table}  ${isLoading ? styles.load : ''}`} >
-              <thead>
-                <tr >
-                  <td colSpan={7} className={styles.reserveDate}>
-                    Reservation for <span>{selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td >
-                    <div className={styles.date_wrapper}>
-                      <p>เดือน/วัน/ปี</p>
-                      <DatePicker
-                        selected={selectedDate}
-                        onChange={handleDateChange}
-                        className={styles.DatePicker}
-                      /></div>
-                  </td>
-                  <th colSpan={6} className={styles.reserveDate}>
-
-
-                    <button className={`${styles.btn} ${parsedId == 0 ? styles.active : ''}`} onClick={() => setbtn(0)}>{format((dateInBangkok), 'dd MMMM ')}</button>
-                    <button className={`${styles.btn} ${parsedId == 1 ? styles.active : ''}`} onClick={() => setbtn(1)}>{format(addDays(dateInBangkok, 1), 'dd MMMM ')}</button>
-                    <button className={`${styles.btn} ${parsedId == 2 ? styles.active : ''}`} onClick={() => setbtn(2)}>{format(addDays(dateInBangkok, 2), 'dd MMMM ')}</button>
-                    <button className={`${styles.btn} ${parsedId == 3 ? styles.active : ''}`} onClick={() => setbtn(3)}>{format(addDays(dateInBangkok, 3), 'dd MMMM ')}</button>
-                    <button className={`${styles.btn} ${parsedId == 4 ? styles.active : ''}`} onClick={() => setbtn(4)}>{format(addDays(dateInBangkok, 4), 'dd MMMM ')}</button>
-                    <button className={`${styles.btn} ${parsedId == 5 ? styles.active : ''}`} onClick={() => setbtn(5)}>{format(addDays(dateInBangkok, 5), 'dd MMMM ')}</button>
-                    <button className={`${styles.btn} ${parsedId == 6 ? styles.active : ''}`} onClick={() => setbtn(6)}>{format(addDays(dateInBangkok, 6), 'dd MMMM ')}</button>
-                    <button className={`${styles.btn} ${parsedId == 7 ? styles.active : ''}`} onClick={() => setbtn(7)}>{format(addDays(dateInBangkok, 7), 'dd MMMM ')}</button>
-
-                  </th>
-                </tr>
-                {!isHoliday &&
-                  <tr>
-                    <th className={styles.tablehead}>Time/Court</th>
-
-                    {courts && courts.length > 0 && (
-
-                      courts.map((court) => (<th className={styles.tablehead} key={court.id}> {court.title}</th>))
-                    )
-
-                    }
+            <div className={styles.tableWrapper}>
+              <table className={`${styles.table}  ${isLoading ? styles.load : ''}`} >
+                <thead>
+                  <tr >
+                    <td colSpan={courts.length+1} className={styles.reserveDate}>
+                      Reservation for <span>{selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
+                    </td>
                   </tr>
+
+                  <tr>
+                    <td >
+                      <div className={styles.date_wrapper}>
+                        <p>เดือน/วัน/ปี</p>
+                        <DatePicker
+                          selected={selectedDate}
+                          onChange={handleDateChange}
+                          className={styles.DatePicker}
+                        /></div>
+                    </td>
+                    <th colSpan={courts.length+1} className={styles.reserveDate}>
+
+
+                      <button className={`${styles.btn} ${parsedId == 0 ? styles.active : ''}`} onClick={() => setbtn(0)}>{format((dateInBangkok), 'dd MMMM ')}</button>
+                      <button className={`${styles.btn} ${parsedId == 1 ? styles.active : ''}`} onClick={() => setbtn(1)}>{format(addDays(dateInBangkok, 1), 'dd MMMM ')}</button>
+                      <button className={`${styles.btn} ${parsedId == 2 ? styles.active : ''}`} onClick={() => setbtn(2)}>{format(addDays(dateInBangkok, 2), 'dd MMMM ')}</button>
+                      <button className={`${styles.btn} ${parsedId == 3 ? styles.active : ''}`} onClick={() => setbtn(3)}>{format(addDays(dateInBangkok, 3), 'dd MMMM ')}</button>
+                      <button className={`${styles.btn} ${parsedId == 4 ? styles.active : ''}`} onClick={() => setbtn(4)}>{format(addDays(dateInBangkok, 4), 'dd MMMM ')}</button>
+                      <button className={`${styles.btn} ${parsedId == 5 ? styles.active : ''}`} onClick={() => setbtn(5)}>{format(addDays(dateInBangkok, 5), 'dd MMMM ')}</button>
+                      <button className={`${styles.btn} ${parsedId == 6 ? styles.active : ''}`} onClick={() => setbtn(6)}>{format(addDays(dateInBangkok, 6), 'dd MMMM ')}</button>
+                      <button className={`${styles.btn} ${parsedId == 7 ? styles.active : ''}`} onClick={() => setbtn(7)}>{format(addDays(dateInBangkok, 7), 'dd MMMM ')}</button>
+
+                    </th>
+                  </tr>
+                  {!isHoliday &&
+                    <tr>
+                      <th className={styles.tablehead}>Time/Court</th>
+
+                      {courts && courts.length > 0 && (
+
+                        courts.map((court) => (<th className={styles.tablehead} key={court.id}> {court.title}</th>))
+                      )
+
+                      }
+                    </tr>
+                  }
+
+                </thead>
+
+                {!isHoliday &&
+                  // if 
+                  <tbody>
+                    {
+                      timeSlots.map((timeSlot) => (
+                        <tr key={timeSlot.id}>
+                          <td className={styles.time}>
+                            {timeSlot.start_time} - {timeSlot.end_time}
+                          </td>
+                          {courts.map((court) => {
+                            const reservation = reservations.find(
+                              (reservation) =>
+                                reservation.court_id === court.id &&
+                                reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
+                                (
+                                  // (reservation.start_time >= timeSlot.start_time && reservation.start_time < timeSlot.end_time) ||  // กรณีการจองเริ่มต้นในช่วงเวลาที่กำหนด
+                                  // (reservation.end_time > timeSlot.start_time && reservation.end_time <= timeSlot.end_time) ||  // กรณีการจองสิ้นสุดในช่วงเวลาที่กำหนด
+                                  (reservation.start_time <= timeSlot.start_time && reservation.end_time >= timeSlot.end_time)  // กรณีการจองที่ครอบคลุมช่วงเวลาที่กำหนด
+                                )
+                            );
+                            const isAvailable = !reservation;
+                            const isExpired = reservation && isAfter(new Date(), new Date(reservation.usedate));
+
+
+                            return (
+                              <td
+                                key={court.id}
+                                className={`${styles.cell} ${isAvailable ? styles.available : styles.reserved} ${isExpired ? styles.expired : ''
+                                  }`}
+                                onClick={() => {
+                                  if (isAvailable && !isExpired) {
+                                    handleCourtReservation(
+                                      court.id,
+                                      timeSlot.id,
+                                      timeSlot.start_time,
+                                      timeSlot.end_time,
+                                      parsedId
+                                    );
+                                  }
+                                }}
+                              >
+                                {isAvailable ? timeSlot.price + " ฿" : reservation.name}
+                              </td>
+                            );
+
+
+                          })}
+                        </tr>
+                      ))}
+                  </tbody>
                 }
 
-              </thead>
 
-              {!isHoliday &&
-                // if 
-                <tbody>
-                  {
-                    timeSlots.map((timeSlot) => (
-                      <tr key={timeSlot.id}>
-                        <td className={styles.time}>
-                          {timeSlot.start_time} - {timeSlot.end_time}
-                        </td>
-                        {courts.map((court) => {
-                          const reservation = reservations.find(
-                            (reservation) =>
-                              reservation.court_id === court.id &&
-                              reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
-                              (
-                                // (reservation.start_time >= timeSlot.start_time && reservation.start_time < timeSlot.end_time) ||  // กรณีการจองเริ่มต้นในช่วงเวลาที่กำหนด
-                                // (reservation.end_time > timeSlot.start_time && reservation.end_time <= timeSlot.end_time) ||  // กรณีการจองสิ้นสุดในช่วงเวลาที่กำหนด
-                                (reservation.start_time <= timeSlot.start_time && reservation.end_time >= timeSlot.end_time)  // กรณีการจองที่ครอบคลุมช่วงเวลาที่กำหนด
-                              )
-                          );
-                          const isAvailable = !reservation;
-                          const isExpired = reservation && isAfter(new Date(), new Date(reservation.usedate));
+              </table>
+              {
+                isHoliday &&
+                <div className='d-flex justify-content-center fs-5 flex-column '>
+                  <span className='d-flex justify-content-center'>วันที่เลือกหยุดให้บริการเนื่องจาก</span>
+                  <span className='d-flex justify-content-center fs-5 text-danger fw-bold'>{foundHoliday[0].title}</span>
+
+                </div>
 
 
-                          return (
-                            <td
-                              key={court.id}
-                              className={`${styles.cell} ${isAvailable ? styles.available : styles.reserved} ${isExpired ? styles.expired : ''
-                                }`}
-                              onClick={() => {
-                                if (isAvailable && !isExpired) {
-                                  handleCourtReservation(
-                                    court.id,
-                                    timeSlot.id,
-                                    timeSlot.start_time,
-                                    timeSlot.end_time,
-                                    parsedId
-                                  );
-                                }
-                              }}
-                            >
-                              {isAvailable ? timeSlot.price + " ฿" : reservation.name}
-                            </td>
-                          );
-
-
-                        })}
-                      </tr>
-                    ))}
-                </tbody>
               }
-
-
-            </table>
-            {
-              isHoliday &&
-              <div className='d-flex justify-content-center fs-5 flex-column '>
-                <span className='d-flex justify-content-center'>วันที่เลือกหยุดให้บริการเนื่องจาก</span>
-                <span className='d-flex justify-content-center fs-5 text-danger fw-bold'>{foundHoliday[0].title}</span>
-
-              </div>
-
-
-            }
-          </div>
-        </div>
-        <Modal
-
-          show={show}
-          onHide={handleClose}
-          backdrop="static"
-          keyboard={false}
-          centered
-        >
-          <Modal.Header closeButton >
-            <Modal.Title><h6>จองใช้สนาม วันที่ <span style={{ color: 'red' }}>{selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span></h6></Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <div className={styles['reserve-form-container']}>
-              <h2>จองสนามแบดมินตันคอร์ท {courtID} </h2>
-              <h3>ราคารวม {price} บาท</h3>
-              <h6>
-                เวลา{' '}
-                <select className={styles.select} onChange={(e) => handleTimeSlotChange(e.target.value)}>
-                  {filteredTimeSlotOptions}
-                </select>
-              </h6>
-              <form id="myForm" onSubmit={handleSubmit}>
-                <label>
-                  Name:
-                  <input type="text" maxLength={16} value={name} onChange={(e) => setName(e.target.value)} placeholder='ชื่อ (ไม่เกิน 16 ตัวอักษร)' required />
-                </label>
-                <label>
-                  Phone:
-                  <input type="tel" maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='เบอร์โทร' required />
-                </label>
-                <div><p style={{ color: "red" }}>{error}</p></div>
-              </form>
             </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button form="myForm" type="submit">Submit</Button>
-            <Button onClick={handleClose} className='btn-secondary'>Close</Button>
-          </Modal.Footer>
-        </Modal>
+          </div>
+          <Modal
 
-      </div >
+            show={show}
+            onHide={handleClose}
+            backdrop="static"
+            keyboard={false}
+            centered
+          >
+            <Modal.Header closeButton >
+              <Modal.Title><h6>จองใช้สนาม วันที่ <span style={{ color: 'red' }}>{selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span></h6></Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <div className={styles['reserve-form-container']}>
+                <h2>จองสนามแบดมินตันคอร์ท {courtID} </h2>
+                <h3>ราคารวม {price} บาท</h3>
+                <h6>
+                  เวลา{' '}
+                  <select className={styles.select} onChange={(e) => handleTimeSlotChange(e.target.value)}>
+                    {filteredTimeSlotOptions}
+                  </select>
+                </h6>
+                <form id="myForm" onSubmit={handleSubmit}>
+                  <label>
+                    Name:
+                    <input type="text" maxLength={16} value={name} onChange={(e) => setName(e.target.value)} placeholder='ชื่อ (ไม่เกิน 16 ตัวอักษร)' required />
+                  </label>
+                  <label>
+                    Phone:
+                    <input type="tel" maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='เบอร์โทร' required />
+                  </label>
+                  <div><p style={{ color: "red" }}>{error}</p></div>
+                </form>
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button form="myForm" type="submit">Submit</Button>
+              <Button onClick={handleClose} className='btn-secondary'>Close</Button>
+            </Modal.Footer>
+          </Modal>
 
+        </div >
+      </AdminLayout>
     );
   }
 }

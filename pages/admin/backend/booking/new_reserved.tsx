@@ -5,6 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
+import AdminLayout from '@/components/AdminLayout';
 
 
 interface Reserve {
@@ -36,7 +37,7 @@ interface TimeSlot {
 }
 
 
-function holiday() {
+function Holiday() {
     const [reserve, setreserve] = useState<Reserve[]>([])
     const [courts, setCourts] = useState<Court[]>([])
     const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -413,7 +414,7 @@ function holiday() {
 
 
     return (
-        <>
+        <AdminLayout>
 
             <div className={styles.container}>
 
@@ -707,9 +708,9 @@ function holiday() {
                 </Modal.Footer>
             </Modal>
 
-        </>
+        </AdminLayout>
 
     )
 }
 
-export default holiday
+export default Holiday

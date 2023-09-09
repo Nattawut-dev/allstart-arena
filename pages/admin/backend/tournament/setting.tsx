@@ -4,7 +4,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/tournament/setting.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
-
+import AdminLayout from '@/components/AdminLayout';
 
 interface Tournament {
     id: number;
@@ -16,11 +16,7 @@ interface Tournament {
     status: number;
 }
 
-
-
-
-
-function holiday() {
+function Holiday() {
     const [tournament, setTournament] = useState<Tournament[]>([])
     const [isTournament, setIsTournament] = useState(false);
     const [title, setTitle] = useState('');
@@ -275,8 +271,7 @@ function holiday() {
 
     }
     return (
-        <>
-
+        <AdminLayout>
             <div className={styles.container}>
 
                 <div className={styles.box}>
@@ -477,9 +472,9 @@ function holiday() {
                     </div>
                 </Modal.Footer>
             </Modal>
-        </>
+        </AdminLayout>
 
     )
 }
 
-export default holiday
+export default Holiday

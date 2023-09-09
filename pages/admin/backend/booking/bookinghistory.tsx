@@ -7,7 +7,7 @@ import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
 import { utcToZonedTime } from 'date-fns-tz';
-
+import AdminLayout from '@/components/AdminLayout';
 
 interface Reserve {
     id: number;
@@ -38,7 +38,7 @@ interface TimeSlot {
 }
 
 
-function holiday() {
+function Holiday() {
     const [message, setMessage] = useState('');
     const [reserve, setreserve] = useState<Reserve[]>([])
     const [courts, setCourts] = useState<Court[]>([])
@@ -184,14 +184,10 @@ function holiday() {
             const courts_data = await courts.json();
             setCourts(courts_data.courts);
         } catch {
-            alert("error")
+            console.log('error');
         }
 
     }
-
-
-    const [loading, setLoading] = useState(false);
-
 
     const deletereserve = async (item: Reserve) => {
         Swal.fire({
@@ -450,8 +446,9 @@ function holiday() {
             </>
         );
     }
+
     return (
-        <>
+        <AdminLayout>
 
             <div className={styles.container}>
 
@@ -589,7 +586,7 @@ function holiday() {
                 <Modal.Header closeButton >
                     <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
                 </Modal.Header>
-                <Modal.Body className={`${loading ? styles.load : ''}`}>
+                <Modal.Body>
                     <div>
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
@@ -742,10 +739,8 @@ function holiday() {
 
                 </Modal.Footer>
             </Modal>
-
-        </>
-
+        </AdminLayout>
     )
 }
 
-export default holiday
+export default Holiday

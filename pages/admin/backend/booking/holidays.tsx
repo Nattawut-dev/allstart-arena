@@ -1,5 +1,4 @@
-import { differenceInCalendarDays, format } from 'date-fns';
-import { GetServerSideProps } from 'next';
+import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react'
 import { Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
@@ -7,7 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/holidays.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
-
+import AdminLayout from '@/components/AdminLayout';
 
 interface Holidays {
   id: number;
@@ -15,17 +14,10 @@ interface Holidays {
   date: string;
   status: number;
 }
-interface Props {
-  holidays: Holidays[];
-}
 
-
-
-
-function holiday() {
+function Holiday() {
   const [message, setMessage] = useState('');
   const [holidays, setHolidays] = useState<Holidays[]>([])
-  const [editholiday, setEditholiday] = useState<Holidays | null>(null);
 
   const [isHoliday, setIsHoliday] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -261,7 +253,7 @@ function holiday() {
   }
 
   return (
-    <>
+    <AdminLayout>
 
       <div className={styles.container}>
 
@@ -415,9 +407,9 @@ function holiday() {
           </div>
         </Modal.Footer>
       </Modal>
-    </>
+    </AdminLayout>
 
   )
 }
 
-export default holiday
+export default Holiday

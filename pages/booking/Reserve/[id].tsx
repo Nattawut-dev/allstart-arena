@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import styles from '@/styles/ReserveForm.module.css';
 import { utcToZonedTime } from 'date-fns-tz';
 import { format, addDays, differenceInHours, } from 'date-fns';
-import { set } from 'lodash';
 
 interface TimeSlot {
   id: number;

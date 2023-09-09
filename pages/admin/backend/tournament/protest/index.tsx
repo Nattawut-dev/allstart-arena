@@ -3,6 +3,7 @@ import { Button, Modal } from 'react-bootstrap';
 import styles from '@/styles/admin/tournament/Tournament.module.css';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/router';
+import AdminLayout from '@/components/AdminLayout';
 
 interface ProtestData {
   id: number;
@@ -254,7 +255,7 @@ const ProtestPage: React.FC = () => {
   }
 
   return (
-    <>
+    <AdminLayout>
 
       <div style={{ maxWidth: '1200px', textAlign: 'center', margin: 'auto' }}>
         <h4 className='d-flex flex-row ' style={{ width: 'fit-content' }}>
@@ -380,7 +381,7 @@ const ProtestPage: React.FC = () => {
         </Modal>
 
       </div>
-    </>
+    </AdminLayout>
 
   );
 };

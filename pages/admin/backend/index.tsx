@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import AdminLayout from '@/components/AdminLayout';
 import styles from '@/styles/admin/backend.module.css';
-import { GetStaticProps } from 'next';
 import NotFoundPage from '@/pages/404';
 import Swal from 'sweetalert2'
+import AdminLayout from '@/components/AdminLayout';
 
 
 interface Rules {
@@ -242,7 +241,7 @@ export default function Welcome() {
     }
 
     return (
-
+        <AdminLayout>
             <div className={styles.Container}>
                 <h3>ตั้งค่ากฎ/ข้อมูลติดต่อ</h3>
 
@@ -272,7 +271,7 @@ export default function Welcome() {
                             content
                         )}
                     </p>
-                    
+
                     <div className={styles.contect} >
                         <div className={styles.box}>
                             <p style={{ textAlign: 'center', marginBottom: '15px', fontWeight: 'bold', backgroundColor: "aliceblue" }}>ช่องทางการติดต่อ</p>
@@ -338,10 +337,10 @@ export default function Welcome() {
                             </p></div>
 
                     </div>
-                    <h6 style={{color: "red"}}>*หมายเหตุ ตัวที่พื้นหลังสีไข่ สามารถแก้ไขได้ทั้งหมด **หากบันทึกการแก้ไขแล้วจะ ย้อนกลับไม่ได้</h6>
+                    <h6 style={{ color: "red" }}>*หมายเหตุ ตัวที่พื้นหลังสีไข่ สามารถแก้ไขได้ทั้งหมด **หากบันทึกการแก้ไขแล้วจะ ย้อนกลับไม่ได้</h6>
 
                 </div>
             </div>
-
+        </AdminLayout>
     );
 }

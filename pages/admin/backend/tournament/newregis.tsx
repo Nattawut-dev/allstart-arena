@@ -4,6 +4,7 @@ import styles from '@/styles/detailTornament.module.css';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { AiFillEdit } from "react-icons/ai";
+import AdminLayout from '@/components/AdminLayout';
 
 interface Detail {
     id: number;
@@ -41,7 +42,7 @@ interface Listtournament {
     price: number;
 }
 
-function detail() {
+function Detail() {
     const router = useRouter();
 
     const [status1, setStatus1] = useState(''); // สถานะ
@@ -442,7 +443,7 @@ function detail() {
         );
     }
     return (
-        <>
+        <AdminLayout>
             <div style={{ textAlign: 'center', margin: 'auto' }}>
                 <div className='mb-1' style={{ justifyContent: 'center', textAlign: 'center', display: 'flex' }}>
                     <label htmlFor="status" className='text-nowrap mx-2 mt-1' >ผู้สมัครแข่ง :</label>
@@ -716,8 +717,8 @@ function detail() {
                 </Modal>
             </div>
 
-        </>
+        </AdminLayout>
     )
 }
 
-export default detail
+export default Detail
