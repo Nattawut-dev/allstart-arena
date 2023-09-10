@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2'
 import NotFoundPage from '../404'
+import Head from 'next/head';
 
 interface TimeSlot {
     id: number;
@@ -38,6 +39,37 @@ interface Props {
     courts: Court[];
     timeZone: string;
 }
+
+
+// const countdownMinutes = 15;
+
+// const UseCountdown = (targetTime: Date, countdownMinutes: number) => {
+//     const [remainingTime, setRemainingTime] = useState(() => {
+//         const currentTime = new Date();
+//         const timeDifference = targetTime.getTime() - currentTime.getTime();
+//         return timeDifference < 0 ? 0 : timeDifference;
+//     });
+
+//     useEffect(() => {
+//         const intervalId = setInterval(() => {
+//             const currentTime = new Date();
+//             const timeDifference = targetTime.getTime() - currentTime.getTime();
+//             setRemainingTime(timeDifference < 0 ? 0 : timeDifference);
+//         }, 1000);
+
+//         return () => clearInterval(intervalId);
+//     }, [targetTime]);
+
+//     const countdownTime = countdownMinutes * 60 * 1000;
+//     const totalRemainingTime = remainingTime + countdownTime;
+
+//     const minutesRemaining = Math.floor((totalRemainingTime / 1000 / 60) % 60);
+//     const secondsRemaining = Math.floor((totalRemainingTime / 1000) % 60);
+
+//     return { minutesRemaining, secondsRemaining };
+// };
+
+// const TargetTime = new Date(); // Replace this with your target time
 
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
@@ -72,6 +104,9 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [reservations1, setReservations1] = useState<Reservation>();
+    const [minutesRemaining, setMinutesRemaining] = useState(0);
+    const [secondsRemaining, setSecondsRemaining] = useState(0);
+
 
     useEffect(() => {
         fetchReservations();
@@ -210,37 +245,19 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
     };
 
 
-    const countdownMinutes = 15;
 
-    const UseCountdown = (targetTime: Date, countdownMinutes: number) => {
-        const [remainingTime, setRemainingTime] = useState(() => {
-            const currentTime = new Date();
-            const timeDifference = targetTime.getTime() - currentTime.getTime();
-            return timeDifference < 0 ? 0 : timeDifference;
-        });
-
-        useEffect(() => {
-            const intervalId = setInterval(() => {
-                const currentTime = new Date();
-                const timeDifference = targetTime.getTime() - currentTime.getTime();
-                setRemainingTime(timeDifference < 0 ? 0 : timeDifference);
-            }, 1000);
-
-            return () => clearInterval(intervalId);
-        }, [targetTime]);
-
-        const countdownTime = countdownMinutes * 60 * 1000;
-        const totalRemainingTime = remainingTime + countdownTime;
+    setInterval(() => {
+        const currentTime = new Date();
+        const timeDifference = targetTime.getTime() - currentTime.getTime();
+        const countdownTime = 15 * 60 * 1000;
+        const totalRemainingTime = timeDifference + countdownTime;
 
         const minutesRemaining = Math.floor((totalRemainingTime / 1000 / 60) % 60);
         const secondsRemaining = Math.floor((totalRemainingTime / 1000) % 60);
+        setMinutesRemaining(minutesRemaining);
+        setSecondsRemaining(secondsRemaining);
+    }, 1000)
 
-        return { minutesRemaining, secondsRemaining };
-    };
-
-
-
-    const { minutesRemaining, secondsRemaining } = UseCountdown(targetTime, countdownMinutes);
 
     if (timeSlots.length < 1 || courts.length < 1) {
 
@@ -262,7 +279,9 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
             }
             <div className={`${styles.container} `}>
-
+                <Head>
+                    <title>Booking details</title>
+                </Head>
 
                 <h5 className={styles.title}>ตารางการจองของวันที่  {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</h5>
                 <div className={styles.btn_wrapper}>

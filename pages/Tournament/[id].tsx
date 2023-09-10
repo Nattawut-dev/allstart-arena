@@ -4,6 +4,7 @@ import styles from '../../styles/Tournament.module.css';
 import Swal from 'sweetalert2'
 import { GetServerSideProps, GetStaticProps } from 'next';
 import NotFoundPage from '../404';
+import Head from 'next/head';
 
 
 interface TeamData {
@@ -260,6 +261,9 @@ function Tournament({ listtournament }: Props) {
     return (
 
       <>
+        <Head>
+          <title>สมัครแข่งขัน ระดับมือ {level}</title>
+        </Head>
         <div className={styles.header}>
           {listtournament.length >= 1 && (
             <div>

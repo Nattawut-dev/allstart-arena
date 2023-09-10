@@ -2,12 +2,16 @@ import React from 'react';
 import styles from '@/styles/feedback.module.css';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 function NotAvailable() {
   const router = useRouter();
   const { id } = router.query
   const url = `/booking/${id}`
   return (
     <div className={styles.container}>
+      <Head>
+        <title>NotAvaliable</title>
+      </Head>
       <h1 className={styles.heading}>คอร์ท/บางช่วงเวลาที่ท่านเลือก ถูกจองไปแล้ว/ไม่ว่าง</h1>
       <p className={styles.message}>ขออภัยสำหรับความไม่สะดวกที่เกิดขึ้น</p>
       <Link href={url}>

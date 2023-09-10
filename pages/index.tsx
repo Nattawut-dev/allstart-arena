@@ -1,7 +1,8 @@
-import { GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import React from 'react';
 import styles from '@/styles/rules.module.css'
 import NotFoundPage from './404'
+import Head from 'next/head'
 
 interface Rules {
   id: number;
@@ -18,7 +19,7 @@ interface Props {
   rules: Rules[];
 }
 
-export const getStaticProps: GetStaticProps<Props> = async () => {
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
   try {
     const response = await fetch(`${process.env.HOSTNAME}/api/rules`);
     const rulesdata = await response.json();
@@ -46,7 +47,9 @@ const Rules = ({ rules }: Props) => {
 
   return (
     <>
-
+      <Head>
+        <title>Rules</title>
+      </Head>
       <div className={styles.container}>
         <h3 className={styles.heading}>{rules[0].title}</h3>
         <p className={styles.content}>{rules[0].content}</p>

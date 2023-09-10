@@ -5,6 +5,7 @@ import { Button, Modal } from 'react-bootstrap';
 import Image from 'next/image'
 import { useRouter } from 'next/router';
 import Swal from 'sweetalert2';
+import Head from 'next/head';
 interface Detail {
     id: number;
     listT_id: number
@@ -78,7 +79,7 @@ const DetailPage = ({ listtournament, detail }: Props) => {
     //         setListtournament([]);
     //     }
     // };
-    
+
     useEffect(() => {
 
         if (parsedId < 0 || parsedId > 3) {
@@ -246,6 +247,9 @@ const DetailPage = ({ listtournament, detail }: Props) => {
     else {
         return (
             <>
+                <Head>
+                    <title>รายละเอียด ระดับมือ {level}</title>
+                </Head>
                 <div className={styles.header}>
                     {listtournament.length >= 1 && (
                         <div>

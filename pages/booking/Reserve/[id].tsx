@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '@/styles/ReserveForm.module.css';
 import { utcToZonedTime } from 'date-fns-tz';
 import { format, addDays, differenceInHours, } from 'date-fns';
+import  Head  from 'next/head';
 
 interface TimeSlot {
   id: number;
@@ -199,6 +200,9 @@ export default function Page() {
 
   return (
     <div className={styles['reserve-form-container']}>
+      <Head>
+        <title>Reservation</title>
+      </Head>
       <h2>จองสนามแบดมินตันคอร์ท {id} </h2>
       <h2 style={{ color: 'red' }}>วันที่ใช้คอร์ท {format(selectedDate, 'dd MMMM yyyy')}</h2>
       <br />

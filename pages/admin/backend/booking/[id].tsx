@@ -10,6 +10,7 @@ import { Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
+import Head from 'next/head';
 
 interface TimeSlot {
   id: number;
@@ -24,6 +25,7 @@ interface Court {
 }
 
 interface Reservation {
+  [x: string]: any;
   id: number;
   name: string;
   court_id: number;
@@ -143,28 +145,56 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     router.push(`/admin/backend/booking/${encodeURIComponent(addDay)}`)
   }
 
-  const handleCourtReservation = (
+  const handleCourtReservation = async (
     courtId: number,
     timeSlotId: number,
     startTime: string,
     endTime: string,
-    usedate: number
+    price : number
   ) => {
-    setPrice(timeSlots[timeSlotId - 1].price)
-    setStartTime(startTime);
-    setTime_slot_id(timeSlotId);
-    setCourtID(courtId);
-    setStartvalue(startTime)
-    setEndvalue(endTime)
-    setShow(true);
+    const response = await fetch(`/api/reserve/reservations`);
+    const data : Reservation = await response.json();
+    const reservation = data.find(
+      (reservation: Reservation) =>
+        reservation.court_id === courtId &&
+        reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
+        (
+          (reservation.start_time <= startTime && reservation.end_time >= endTime)
+        )
+    );
+    const isAvailable = !reservation;
+    const isExpired = reservation && isAfter(new Date(), new Date(reservation.usedate));
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+      }
+    })
+    if (isAvailable && !isExpired) {
+      setPrice(price)
+      setStartTime(startTime);
+      setTime_slot_id(timeSlotId);
+      setCourtID(courtId);
+      setStartvalue(startTime)
+      setEndvalue(endTime)
+      setShow(true);
+    }else{
+      
+      Toast.fire({
+        icon: 'error',
+        title: 'มีคนจองไปแล้ว'
+      })
+      
+      getReservations();
+    }
+
   };
-  const getCurrentDate = () => {
-    const id = parseInt(router.query.id as string)
-    const year = selectedDate.getFullYear();
-    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(selectedDate.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+
 
   // Function to handle date change
   const handleDateChange = (date: Date) => {
@@ -356,7 +386,9 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   } else {
     return (
       <AdminLayout>
-
+        <Head>
+          <title>Booking</title>
+        </Head>
 
         <div className={`${styles.container} `}>
 
@@ -372,7 +404,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
               <table className={`${styles.table}  ${isLoading ? styles.load : ''}`} >
                 <thead>
                   <tr >
-                    <td colSpan={courts.length+1} className={styles.reserveDate}>
+                    <td colSpan={courts.length + 1} className={styles.reserveDate}>
                       Reservation for <span>{selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
                     </td>
                   </tr>
@@ -387,7 +419,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                           className={styles.DatePicker}
                         /></div>
                     </td>
-                    <th colSpan={courts.length+1} className={styles.reserveDate}>
+                    <th colSpan={courts.length + 1} className={styles.reserveDate}>
 
 
                       <button className={`${styles.btn} ${parsedId == 0 ? styles.active : ''}`} onClick={() => setbtn(0)}>{format((dateInBangkok), 'dd MMMM ')}</button>
@@ -431,9 +463,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                 reservation.court_id === court.id &&
                                 reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
                                 (
-                                  // (reservation.start_time >= timeSlot.start_time && reservation.start_time < timeSlot.end_time) ||  // กรณีการจองเริ่มต้นในช่วงเวลาที่กำหนด
-                                  // (reservation.end_time > timeSlot.start_time && reservation.end_time <= timeSlot.end_time) ||  // กรณีการจองสิ้นสุดในช่วงเวลาที่กำหนด
-                                  (reservation.start_time <= timeSlot.start_time && reservation.end_time >= timeSlot.end_time)  // กรณีการจองที่ครอบคลุมช่วงเวลาที่กำหนด
+                                  (reservation.start_time <= timeSlot.start_time && reservation.end_time >= timeSlot.end_time)
                                 )
                             );
                             const isAvailable = !reservation;
@@ -446,13 +476,14 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                 className={`${styles.cell} ${isAvailable ? styles.available : styles.reserved} ${isExpired ? styles.expired : ''
                                   }`}
                                 onClick={() => {
+
                                   if (isAvailable && !isExpired) {
                                     handleCourtReservation(
                                       court.id,
                                       timeSlot.id,
                                       timeSlot.start_time,
                                       timeSlot.end_time,
-                                      parsedId
+                                      timeSlot.price,
                                     );
                                   }
                                 }}
