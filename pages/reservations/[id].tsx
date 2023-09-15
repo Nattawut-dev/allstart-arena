@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styles from '@/styles/reservation.module.css';
 import { utcToZonedTime } from 'date-fns-tz';
 import { format, addDays } from 'date-fns';
@@ -9,7 +9,7 @@ import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2'
 import NotFoundPage from '../404'
 import Head from 'next/head';
-
+import useCountdown from '../countdown';
 interface TimeSlot {
     id: number;
     start_time: string;
@@ -103,32 +103,38 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
     const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [reservations1, setReservations1] = useState<Reservation>();
+    const [reservations1, setReservations1] = useState<Reservation | null>();
     const [minutesRemaining, setMinutesRemaining] = useState(0);
     const [secondsRemaining, setSecondsRemaining] = useState(0);
-
-
-    useEffect(() => {
-        fetchReservations();
-    }, []);
-
-    const fetchReservations = async () => {
-        try {
-            const response = await fetch(`/api/reserve/reservations`);
-            const data = await response.json();
-            setReservations(data);
-        } catch (error) {
-            console.error('Failed to fetch reservations:', error);
-        }
-    };
-
     const router = useRouter();
     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
     const parsedId = parseInt(router.query.id as string)
     const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
 
+    useEffect(() => {
+        const usedate = format(selectedDate, 'dd MMMM yyyy');
+        fetchReservations(usedate);
+    }, [selectedDate]);
+
+    const fetchReservations = async (usedate: string) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
+            const data = await response.json();
+            if (response.ok) {
+                setReservations(data);
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error('Failed to fetch reservations:', error);
+        }
+    };
+
+
+
     function setbtn(id: any) {
-        fetchReservations();
+        const usedate = format(selectedDate, 'dd MMMM yyyy');
+        fetchReservations(usedate);
         setSelectedDate(addDays(dateInBangkok, id))
         router.push(`/reservations/${encodeURIComponent(id)}`)
 
@@ -207,7 +213,8 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                         showConfirmButton: false,
                         timer: 1500,
                     }).then(() => {
-                        window.location.reload();
+                        const usedate = format(selectedDate, 'dd MMMM yyyy');
+                        fetchReservations(usedate);
                     })
 
                 } else {
@@ -222,42 +229,59 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
     const [court1, setCourt1] = useState<Court>();
 
-    const [targetTime, setTargetTime] = useState(new Date());
+    const [show, setShow] = useState(false);
 
+    const [intervalId, setIntervalId] = useState<number | NodeJS.Timer>(0);
 
     const payment = (id: any) => {
         const reservation = reservations.find((r) => r.id === id);
-        setReservations1(reservation)
+        setReservations1(reservation);
+
+        // สร้างตัวแปร interval เพื่อใช้ในการหยุดการนับถอยหลัง
+
         if (reservation) {
             if (reservation.status === 0) {
-                const targetTime = new Date(reservation.reserved_date);
-                setTargetTime(targetTime)
+                const newTargetTime: Date = new Date(reservation.reserved_date);
+                const currentTime = new Date();
+                const remainingTime = (newTargetTime.getTime() + (900 * 1000) - currentTime.getTime());
+                const minutesRemaining = Math.floor(remainingTime / 60000);
+                const secondsRemaining = Math.floor((remainingTime % 60000) / 1000);
+                setMinutesRemaining(minutesRemaining);
+                setSecondsRemaining(secondsRemaining);
+                // เริ่มการนับถอยหลังและเซ็ตค่าให้กับ state
+                const Interval = setInterval(() => {
+                    const currentTime = new Date();
+                    const remainingTime = (newTargetTime.getTime() + (900 * 1000) - currentTime.getTime());
+                    const minutesRemaining = Math.floor(remainingTime / 60000);
+                    const secondsRemaining = Math.floor((remainingTime % 60000) / 1000);
+                    console.log(minutesRemaining, secondsRemaining, newTargetTime.getTime() + 900 * 1000, currentTime.getTime(), remainingTime);
+                    console.log(id)
+                    if (remainingTime < 0) {
+                        clearInterval(id);
+                    }
+
+                    setMinutesRemaining(minutesRemaining);
+                    setSecondsRemaining(secondsRemaining);
+                }, 1000);
+
+                // เซ็ต intervalId ด้วยค่า id ที่เราสร้าง
+                setIntervalId(Interval);
             }
             const court = courts.find((c) => c.id === reservation.court_id);
-            setCourt1(court)
+            setCourt1(court);
             setShow(true);
-        }
 
-    }
-    const [show, setShow] = useState(false);
-    const handleClose = () => {
-        setShow(false)
+        }
     };
 
-
-
-    setInterval(() => {
-        const currentTime = new Date();
-        const timeDifference = targetTime.getTime() - currentTime.getTime();
-        const countdownTime = 15 * 60 * 1000;
-        const totalRemainingTime = timeDifference + countdownTime;
-
-        const minutesRemaining = Math.floor((totalRemainingTime / 1000 / 60) % 60);
-        const secondsRemaining = Math.floor((totalRemainingTime / 1000) % 60);
-        setMinutesRemaining(minutesRemaining);
-        setSecondsRemaining(secondsRemaining);
-    }, 1000)
-
+    // ใช้ handleClose เพื่อหยุดการนับถอยหลัง
+    const handleClose = () => {
+        setShow(false);
+        setReservations1(null);
+        if (intervalId) {
+            clearInterval(intervalId); // หยุดการนับถอยหลัง (ถ้ามี interval ที่ถูกสร้าง)
+        }
+    };
 
     if (timeSlots.length < 1 || courts.length < 1) {
 
@@ -278,7 +302,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                 </div>
 
             }
-            <div className={`${styles.container} `}>
+            <div className={`${styles.container} ${loading ? styles.load : ''} `}>
                 <Head>
                     <title>Booking details</title>
                 </Head>
@@ -310,7 +334,6 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                         </thead>
                         <tbody>
                             {reservations
-                                .filter(item => item.usedate === format(selectedDate, 'dd MMMM yyyy'))
                                 .map((reservation, index) => {
                                     const court = courts.find((c) => c.id === reservation.court_id);
                                     const timeSlot = timeSlots.find((ts) => ts.id === reservation.time_slot_id);
@@ -343,7 +366,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                 <Modal
 
                     show={show}
-                    onHide={handleClose}
+                    onHide={() => { handleClose(); }}
                     backdrop="static"
                     keyboard={false}
                     centered
@@ -441,7 +464,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
                         </div>
                     </Modal.Body>
-                    <Modal.Footer>
+                    <Modal.Footer className={`${loading ? styles.load : ''}`} >
                         <div className={styles.footer1}>
                             <div className={styles.btn1}><Button className='btn-info '><a href="/QR5.jpg" download="QR.jpg">โหลดสลิป</a></Button></div>
                             <div className={styles.slipbtn}>
@@ -450,6 +473,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                 </label>
                                 <input
                                     style={{ display: 'none' }}
+                                    disabled={loading}
                                     id="file-input"
                                     type="file"
                                     accept="image/*"
@@ -467,6 +491,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                             </div>
 
                         </div>
+                        {/* <Button onClick={handleClose}>asdfsadf</Button> */}
                     </Modal.Footer>
                 </Modal>
 

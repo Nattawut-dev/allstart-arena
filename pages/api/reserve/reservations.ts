@@ -8,12 +8,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     if (req.method === 'GET') {
-      const query = 'SELECT id,name, court_id, time_slot_id,reserved_date, usedate ,start_time,end_time, price ,status FROM reserve';
-      const [reservations] = await connection.query(query);
-      res.json(reservations);
+      // ป้องการการ query วันที่ที่ไม่ต้องการให้เห็น 
 
-
-
+      const { usedate, parsedId } = req.query
+      const parsedIdInt = parseInt(parsedId as string)
+      if (parsedIdInt < 0 || parsedIdInt > 7 || !parsedId) {
+        res.status(405).json({ message: 'Not Allowed' });
+        return;
+      } else {
+        const query = 'SELECT id,name, court_id, time_slot_id,reserved_date, usedate ,start_time,end_time, price ,status FROM reserve WHERE usedate = ?';
+        const [reservations] = await connection.query(query, [usedate]);
+        res.json(reservations);
+      }
     }
     else if (req.method === 'POST') {
       try {

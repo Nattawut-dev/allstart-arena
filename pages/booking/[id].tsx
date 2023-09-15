@@ -87,30 +87,31 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     const [phone, setPhone] = useState('');
     const [error, setError] = useState('');
     const [time_slot_id, setTime_slot_id] = useState(0);
+    const dateInBangkok = utcToZonedTime(new Date(), timeZone);
+    const parsedId = parseInt(router.query.id as string)
+    const [isHoliday, setIsHoliday] = useState(false);
+
+    const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
 
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [foundHoliday, setFoundHoliday] = useState<Holidays[]>([])
 
 
-    const getReservations = async () => {
-        const response = await fetch(`/api/reserve/reservations`);
+    const getReservations = async (usedate: string) => {
+        const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
         const data = await response.json();
         setReservations(data);
     };
 
 
-    const dateInBangkok = utcToZonedTime(new Date(), timeZone);
-    const parsedId = parseInt(router.query.id as string)
-    const [isHoliday, setIsHoliday] = useState(false);
 
     useEffect(() => {
-        // check(parsedId)
         getHoliday();
-        getReservations();
+        const usedate = format(selectedDate, 'dd MMMM yyyy');
+        getReservations(usedate);
         selectDate(parsedId);
     }, [parsedId]);
 
-    const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
 
     const selectDate = (id: number) => {
         setSelectedDate(addDays(dateInBangkok, id))
@@ -146,9 +147,10 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         timeSlotId: number,
         startTime: string,
         endTime: string,
-        price: number
+        price: number,
+        usedate : string
     ) => {
-        const response = await fetch(`/api/reserve/reservations`);
+        const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
         const data: Reservation = await response.json();
         const reservation = data.find(
             (reservation: Reservation) =>
@@ -186,7 +188,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                 title: 'มีคนจองไปแล้ว'
             })
 
-            getReservations();
+            const usedate = format(selectedDate, 'dd MMMM yyyy');
+            getReservations(usedate);
         }
 
     };
@@ -293,7 +296,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                     // Reset form fields if needed
                     setName('');
                     setPhone('');
-                    getReservations();
+                    const usedate = format(selectedDate, 'dd MMMM yyyy');
+                    getReservations(usedate);
                     setError('');
                     setShow(false);
 
@@ -319,7 +323,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                     })
 
                 } else {
-                    getReservations();
+                    const usedate = format(selectedDate, 'dd MMMM yyyy');
+                    getReservations(usedate);
                     setError('');
                     setShow(false);
                     Swal.fire({
@@ -403,7 +408,6 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                                         const reservation = reservations.find(
                                                             (reservation) =>
                                                                 reservation.court_id === court.id &&
-                                                                reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
                                                                 (
                                                                     // (reservation.start_time >= timeSlot.start_time && reservation.start_time < timeSlot.end_time) ||  // กรณีการจองเริ่มต้นในช่วงเวลาที่กำหนด
                                                                     // (reservation.end_time > timeSlot.start_time && reservation.end_time <= timeSlot.end_time) ||  // กรณีการจองสิ้นสุดในช่วงเวลาที่กำหนด
@@ -424,7 +428,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                                                             timeSlot.id,
                                                                             timeSlot.start_time,
                                                                             timeSlot.end_time,
-                                                                            timeSlot.price
+                                                                            timeSlot.price,
+                                                                            format(selectedDate , 'dd MMMM yyyy')
                                                                         );
                                                                     }
                                                                 }}
