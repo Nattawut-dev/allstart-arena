@@ -98,8 +98,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     setShow(false);
   }
 
-  const getReservations = async () => {
-    const response = await fetch(`/api/reserve/reservations`);
+  const getReservations = async (usedate : string ) => {
+    const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
     const data = await response.json();
     setReservations(data);
   };
@@ -109,7 +109,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
   useEffect(() => {
     getHoliday();
-    getReservations();
+    const usedate = format(selectedDate, 'dd MMMM yyyy');
+    getReservations(usedate);
     selectDate(parsedId);
     checkAuthentication();
   }, [parsedId]);
@@ -150,9 +151,10 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     timeSlotId: number,
     startTime: string,
     endTime: string,
-    price : number
+    price : number,
+    usedate : string
   ) => {
-    const response = await fetch(`/api/reserve/reservations`);
+    const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
     const data : Reservation = await response.json();
     const reservation = data.find(
       (reservation: Reservation) =>
@@ -190,7 +192,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         title: 'มีคนจองไปแล้ว'
       })
       
-      getReservations();
+      const usedate = format(selectedDate, 'dd MMMM yyyy');
+      getReservations(usedate);
     }
 
   };
@@ -321,7 +324,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
             startvalue,
             endvalue,
             usedate: date,
-            price: price
+            price: price,
           }),
           headers: {
             'Content-Type': 'application/json',
@@ -332,7 +335,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
           // Reset form fields if needed
           setName('');
           setPhone('');
-          getReservations();
+          const usedate = format(selectedDate, 'dd MMMM yyyy');
+          getReservations(usedate);
           setShow(false);
 
           Toast.fire({
@@ -345,7 +349,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
             icon: 'error',
             title: 'เกิดข้อผิดพลาด'
           }).then(() => {
-            getReservations();
+            const usedate = format(selectedDate, 'dd MMMM yyyy');
+            getReservations(usedate);
 
           })
           console.error('Error submitting data');
@@ -484,6 +489,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                       timeSlot.start_time,
                                       timeSlot.end_time,
                                       timeSlot.price,
+                                      format(selectedDate , 'dd MMMM yyyy')
+
                                     );
                                   }
                                 }}

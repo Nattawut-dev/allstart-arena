@@ -354,7 +354,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                         </tr>
                                     );
                                 })}
-                            {reservations.filter(item => item.usedate === format(selectedDate, 'dd MMMM yyyy')).length === 0 &&
+                            {reservations.length === 0 &&
                                 <tr>
                                     <td colSpan={6}>ยังไม่มีการจอง</td>
                                 </tr>

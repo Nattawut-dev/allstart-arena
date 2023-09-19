@@ -17,7 +17,7 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const connection= await pool.getConnection()
+  const connection = await pool.getConnection()
 
   try {
     if (req.method !== 'POST') {
@@ -68,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch {
     return res.status(500).json({ error: 'Server error' });
-  }finally {
+  } finally {
     connection.release(); // Release the connection back to the pool when done
   }
 }
