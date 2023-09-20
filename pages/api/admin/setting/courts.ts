@@ -21,7 +21,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(201).json(result);
     } else if (req.method === 'PUT') {
       const { id, title, status } = req.body;
-
       await connection.query('UPDATE cord SET title = ?, status = ? WHERE id = ?', [title, status, id]);
       const [updatedCourt] = await connection.query('SELECT * FROM cord WHERE id = ?', [id]);
       res.status(200).json(updatedCourt);

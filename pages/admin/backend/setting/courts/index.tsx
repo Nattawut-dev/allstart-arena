@@ -227,7 +227,7 @@ const Home = () => {
         <h1>Court List</h1>
 
         <table className="table table-bordered table-striped  table-sm">
-          <thead>
+          <thead className='table-primary'>
             <tr>
               <th>#</th>
               <th>Court Title</th>

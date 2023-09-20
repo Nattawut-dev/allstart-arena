@@ -78,9 +78,9 @@ export default function Page({ buffet_setting }: Props) {
     if (name == '' || phone == '' || !nickname) {
       setError("กรุณากรอกฟิลให้ครบ")
       return;
-    }else if (!selectedFile) {
+    } else if (!selectedFile) {
       setError("กรุณาอัพโหลดภาพสลิป")
-    }else if (phone.length < 10) {
+    } else if (phone.length < 10) {
       setError("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 ตัว")
       return;
     }
@@ -225,7 +225,7 @@ export default function Page({ buffet_setting }: Props) {
           </div>
         } */}
         <div>
-          <p style={{ color: "red" , fontWeight : 'Bold' }}>{error}</p>
+          <p style={{ color: "red", fontWeight: 'Bold' }}>{error}</p>
         </div>
         <div className='row' >
           <Button className=' btn btn-success col' onClick={showQR}>ดู QR Code</Button>

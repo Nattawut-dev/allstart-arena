@@ -4,6 +4,7 @@ import styles from '@/styles/admin/tournament/Tournament.module.css';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
+import Head from 'next/head';
 
 interface ProtestData {
   id: number;
@@ -244,7 +245,7 @@ const ProtestPage: React.FC = () => {
     );
   }
 
-  if ( !isTournament ||  message != "Authenticated") {
+  if (!isTournament || message != "Authenticated") {
     return (
       <>
         <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
@@ -256,7 +257,9 @@ const ProtestPage: React.FC = () => {
 
   return (
     <AdminLayout>
-
+      <Head>
+        <title>Protest</title>
+      </Head>
       <div style={{ maxWidth: '1200px', textAlign: 'center', margin: 'auto' }}>
         <h4 className='d-flex flex-row ' style={{ width: 'fit-content' }}>
           <label htmlFor="status" className='text-nowrap mx-2 '>การประท้วง  : </label>

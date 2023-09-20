@@ -8,6 +8,7 @@ import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
 import { utcToZonedTime } from 'date-fns-tz';
 import AdminLayout from '@/components/AdminLayout';
+import Head from 'next/head';
 
 interface Reserve {
     id: number;
@@ -449,7 +450,9 @@ function Holiday() {
 
     return (
         <AdminLayout>
-
+            <Head>
+                <title>History reserveations</title>
+            </Head>
             <div className={styles.container}>
 
                 <div className={styles.box}>

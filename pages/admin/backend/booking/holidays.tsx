@@ -7,6 +7,7 @@ import styles from '@/styles/admin/holidays.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
+import Head from 'next/head';
 
 interface Holidays {
   id: number;
@@ -254,7 +255,9 @@ function Holiday() {
 
   return (
     <AdminLayout>
-
+      <Head>
+        <title>Holidays</title>
+      </Head>
       <div className={styles.container}>
 
         <div className={styles.box}>

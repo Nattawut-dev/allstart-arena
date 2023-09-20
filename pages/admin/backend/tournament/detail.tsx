@@ -5,6 +5,7 @@ import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { AiFillEdit } from "react-icons/ai";
 import AdminLayout from '@/components/AdminLayout';
+import Head from 'next/head';
 
 interface Detail {
     id: number;
@@ -373,6 +374,9 @@ function Detail() {
     }
     return (
         <AdminLayout>
+            <Head>
+                <title>Detail {`${level}`}</title>
+            </Head>
             <div style={{ textAlign: 'center', margin: 'auto' }}>
                 <div className='mb-1' style={{ justifyContent: 'center', textAlign: 'center', display: 'flex' }}>
                     <label htmlFor="status" className='text-nowrap mx-2 mt-1' >ผู้สมัครแข่ง :</label>

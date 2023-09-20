@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                 <Link href="/booking/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span> จองสนามแบดมินตัน</span> </li></Link>
                 <Link href="/reservations/0" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarAlt className='mx-1' /> <span>ข้อมูลการจอง</span> </li></Link>
                 <Link href="/booking/buffet" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>จองตีบุฟเฟ่ต์</span> </li></Link>
-                <Link href="/booking/buffet/info" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/info' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>ข้อมูลตีบุีฟเฟ่ต์</span> </li></Link>
+                <Link href="/booking/buffet/info" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/info' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>ข้อมูลตีบุฟเฟ่ต์</span> </li></Link>
 
               </ul>
             )}

@@ -4,6 +4,7 @@ import styles from '@/styles/admin/backend.module.css';
 import NotFoundPage from '@/pages/404';
 import Swal from 'sweetalert2'
 import AdminLayout from '@/components/AdminLayout';
+import Head from 'next/head';
 
 
 interface Rules {
@@ -242,6 +243,9 @@ export default function Welcome() {
 
     return (
         <AdminLayout>
+            <Head>
+                <title>Rules setting</title>
+            </Head>
             <div className={styles.Container}>
                 <h3>ตั้งค่ากฎ/ข้อมูลติดต่อ</h3>
 

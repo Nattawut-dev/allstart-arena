@@ -6,6 +6,7 @@ import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
+import Head from 'next/head';
 
 
 interface Reserve {
@@ -415,7 +416,9 @@ function Holiday() {
 
     return (
         <AdminLayout>
-
+            <Head>
+                <title>New reservations</title>
+            </Head>
             <div className={styles.container}>
 
                 <div className={styles.box}>

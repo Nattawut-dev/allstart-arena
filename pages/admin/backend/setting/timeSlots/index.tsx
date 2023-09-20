@@ -255,8 +255,8 @@ const TimeSlots = () => {
     <AdminLayout>
       <div className="container mt-5">
         <h1>Time Slots</h1>
-        <table className="table table-bordered table-striped  table-sm">
-          <thead>
+        <table className="table table-bordered table-striped  table-sm ">
+          <thead className='table-primary'>
             <tr>
               <th>#</th>
               <th>Time Slot Title</th>

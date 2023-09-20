@@ -54,6 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                 <Link href="/admin/backend/booking/holidays" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/holidays' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay /> <span>วันหยุด</span> </div></li></Link>
                 <Link href="/admin/backend/booking/new_reserved?state=1" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/new_reserved' ? styles.activeSubMenu : ''}`} ><div><MdFiberNew /> <span>การจองใหม่</span> </div></li></Link>
                 <Link href="/admin/backend/booking/bookinghistory" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/bookinghistory' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt /> <span>ค้นหาการจอง</span></div></li></Link>
+                <Link href="/admin/backend/booking/buffet" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/buffet' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt /> <span>บุฟเฟ่ต์</span></div></li></Link>
+
               </ul>
             )}
           </li>
@@ -78,7 +80,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             )}
           </li>
           <Link href="/admin/backend/setting/courts" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/setting/courts' ? styles.activeMenuItem : ''}`}> <div> <FaTh /> <span>คอร์ท</span></div> </li></Link>
-          <Link href="//admin/backend/setting/timeSlots" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/setting/timeSlots' ? styles.activeMenuItem : ''}`}> <div><FaRegClock /> <span>เวลา</span></div>  </li></Link>
+          <Link href="/admin/backend/setting/timeSlots" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/setting/timeSlots' ? styles.activeMenuItem : ''}`}> <div><FaRegClock /> <span>เวลา</span></div>  </li></Link>
+          <Link href="/admin/backend/setting/buffet" className={styles.link} ><li className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/setting/buffet' ? styles.activeMenuItem : ''}`}> <div><FaRegClock /> <span>บุฟเฟ่ต์</span></div>  </li></Link>
 
           <Link onClick={handleLogout} href="" className={styles.link} ><li className={`${styles['sub-menu-item']}`} > <div><FiLogOut /> <span>ออกจากระบบ</span></div>    </li></Link>
         </ul>

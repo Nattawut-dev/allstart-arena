@@ -5,6 +5,7 @@ import styles from '@/styles/admin/tournament/setting.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
+import Head from 'next/head';
 
 interface Tournament {
     id: number;
@@ -224,7 +225,7 @@ function Holiday() {
                     ordinal: ordinal2,
                     location: location2,
                     timebetween: timebetween2,
-                    max_team :max_team2
+                    max_team: max_team2
                 }),
             });
 
@@ -272,6 +273,9 @@ function Holiday() {
     }
     return (
         <AdminLayout>
+            <Head>
+                <title>Setting tournament</title>
+            </Head>
             <div className={styles.container}>
 
                 <div className={styles.box}>
