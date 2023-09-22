@@ -9,7 +9,7 @@ import { Button } from 'react-bootstrap';
 const Column = ({ tasks, index }) => {
     return (
         <div>
-            <Droppable droppableId={`col-${index}`} direction="horizontal">
+            <Droppable droppableId={`left-${index}`} direction="horizontal">
 
                 {/* <th >1</th>
                 <td>ณัฐวุฒิ (ปาน)</td>
@@ -22,6 +22,8 @@ const Column = ({ tasks, index }) => {
                     <Flex
                         p="0.5rem"
                         flexDir="row"
+                        bg="black"
+                        m={"10px"}
                         {...droppableProvided.droppableProps}
                         ref={droppableProvided.innerRef}
                     >

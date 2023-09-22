@@ -43,81 +43,6 @@ function buffet() {
     //   setLeftItems(newState);
     // };
 
-    const onDragEnd = (result: any) => {
-        if (!result.destination) return;
-
-        const { source, destination } = result;
-
-        if (source.droppableId === destination.droppableId) {
-            if (source.droppableId === 'col-0') {
-                const reorderedItems = Array.from(leftItems.T1);
-                const [removedItem] = reorderedItems.splice(source.index, 1);
-                reorderedItems.splice(destination.index, 0, removedItem);
-                const newState: any = {
-                    ...leftItems,
-                    T1: reorderedItems,
-                };
-                setLeftItems(newState);
-            } else if (source.droppableId === 'col-1') {
-                const reorderedItems = Array.from(leftItems.T2);
-                const [removedItem] = reorderedItems.splice(source.index, 1);
-                reorderedItems.splice(destination.index, 0, removedItem);
-                const newState: any = {
-                    ...leftItems,
-                    T2: reorderedItems,
-                };
-                setLeftItems(newState);
-            } else {
-                const reorderedItems = Array.from(rightItems.tasks);
-                const [removedItem] = reorderedItems.splice(source.index, 1);
-                reorderedItems.splice(destination.index, 0, removedItem);
-                const newState: any = {
-                    ...rightItems,
-                    tasks: reorderedItems,
-                };
-                setRightItems(newState);
-            }
-        } else {
-            let sourceItems;
-            let destinationItems;
-
-            if (source.droppableId === 'col-0') {
-                sourceItems = leftItems.T1;
-            } else if (source.droppableId === 'col-1') {
-                sourceItems = leftItems.T2;
-            } else {
-                sourceItems = rightItems.tasks;
-            }
-
-            if (destination.droppableId === 'col-0') {
-                destinationItems = leftItems.T1;
-            } else if (destination.droppableId === 'col-1') {
-                destinationItems = leftItems.T2;
-            } else {
-                destinationItems = rightItems.tasks;
-            }
-
-            const [movedItem] = sourceItems.splice(source.index, 1);
-            destinationItems.splice(destination.index, 0, movedItem);
-
-            const newLeftItems = {
-                ...leftItems
-            };
-
-            const newRightItems = {
-                ...rightItems
-
-            };
-
-            setLeftItems(newLeftItems);
-            setRightItems(newRightItems);
-        }
-        console.log("left", leftItems.T1);
-        console.log("right", rightItems.tasks);
-    };
-
-
-
     const elements = [];
     const numberOfProperties = Object.keys(leftItems).length;
     for (let i = 0; i < numberOfProperties; i++) {
@@ -127,6 +52,123 @@ function buffet() {
         console.log(entries[i][1])
         console.log(leftItems)
     }
+
+    const onDragEnd = (result: any) => {
+        if (!result.destination) return;
+
+        const { source, destination } = result;
+
+        if (source.droppableId === destination.droppableId) {
+            for (let i = 0; i < numberOfProperties; i++) {
+                if (source.droppableId === `left-${i}`) {
+                    const colName = `T${i}`;
+                    const reorderedItems = Array.from(Object.entries(leftItems)[i][1]);
+                    const [removedItem] = reorderedItems.splice(source.index, 1);
+                    reorderedItems.splice(destination.index, 0, removedItem);
+                    const newState: any = {
+                        ...leftItems,
+                        [colName]: reorderedItems,
+                    };
+                    setLeftItems(newState);
+                } else if (source.droppableId === `right`) {
+                    const reorderedItems = Array.from(rightItems.tasks);
+                    const [removedItem] = reorderedItems.splice(source.index, 1);
+                    reorderedItems.splice(destination.index, 0, removedItem);
+                    const newState: any = {
+                        ...rightItems,
+                        tasks: reorderedItems,
+                    };
+                    setRightItems(newState);
+                }
+            }
+            // if (source.droppableId === 'col-0') {
+            //     const reorderedItems = Array.from(leftItems.T0);
+            //     const [removedItem] = reorderedItems.splice(source.index, 1);
+            //     reorderedItems.splice(destination.index, 0, removedItem);
+            //     const newState: any = {
+            //         ...leftItems,
+            //         T0: reorderedItems,
+            //     };
+            //     setLeftItems(newState);
+            // } else if (source.droppableId === 'col-1') {
+            //     const reorderedItems = Array.from(leftItems.T1);
+            //     const [removedItem] = reorderedItems.splice(source.index, 1);
+            //     reorderedItems.splice(destination.index, 0, removedItem);
+            //     const newState: any = {
+            //         ...leftItems,
+            //         T1: reorderedItems,
+            //     };
+            //     setLeftItems(newState);
+            // } else {
+            //     const reorderedItems = Array.from(rightItems.tasks);
+            //     const [removedItem] = reorderedItems.splice(source.index, 1);
+            //     reorderedItems.splice(destination.index, 0, removedItem);
+            //     const newState: any = {
+            //         ...rightItems,
+            //         tasks: reorderedItems,
+            //     };
+            //     setRightItems(newState);
+            // }
+        } else {
+
+            // if (source.droppableId === 'left-0') {
+            //     sourceItems = leftItems.T0;
+            // } else if (source.droppableId === 'left-1') {
+            //     sourceItems = leftItems.T1;
+            // } else {
+            //     sourceItems = rightItems.tasks;
+            // }
+
+            // if (destination.droppableId === 'left-0') {
+            //     destinationItems = leftItems.T0;
+            // } else if (destination.droppableId === 'left-1') {
+            //     destinationItems = leftItems.T1;
+            // } else {
+            //     destinationItems = rightItems.tasks;
+            // }
+            let sourceItems: any = [];
+            let destinationItems: any = [];
+
+            for (let i = 0; i < numberOfProperties; i++) {
+                if (source.droppableId === 'right') {
+                    sourceItems = rightItems.tasks;
+
+                } else if (source.droppableId === `left-${i}`) {
+                    sourceItems = Object.entries(leftItems)[i][1];
+                }
+                if (destination.droppableId === 'right') {
+                    destinationItems = rightItems.tasks;
+                }
+                else if (destination.droppableId === `left-${i}`) {
+                    destinationItems = Object.entries(leftItems)[i][1];
+                }
+            }
+
+            const [movedItem] = sourceItems.splice(source.index, 1);
+            destinationItems.splice(destination.index, 0, movedItem);
+
+
+
+            const newLeftItems = {
+                ...leftItems
+            };
+
+            const newRightItems = {
+                ...rightItems
+            };
+
+            setLeftItems(newLeftItems);
+            setRightItems(newRightItems);
+
+            console.log("left", newLeftItems.T0); // เปลี่ยนเป็น newLeftItems.T{i} ตามที่คุณต้องการ
+            console.log("right", newRightItems.tasks);
+
+        }
+    };
+
+
+
+
 
     return (
         <AdminLayout>
@@ -165,7 +207,7 @@ function buffet() {
                         </div>
                         <div className='col me-5 bg-dark-subtle' >
                             <ColumsRight tasks={rightItems.tasks} />
-                            {/* <Column placeholderProps={placeholderProps} tasks1={leftItems.T1} tasks2={rightItems.tasks} /> */}
+                            {/* <Column placeholderProps={placeholderProps} tasks1={leftItems.T0} tasks2={rightItems.tasks} /> */}
                         </div>
                     </div>
                 </div>
@@ -174,12 +216,12 @@ function buffet() {
     )
 }
 const initialLeftItems = {
-    T1: [
+    T0: [
         { id: 1, content: 'Item 1' },
         { id: 2, content: 'Item 2' },
         { id: 3, content: 'Item 3' },
     ],
-    T2: [
+    T1: [
         { id: 7, content: 'Item 7' },
         { id: 8, content: 'Item 8' },
         { id: 9, content: 'Item 9' },
