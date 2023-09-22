@@ -1,47 +1,62 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import AdminLayout from '@/components/AdminLayout';
 import { Button } from 'react-bootstrap';
 import dynamic from 'next/dynamic';
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
-const Column = dynamic(() => import("./colums"), { ssr: false });
 const ColumsLeft = dynamic(() => import("./columsLeft"), { ssr: false });
 const ColumsRight = dynamic(() => import("./columsRight"), { ssr: false });
 
+interface Buffet {
+    id: number;
+    name: string;
+    nickname: string;
+    usedate: string;
+    phone: string;
+    price: number;
+    shuttle_cock: number;
+    paymentStatus: number;
+    paymentSlip: string;
+    regisDate: string;
+}
 function buffet() {
-    // const [state1, setState1] = useState(initialLeftItems);
-    // const [state2, setState2] = useState(initialRightItems);
-    const [leftItems, setLeftItems] = React.useState(initialLeftItems);
-    const [rightItems, setRightItems] = React.useState(initialRightItems);
+    const [state1, setState1] = useState(initialLeftItems);
+    const [state2, setState2] = useState<Buffet>();
+    const [leftItems, setLeftItems] = useState<Object>(initialLeftItems);
+    const [rightItems, setRightItems] = useState<any>(initialRightItems);
 
     const [placeholderProps, setPlaceholderProps] = useState({});
 
+    const fetchRegis = async () => {
+        try {
+            const res = await fetch(`/api/admin/buffet/getRegis`)
+            const data = await res.json()
+            setState2(data);
+            console.log("432432432432", rightItems)
 
-    // const onDragEnd = (result: any) => {
-    //   const { source, destination } = result;
+            // รวมข้อมูลใน data ก่อน
+            const newTasks = data.map((item : Buffet) => ({
+                id: item.id,
+                content: item.name,
+            }));
 
-    //   // if the user drops outside of a droppable destination
-    //   if (!destination) return;
+            // อัปเดต rightItems โดยรวมข้อมูลใหม่เข้าไป
+            const newRightItems = {
+                ...rightItems,
+                tasks: [...rightItems.tasks, ...newTasks],
+            };
 
-    //   // If the user drags and drops back in the same position
-    //   if (
-    //     destination.droppableId === source.droppableId &&
-    //     destination.index === source.index
+            setRightItems(newRightItems);
 
-    //   ) {
-    //     return;
-    //   }
-    //   // If the user drops in a different postion
-    //   console.log(source, destination)
-    //   const { tasks } = leftItems;
-    //   const newTasks = reorderTasks(tasks, source.index, destination.index);
+            console.log("darattrda", newRightItems)
+        } catch (error) {
+            console.error(error)
+        }
 
-    //   const newState: any = {
-    //     ...leftItems,
-    //     tasks: newTasks,
-    //   };
-    //   setLeftItems(newState);
-    // };
+    }
+    useEffect(() => {
+        fetchRegis();
+    }, [])
 
     const elements = [];
     const numberOfProperties = Object.keys(leftItems).length;
@@ -62,7 +77,8 @@ function buffet() {
             for (let i = 0; i < numberOfProperties; i++) {
                 if (source.droppableId === `left-${i}`) {
                     const colName = `T${i}`;
-                    const reorderedItems = Array.from(Object.entries(leftItems)[i][1]);
+                    const entries = Object.entries(leftItems)
+                    const reorderedItems = Array.from(entries[i][1]);
                     const [removedItem] = reorderedItems.splice(source.index, 1);
                     reorderedItems.splice(destination.index, 0, removedItem);
                     const newState: any = {
@@ -160,7 +176,7 @@ function buffet() {
             setLeftItems(newLeftItems);
             setRightItems(newRightItems);
 
-            console.log("left", newLeftItems.T0); // เปลี่ยนเป็น newLeftItems.T{i} ตามที่คุณต้องการ
+            // console.log("left", newLeftItems.T0); // เปลี่ยนเป็น newLeftItems.T{i} ตามที่คุณต้องการ
             console.log("right", newRightItems.tasks);
 
         }
@@ -217,22 +233,20 @@ function buffet() {
 }
 const initialLeftItems = {
     T0: [
-        { id: 1, content: 'Item 1' },
-        { id: 2, content: 'Item 2' },
-        { id: 3, content: 'Item 3' },
+        { id: 100, content: 'Item 1' },
+        { id: 200, content: 'Item 2' },
+        { id: 300, content: 'Item 3' },
     ],
     T1: [
-        { id: 7, content: 'Item 7' },
-        { id: 8, content: 'Item 8' },
-        { id: 9, content: 'Item 9' },
+        { id: 7400, content: 'Item 7' },
+        { id: 800, content: 'Item 8' },
+        { id: 900, content: 'Item 9' },
     ],
 }
 
 const initialRightItems = {
     tasks: [
-        { id: 4, content: 'Item 4' },
-        { id: 5, content: 'Item 5' },
-        { id: 6, content: 'Item 6' },
+ 
     ],
 }
 export default buffet
