@@ -1,72 +1,85 @@
 
 import { Center, Flex, Text } from "@chakra-ui/react";
-import { th } from "date-fns/locale";
+import { th, tr } from "date-fns/locale";
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Droppable } from "react-beautiful-dnd";
 import { Button } from 'react-bootstrap';
 
-const Column = ({ tasks, index }) => {
+const Column = ({ tasks, index}) => {
     return (
-        <div>
+        <div style={{ width: '700px' }}>
             <Droppable droppableId={`left-${index}`} direction="horizontal">
-
-                {/* <th >1</th>
-                <td>ณัฐวุฒิ (ปาน)</td>
-                <td>ณัฐวุฒิ (ปาน)</td>
-                <td>ณัฐวุฒิ (ปาน)</td>
-                <td>ณัฐวุฒิ (ปาน)</td>
-                <td ><Button className='btn btn-sm'>Endgame</Button></td> */}
-
                 {(droppableProvided) => (
+
                     <Flex
-                        p="0.5rem"
-                        flexDir="row"
-                        bg="black"
-                        m={"10px"}
+                        maxWidth={"100%"}
+                        height={"45px"}
                         {...droppableProvided.droppableProps}
                         ref={droppableProvided.innerRef}
                     >
                         {tasks.map((task, index) => (
-                            <Draggable
-                                key={task.id}
-                                draggableId={task.id.toString()}
-                                index={index}
-                            >
-                                {(draggableProvided, draggableSnapshot) => (
+                            <>
+                                <Draggable
+                                    key={task.id}
+                                    draggableId={task.id.toString()}
+                                    index={index}
+                                >
+                                    {(draggableProvided, draggableSnapshot) => (
+                                        <Flex
+                                            m={"0.2rem"}
+                                            p={"0"}
+                                            width={"150px"}
+                                            bg={draggableSnapshot.isDragging ? "lightblue" : "white"}
+                                            rounded="3px"
+                                            textAlign="center"
+                                            _active={{ bg: "white" }}
+                                            outline="0px solid transparent"
+                                            outlineColor={
+                                                draggableSnapshot.isDragging ? "blue" : ""
+                                            }
+                                            boxShadow={
+                                                draggableSnapshot.isDragging
+                                                    ? "0 5px 10px rgba(0, 0, 0, 0.6)"
+                                                    : "unset"
+                                            }
+                                            align="center"
+                                            flexDirection={"column"}
+                                            zIndex={1}
+                                            {...draggableProvided.dragHandleProps}
+                                            {...draggableProvided.draggableProps}
+                                            ref={draggableProvided.innerRef}
+                                        >
+                                            <span className="p-1 fs-6">{task.content}</span>
+                                        </Flex>
+                                    )}
+                                </Draggable>
+                                {index === 1 && (
+
                                     <Flex
-                                        h="auto"
-                                        m={"0.5rem"}
-                                        bg="white"
+                                        m={"0.2rem"}
+                                        p={"0"}
+                                        width={"50px"}
                                         rounded="3px"
                                         textAlign="center"
                                         _active={{ bg: "white" }}
-                                        outline="2px solid "
-                                        outlineColor={
-                                            draggableSnapshot.isDragging
-                                                ? "card-border"
-                                                : "transparent"
-                                        }
-                                        boxShadow={
-                                            draggableSnapshot.isDragging
-                                                ? "0 5px 10px rgba(0, 0, 0, 0.6)"
-                                                : "unset"
-                                        }
-                                        align="center"
-                                        zIndex={1}
-                                        {...draggableProvided.dragHandleProps}
-                                        {...draggableProvided.draggableProps}
-                                        ref={draggableProvided.innerRef}
-                                    >
-                                        <Text fontSize="20px" >{task.content}</Text>
+                                        outline="0px solid transparent"
 
+                                        align="center"
+                                        flexDirection={"column"}
+                                        zIndex={1}
+
+                                    >
+                                        <span className="p-1 fs-5 text-white fw-bold">VS</span>
                                     </Flex>
 
 
                                 )}
-                            </Draggable>
+
+                            </>
                         ))}
                         {droppableProvided.placeholder}
+
                     </Flex>
                 )}
             </Droppable>

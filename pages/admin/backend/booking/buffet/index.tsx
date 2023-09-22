@@ -22,7 +22,7 @@ interface Buffet {
 function buffet() {
     const [state1, setState1] = useState(initialLeftItems);
     const [state2, setState2] = useState<Buffet>();
-    const [leftItems, setLeftItems] = useState<Object>(initialLeftItems);
+    const [leftItems, setLeftItems] = useState<LeftItemsType>(initialLeftItems);
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
 
     const [placeholderProps, setPlaceholderProps] = useState({});
@@ -32,12 +32,11 @@ function buffet() {
             const res = await fetch(`/api/admin/buffet/getRegis`)
             const data = await res.json()
             setState2(data);
-            console.log("432432432432", rightItems)
 
             // รวมข้อมูลใน data ก่อน
-            const newTasks = data.map((item : Buffet) => ({
+            const newTasks = data.map((item: Buffet) => ({
                 id: item.id,
-                content: item.name,
+                content: `${item.name}(${item.nickname})`,
             }));
 
             // อัปเดต rightItems โดยรวมข้อมูลใหม่เข้าไป
@@ -48,7 +47,6 @@ function buffet() {
 
             setRightItems(newRightItems);
 
-            console.log("darattrda", newRightItems)
         } catch (error) {
             console.error(error)
         }
@@ -62,13 +60,43 @@ function buffet() {
     const numberOfProperties = Object.keys(leftItems).length;
     for (let i = 0; i < numberOfProperties; i++) {
         const entries = Object.entries(leftItems)
+        const colName = `T${i}`;
+        const colNameunder = `T${i + 1}`;
 
-        elements.push(<ColumsLeft key={i} tasks={entries[i][1]} index={i} />)
-        console.log(entries[i][1])
-        console.log(leftItems)
+        elements.push(
+            <div className='d-flex flex-row mb-1 p-1' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px' }}>
+                <ColumsLeft key={i} tasks={entries[i][1]} index={i} />
+                <Button onClick={() => clearArray(entries[i][1], i)}>Clear</Button>
+            </div>
+        )
+
     }
+    const clearArray = (value: any, index: number) => {
 
-    const onDragEnd = (result: any) => {
+        const updatedLeftItems: Record<string, any> = { ...leftItems };
+
+        for (let i = index; i < numberOfProperties - 1; i++) {
+            const currentColName = `T${i}`;
+            const nextColName = `T${i + 1}`;
+
+            // Copy data from the next column to the current column
+            updatedLeftItems[currentColName] = [...leftItems[nextColName]];
+
+            // Clear the next column
+            updatedLeftItems[nextColName] = [];
+        }
+        setLeftItems(updatedLeftItems);
+
+        const updatedRightItems = {
+            ...rightItems,
+            tasks: [...rightItems.tasks, ...value],
+        };
+
+        // Set the updated state for both leftItems and rightItems
+        setRightItems(updatedRightItems);
+    };
+
+    const onDragEnd = async (result: any) => {
         if (!result.destination) return;
 
         const { source, destination } = result;
@@ -86,6 +114,34 @@ function buffet() {
                         [colName]: reorderedItems,
                     };
                     setLeftItems(newState);
+                    const updatedLeftItems: Record<string, any> = { ...newState };
+                    console.log()
+                    try {
+                        const response = await fetch('/api/your-api-route', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                id: i,
+                                player_1: updatedLeftItems[colName][0].content,
+                                player_2: updatedLeftItems[colName][1].content,
+                                player_3: updatedLeftItems[colName][2].content,
+                                player_4: updatedLeftItems[colName][3].content,
+                                T_value: colName
+
+                            }),
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log(data.message); // ข้อมูลที่ส่งกลับจาก API
+                        } else {
+                            console.error('มีข้อผิดพลาดในการเรียก API');
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
                 } else if (source.droppableId === `right`) {
                     const reorderedItems = Array.from(rightItems.tasks);
                     const [removedItem] = reorderedItems.splice(source.index, 1);
@@ -97,89 +153,32 @@ function buffet() {
                     setRightItems(newState);
                 }
             }
-            // if (source.droppableId === 'col-0') {
-            //     const reorderedItems = Array.from(leftItems.T0);
-            //     const [removedItem] = reorderedItems.splice(source.index, 1);
-            //     reorderedItems.splice(destination.index, 0, removedItem);
-            //     const newState: any = {
-            //         ...leftItems,
-            //         T0: reorderedItems,
-            //     };
-            //     setLeftItems(newState);
-            // } else if (source.droppableId === 'col-1') {
-            //     const reorderedItems = Array.from(leftItems.T1);
-            //     const [removedItem] = reorderedItems.splice(source.index, 1);
-            //     reorderedItems.splice(destination.index, 0, removedItem);
-            //     const newState: any = {
-            //         ...leftItems,
-            //         T1: reorderedItems,
-            //     };
-            //     setLeftItems(newState);
-            // } else {
-            //     const reorderedItems = Array.from(rightItems.tasks);
-            //     const [removedItem] = reorderedItems.splice(source.index, 1);
-            //     reorderedItems.splice(destination.index, 0, removedItem);
-            //     const newState: any = {
-            //         ...rightItems,
-            //         tasks: reorderedItems,
-            //     };
-            //     setRightItems(newState);
-            // }
         } else {
 
-            // if (source.droppableId === 'left-0') {
-            //     sourceItems = leftItems.T0;
-            // } else if (source.droppableId === 'left-1') {
-            //     sourceItems = leftItems.T1;
-            // } else {
-            //     sourceItems = rightItems.tasks;
-            // }
-
-            // if (destination.droppableId === 'left-0') {
-            //     destinationItems = leftItems.T0;
-            // } else if (destination.droppableId === 'left-1') {
-            //     destinationItems = leftItems.T1;
-            // } else {
-            //     destinationItems = rightItems.tasks;
-            // }
-            let sourceItems: any = [];
-            let destinationItems: any = [];
-
+            let sourceItems = [];
+            let destinationItems = [];
+            if (destination > 4) {
+                return;
+            }
             for (let i = 0; i < numberOfProperties; i++) {
                 if (source.droppableId === 'right') {
                     sourceItems = rightItems.tasks;
-
                 } else if (source.droppableId === `left-${i}`) {
                     sourceItems = Object.entries(leftItems)[i][1];
                 }
+
                 if (destination.droppableId === 'right') {
                     destinationItems = rightItems.tasks;
-                }
-                else if (destination.droppableId === `left-${i}`) {
+                } else if (destination.droppableId === `left-${i}`) {
                     destinationItems = Object.entries(leftItems)[i][1];
                 }
             }
-
-            const [movedItem] = sourceItems.splice(source.index, 1);
-            destinationItems.splice(destination.index, 0, movedItem);
-
-
-
-            const newLeftItems = {
-                ...leftItems
-            };
-
-            const newRightItems = {
-                ...rightItems
-            };
-
-            setLeftItems(newLeftItems);
-            setRightItems(newRightItems);
-
-            // console.log("left", newLeftItems.T0); // เปลี่ยนเป็น newLeftItems.T{i} ตามที่คุณต้องการ
-            console.log("right", newRightItems.tasks);
-
+            if (destinationItems.length < 4 || destination.droppableId === 'right') {
+                const [movedItem] = sourceItems.splice(source.index, 1);
+                destinationItems.splice(destination.index, 0, movedItem);
+            }
         }
+        console.log(leftItems)
     };
 
 
@@ -189,41 +188,20 @@ function buffet() {
     return (
         <AdminLayout>
             <DragDropContext onDragEnd={onDragEnd}>
-                <div className='container-fluid text-center'>
+                <div className='container-fluid text-center' style={{ overflow: 'hidden' }}>
+                    <h4>จัดคิวตีบุฟเฟ่ต์</h4>
                     <div className='row'>
-                        {/* 
-                        <table className="table table-bordered table-striped  table-sm col me-5">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Q</th>
-                                    <th scope="col">Player 1</th>
-                                    <th scope="col">Player 2</th>
-                                    <th scope="col">Player 3</th>
-                                    <th scope="col">Player 4</th>
-                                    <th scope="col">Action</th>
 
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th scope="row">1</th>
-                                    <td>ณัฐวุฒิ (ปาน)</td>
-                                    <td>ณัฐวุฒิ (ปาน)</td>
-                                    <td>ณัฐวุฒิ (ปาน)</td>
-                                    <td>ณัฐวุฒิ (ปาน)</td>
-                                    <td ><Button className='btn btn-sm'>Endgame</Button></td>
-                                </tr>
-
-                            </tbody>
-                        </table> */}
-
-
-                        <div className='col me-5 bg-dark-subtle' >
+                        <div className='col me-3 p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px' }}>
+                            <h6 className='fw-bold bg-primary text-white rounded p-1' >คิวการเล่น</h6>
                             {elements}
                         </div>
-                        <div className='col me-5 bg-dark-subtle' >
+                        <div className='col  p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px' }}>
+                            <h6 className='fw-bold bg-primary text-white rounded p-1' >ผู้จองตีบุฟเฟต์วันนี้</h6>
+                            {rightItems.tasks.length === 0 && (
+                                <div style={{ color: 'red', fontWeight: 'bold' }}>ไม่พบข้อมูล</div>
+                            )}
                             <ColumsRight tasks={rightItems.tasks} />
-                            {/* <Column placeholderProps={placeholderProps} tasks1={leftItems.T0} tasks2={rightItems.tasks} /> */}
                         </div>
                     </div>
                 </div>
@@ -231,22 +209,45 @@ function buffet() {
         </AdminLayout>
     )
 }
-const initialLeftItems = {
+interface LeftItemsType {
+    [key: string]: string[];
+}
+const initialLeftItems: LeftItemsType = {
     T0: [
-        { id: 100, content: 'Item 1' },
-        { id: 200, content: 'Item 2' },
-        { id: 300, content: 'Item 3' },
+
     ],
     T1: [
-        { id: 7400, content: 'Item 7' },
-        { id: 800, content: 'Item 8' },
-        { id: 900, content: 'Item 9' },
+
+    ],
+    T2: [
+
+    ],
+    T3: [
+
+    ],
+    T4: [
+
+    ],
+    T5: [
+
+    ],
+    T6: [
+
+    ],
+    T7: [
+
+    ],
+    T8: [
+
+    ],
+    T9: [
+
     ],
 }
 
 const initialRightItems = {
     tasks: [
- 
+
     ],
 }
 export default buffet
