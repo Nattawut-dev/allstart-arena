@@ -2,13 +2,13 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import Sidebar from './AdminSidebar';
 import Topbar from './AdminTopbar';
 import styles from './styles/admin/AdminLayout.module.css';
+import { useRouter } from 'next/router';
 
 type LayoutProps = {
   children: ReactNode;
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-
   useEffect(() => {
     setIsSidebarOpen(window.innerWidth >= 768);
   }, []);
@@ -35,3 +35,5 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 };
 
 export default Layout;
+
+

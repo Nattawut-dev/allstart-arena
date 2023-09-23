@@ -2,8 +2,22 @@ import { Flex, Text } from "@chakra-ui/react";
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Droppable } from "react-beautiful-dnd";
-
-const Column = ({ tasks }) => {
+export async function getServerSideProps() {
+    try {
+        const response = await fetch(`${process.env.HOSTNAME}/api/admin/check-auth`, { method: 'GET' });
+        if (response.redirected) {
+            return {
+                redirect: {
+                    destination: response.url,
+                    permanent: false,
+                },
+            };
+        }
+    } catch (error) {
+        console.error('Error while checking authentication', error);
+    }
+}
+const Column = ({ tasks }: any) => {
     return (
         <div>
             <Droppable droppableId={`right`} direction="horizontal" >
@@ -19,7 +33,7 @@ const Column = ({ tasks }) => {
                             gap: "0.1rem",
                         }}
                     >
-                        {tasks.map((task, index) => (
+                        {tasks.map((task: any, index: any) => (
                             <Draggable
                                 key={task.id}
                                 draggableId={task.id.toString()}

@@ -1,12 +1,25 @@
 
-import { Center, Flex, Text } from "@chakra-ui/react";
-import { th, tr } from "date-fns/locale";
+import { Flex } from "@chakra-ui/react";
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Droppable } from "react-beautiful-dnd";
-import { Button } from 'react-bootstrap';
+export async function getServerSideProps() {
+    try {
+        const response = await fetch(`${process.env.HOSTNAME}/api/admin/check-auth`, { method: 'GET' });
+        if (response.redirected) {
+            return {
+                redirect: {
+                    destination: response.url,
+                    permanent: false,
+                },
+            };
+        }
+    } catch (error) {
+        console.error('Error while checking authentication', error);
+    }
+}
 
-const Column = ({ tasks, index}) => {
+const Column = ({ tasks, index }: any) => {
     return (
         <div style={{ width: '700px' }}>
             <Droppable droppableId={`left-${index}`} direction="horizontal">
@@ -18,7 +31,7 @@ const Column = ({ tasks, index}) => {
                         {...droppableProvided.droppableProps}
                         ref={droppableProvided.innerRef}
                     >
-                        {tasks.map((task, index) => (
+                        {tasks.map((task: any, index: number) => (
                             <>
                                 <Draggable
                                     key={task.id}

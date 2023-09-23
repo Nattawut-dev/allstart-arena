@@ -1,6 +1,50 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '@/styles/admin/login.module.css'
+
+// export async function getServerSideProps() {
+//     try {
+//         const response = await fetch(`${process.env.HOSTNAME}/api/admin/check-auth`, { method: 'GET' });
+//         if (response.redirected) {
+//             return {
+//                 redirect: {
+//                     destination: response.url,
+//                     permanent: false,
+//                 },
+//             };
+//         }else {
+//             return {
+//                 redirect: {
+//                     destination: `${process.env.HOSTNAME}/admin/backend`,
+//                     permanent: false,
+//                 },
+//             };
+//         }
+//     } catch (error) {
+//         console.error('Error while checking authentication', error);
+//     }
+// }
+export async function getServerSideProps({ req }: any) {
+    const token = req.cookies.token;
+    // Get the session token from the request cookies
+
+    if (!token) {
+        return {
+            props: {
+
+            }
+        }
+    } else {
+        return {
+            redirect: {
+                destination: '/admin/backend',
+                permanent: false,
+            },
+        };
+
+    }
+}
+
 export default function Login() {
 
     const router = useRouter()
@@ -36,25 +80,10 @@ export default function Login() {
 
 
     const checkAuthentication = async () => {
-        try {
-            const response = await fetch('/api/admin/check-auth', {
-                method: 'GET',
-                credentials: 'include', // Include cookies in the request
-            });
+        const response = await fetch(`/api/admin/check-auth`, { method: 'GET' });
 
-            const data = await response.json();
-            if (response.ok) {
-                router.push('/admin/backend')
-            } else {
-                // Redirect to the login page if the user is not authenticated
-                router.push('/admin/login')
-                return;
-            }
+        console.log(response.redirected)
 
-        } catch (error) {
-            console.error('Error while checking authentication', error);
-            setMessage('An error occurred. Please try again later.');
-        }
     };
 
     useEffect(() => {

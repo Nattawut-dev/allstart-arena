@@ -50,6 +50,7 @@ export default function Welcome() {
                 });
 
                 const data = await response.json();
+                console.log(response)
                 if (response.ok) {
                     setMessage(data.message);
                 } else {
