@@ -8,7 +8,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     try {
         const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
         const usedate = format(dateInBangkok, 'dd MMMM yyyy')
-        const query = 'SELECT * FROM buffet';
+        const query = `SELECT buffet.*, 
+        CASE 
+            WHEN current_buffet_q.id IS NULL THEN NULL
+            ELSE current_buffet_q.T_value
+        END AS T_value
+ FROM buffet
+ LEFT JOIN current_buffet_q ON buffet.q_id = current_buffet_q.id 
+         WHERE buffet.usedate = ?; `;
 
         // Execute the SQL query to fetch time slots
         const [results] = await connection.query(query, [usedate]);

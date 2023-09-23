@@ -15,9 +15,12 @@ interface Buffet {
     phone: string;
     price: number;
     shuttle_cock: number;
+    q_id: number;
+    q_list: number;
     paymentStatus: number;
     paymentSlip: string;
     regisDate: string;
+    T_value: string;
 }
 function buffet() {
     const [state1, setState1] = useState(initialLeftItems);
@@ -27,25 +30,48 @@ function buffet() {
 
     const [placeholderProps, setPlaceholderProps] = useState({});
 
+    const elements = [];
+    const numberOfProperties = Object.keys(leftItems).length;
+
     const fetchRegis = async () => {
         try {
             const res = await fetch(`/api/admin/buffet/getRegis`)
             const data = await res.json()
             setState2(data);
 
-            // รวมข้อมูลใน data ก่อน
-            const newTasks = data.map((item: Buffet) => ({
+            const notQdata = data.filter((item: Buffet) => item.q_id === null);
+            const newTasks = notQdata.map((item: Buffet) => ({
                 id: item.id,
                 content: `${item.name}(${item.nickname})`,
             }));
-
-            // อัปเดต rightItems โดยรวมข้อมูลใหม่เข้าไป
             const newRightItems = {
                 ...rightItems,
                 tasks: [...rightItems.tasks, ...newTasks],
             };
-
             setRightItems(newRightItems);
+
+            const newLeftItems = { ...leftItems };
+
+            for (let i = 0; i < numberOfProperties; i++) {
+                const colname = `T${i}`;
+
+                // กรองข้อมูลที่มี q_id เท่ากับ i
+                const QData = data.filter((item: Buffet) => item.q_id !== null && item.q_id === i);
+
+                // แปลงข้อมูลที่ผ่านการกรองเป็นรูปแบบที่ต้องการ
+                const newTasksLeft = QData.map((item: Buffet) => ({
+                    id: item.id,
+                    content: `${item.name}(${item.nickname})`,
+                    q_list: item.q_list || 0, // ใช้ 0 ถ้า q_list ไม่มีค่า
+                }));
+
+                newTasksLeft.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
+                newLeftItems[colname] = newTasksLeft;
+            }
+
+            setLeftItems(newLeftItems);
+
+
 
         } catch (error) {
             console.error(error)
@@ -56,13 +82,9 @@ function buffet() {
         fetchRegis();
     }, [])
 
-    const elements = [];
-    const numberOfProperties = Object.keys(leftItems).length;
+
     for (let i = 0; i < numberOfProperties; i++) {
         const entries = Object.entries(leftItems)
-        const colName = `T${i}`;
-        const colNameunder = `T${i + 1}`;
-
         elements.push(
             <div className='d-flex flex-row mb-1 p-1' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px' }}>
                 <ColumsLeft key={i} tasks={entries[i][1]} index={i} />
@@ -91,8 +113,6 @@ function buffet() {
             ...rightItems,
             tasks: [...rightItems.tasks, ...value],
         };
-
-        // Set the updated state for both leftItems and rightItems
         setRightItems(updatedRightItems);
     };
 
@@ -105,7 +125,7 @@ function buffet() {
             for (let i = 0; i < numberOfProperties; i++) {
                 if (source.droppableId === `left-${i}`) {
                     const colName = `T${i}`;
-                    const entries = Object.entries(leftItems)
+                    const entries = Object.entries(leftItems);
                     const reorderedItems = Array.from(entries[i][1]);
                     const [removedItem] = reorderedItems.splice(source.index, 1);
                     reorderedItems.splice(destination.index, 0, removedItem);
@@ -113,35 +133,10 @@ function buffet() {
                         ...leftItems,
                         [colName]: reorderedItems,
                     };
-                    setLeftItems(newState);
-                    const updatedLeftItems: Record<string, any> = { ...newState };
-                    console.log()
-                    try {
-                        const response = await fetch('/api/your-api-route', {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                id: i,
-                                player_1: updatedLeftItems[colName][0].content,
-                                player_2: updatedLeftItems[colName][1].content,
-                                player_3: updatedLeftItems[colName][2].content,
-                                player_4: updatedLeftItems[colName][3].content,
-                                T_value: colName
-
-                            }),
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            console.log(data.message); // ข้อมูลที่ส่งกลับจาก API
-                        } else {
-                            console.error('มีข้อผิดพลาดในการเรียก API');
-                        }
-                    } catch (error) {
-                        console.error(error);
+                    for (let i = 0; i < reorderedItems.length; i++) {
+                        newState[colName][i].q_list = i + 1
                     }
+                    setLeftItems(newState);
                 } else if (source.droppableId === `right`) {
                     const reorderedItems = Array.from(rightItems.tasks);
                     const [removedItem] = reorderedItems.splice(source.index, 1);
@@ -176,9 +171,15 @@ function buffet() {
             if (destinationItems.length < 4 || destination.droppableId === 'right') {
                 const [movedItem] = sourceItems.splice(source.index, 1);
                 destinationItems.splice(destination.index, 0, movedItem);
+                
+                for (let i = 0; i < destinationItems.length; i++) {
+                    destinationItems[i].q_list = i + 1
+                }
+                console.log("destination" ,destination.index  ,"source" ,source  ,"destinationItems" ,destinationItems)
+                console.log(leftItems)
+
             }
         }
-        console.log(leftItems)
     };
 
 
