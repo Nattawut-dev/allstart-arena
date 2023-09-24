@@ -5,8 +5,9 @@ import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
-import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
+import dynamic from 'next/dynamic';
+const AdminLayout = dynamic(() => import('@/components/AdminLayout'));
 
 
 interface Reserve {
@@ -37,6 +38,23 @@ interface TimeSlot {
     price: number;
 }
 
+export const getServerSideProps = async ({ req }: any) => {
+    const sessiontoken = req.cookies.sessionToken;
+
+    if (!sessiontoken) {
+        return {
+            redirect: {
+                destination: '/admin/login',
+                permanent: false,
+            },
+        };
+    } else {
+        return {
+            props: {
+            },
+        };
+    }
+}
 
 function Holiday() {
     const [reserve, setreserve] = useState<Reserve[]>([])
@@ -68,28 +86,6 @@ function Holiday() {
 
     const [currentPage, setCurrentPage] = useState(0);
     const [message, setMessage] = useState('');
-
-    const checkAuthentication = async () => {
-        try {
-            const response = await fetch('/api/admin/check-auth', {
-                method: 'GET',
-                credentials: 'include', // Include cookies in the request
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                setMessage(data.message);
-            } else {
-                // Redirect to the login page if the user is not authenticated
-                router.push('/admin/login')
-                return;
-            }
-
-        } catch (error) {
-            console.error('Error while checking authentication', error);
-            setMessage('An error occurred. Please try again later.');
-        }
-    };
 
     const handleOptionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(event.target.value)
@@ -153,7 +149,6 @@ function Holiday() {
     const router = useRouter();
     const { state } = router.query;
     useEffect(() => {
-        checkAuthentication();
         setFilter(state as string);
         setStatus(parseInt(state as string));
         getReserve(parseInt(state as string), currentPage);
@@ -393,26 +388,6 @@ function Holiday() {
         }
         return totalPrice;
     };
-
-    if (message === 'Not authenticated') {
-        return (
-            <>
-                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-                    <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
-                </div>
-            </>
-        );
-    }
-    if (!isreserve || message != "Authenticated") {
-        return (
-            <>
-                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-                    <h5 >loading....</h5>
-                </div>
-            </>
-        );
-    }
-
 
     return (
         <AdminLayout>

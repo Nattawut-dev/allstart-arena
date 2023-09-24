@@ -3,34 +3,18 @@ import { Flex } from "@chakra-ui/react";
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Droppable } from "react-beautiful-dnd";
-export async function getServerSideProps() {
-    try {
-        const response = await fetch(`${process.env.HOSTNAME}/api/admin/check-auth`, { method: 'GET' });
-        if (response.redirected) {
-            return {
-                redirect: {
-                    destination: response.url,
-                    permanent: false,
-                },
-            };
-        }
-    } catch (error) {
-        console.error('Error while checking authentication', error);
-    }
-}
-
 const Column = ({ tasks, index }: any) => {
     return (
-        <div style={{ width: '700px' }}>
+        <div style={{width : '100%'}}>
             <Droppable droppableId={`left-${index}`} direction="horizontal">
                 {(droppableProvided) => (
-
                     <Flex
                         maxWidth={"100%"}
-                        height={"45px"}
+                        height={'100%'}
                         {...droppableProvided.droppableProps}
                         ref={droppableProvided.innerRef}
                     >
+          
                         {tasks.map((task: any, index: number) => (
                             <>
                                 <Draggable
@@ -45,6 +29,7 @@ const Column = ({ tasks, index }: any) => {
                                             width={"150px"}
                                             bg={draggableSnapshot.isDragging ? "lightblue" : "white"}
                                             rounded="3px"
+                                            height={'32px'}
                                             textAlign="center"
                                             _active={{ bg: "white" }}
                                             outline="0px solid transparent"
@@ -68,11 +53,12 @@ const Column = ({ tasks, index }: any) => {
                                     )}
                                 </Draggable>
                                 {index === 1 && (
-
                                     <Flex
                                         m={"0.2rem"}
                                         p={"0"}
                                         width={"50px"}
+                                        height={'32px'}
+
                                         rounded="3px"
                                         textAlign="center"
                                         _active={{ bg: "white" }}
@@ -81,19 +67,16 @@ const Column = ({ tasks, index }: any) => {
                                         align="center"
                                         flexDirection={"column"}
                                         zIndex={1}
-
                                     >
-                                        <span className="p-1 fs-5 text-white fw-bold">VS</span>
+                                        <span className="p-1 fs-6 text-white fw-bold">VS</span>
                                     </Flex>
-
-
                                 )}
-
                             </>
                         ))}
                         {droppableProvided.placeholder}
 
                     </Flex>
+
                 )}
             </Droppable>
 

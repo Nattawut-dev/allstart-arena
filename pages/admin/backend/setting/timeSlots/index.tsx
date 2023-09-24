@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
 import AdminLayout from '@/components/AdminLayout';
 
 export interface TimeSlot {
@@ -13,11 +12,25 @@ export interface TimeSlot {
   status: number;
 }
 
-const MySwal = withReactContent(Swal);
+export const getServerSideProps = async ({ req }: any) => {
+  const sessiontoken = req.cookies.sessionToken;
 
+  if (!sessiontoken) {
+      return {
+          redirect: {
+              destination: '/admin/login',
+              permanent: false,
+          },
+      };
+  } else {
+      return {
+          props: {
+          },
+      };
+  }
+}
 const TimeSlots = () => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [newTimeSlot, setNewTimeSlot] = useState('');
   const [editingTimeSlot, setEditingTimeSlot] = useState<TimeSlot | null>(null);
   const [editedStartTime, setEditedStartTime] = useState('');
   const [editedEndTime, setEditedEndTime] = useState('');
@@ -28,30 +41,7 @@ const TimeSlots = () => {
   const [newPrice, setNewPrice] = useState<number | undefined>(undefined);
   const [newStatus, setNewStatus] = useState(true);
 
-  const [message, setMessage] = useState('');
-  const router = useRouter();
 
-  const checkAuthentication = async () => {
-    try {
-      const response = await fetch('/api/admin/check-auth', {
-        method: 'GET',
-        credentials: 'include', // Include cookies in the request
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setMessage(data.message);
-      } else {
-        // Redirect to the login page if the user is not authenticated
-        router.push('/admin/login')
-        return;
-      }
-
-    } catch (error) {
-      console.error('Error while checking authentication', error);
-      setMessage('An error occurred. Please try again later.');
-    }
-  };
 
 
   const fetchTimeSlots = async () => {
@@ -66,7 +56,7 @@ const TimeSlots = () => {
       setTimeSlots(data);
     } catch (error) {
       console.error('Error fetching time slots:', error);
-      MySwal.fire({
+      Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'Failed to fetch data. Please try again later.',
@@ -76,14 +66,13 @@ const TimeSlots = () => {
 
   useEffect(() => {
     fetchTimeSlots();
-    checkAuthentication();
 
   }, []);
 
   const addTimeSlot = async () => {
     if (newStartTime.trim() === '') return;
 
-    const result = await MySwal.fire({
+    const result = await Swal.fire({
       title: 'Confirmation',
       text: `ยืนยันการเพิ่ม Time Slot ใหม่?`,
       icon: 'warning',
@@ -113,7 +102,7 @@ const TimeSlots = () => {
         setNewEndTime('');
         setNewPrice(0);
         setNewStatus(true)
-        MySwal.fire({
+        Swal.fire({
           icon: 'success',
           title: 'Success',
           text: `เพิ่ม Time Slot "${newStartTime + ' - ' + newEndTime}" เรียบร้อยแล้ว`,
@@ -123,7 +112,7 @@ const TimeSlots = () => {
   };
 
   const deleteTimeSlot = async (id: number, title: string) => {
-    const result1 = await MySwal.fire({
+    const result1 = await Swal.fire({
       title: `แน่ใจนะว่าจะลบ Time Slot "${title}"?`,
       text: 'หากลบแล้วข้อมูลที่เกี่ยวข้องอาจถูกลบไปด้วย',
       icon: 'warning',
@@ -133,7 +122,7 @@ const TimeSlots = () => {
     });
 
     if (result1.isConfirmed) {
-      const result2 = await MySwal.fire({
+      const result2 = await Swal.fire({
         title: `ถามอีกครั้งว่าจะลบ "${title}" จริงๆหรือไม่`,
         text: 'หากลบแล้วข้อมูลที่เกี่ยวข้องจะถูกลบไปด้วยนะ',
         icon: 'warning',
@@ -151,7 +140,7 @@ const TimeSlots = () => {
           const updatedTimeSlots = timeSlots.filter((timeSlot) => timeSlot.id !== id);
           setTimeSlots(updatedTimeSlots);
 
-          MySwal.fire({
+          Swal.fire({
             icon: 'success',
             title: 'Success',
             text: `ลบ Time Slot "${title}" เรียบร้อยแล้ว`,
@@ -164,7 +153,7 @@ const TimeSlots = () => {
   const saveEditedTimeSlot = async () => {
     if (!editingTimeSlot) return;
 
-    const result = await MySwal.fire({
+    const result = await Swal.fire({
       title: 'Confirmation',
       text: `ต้องการเปลี่ยนข้อมูล Time Slot "${editingTimeSlot.title}" ใหม่หรือไม่?`,
       icon: 'question',
@@ -193,7 +182,7 @@ const TimeSlots = () => {
         fetchTimeSlots();
         setEditingTimeSlot(null);
 
-        MySwal.fire({
+        Swal.fire({
           icon: 'success',
           title: 'Success',
           text: 'บันทึกการแก้ไขเรียบร้อยแล้ว',
@@ -231,25 +220,6 @@ const TimeSlots = () => {
       fetchTimeSlots();
     }
   };
-
-  if (message === 'Not authenticated') {
-    return (
-      <>
-        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-          <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
-        </div>
-      </>
-    );
-  }
-  if (message != "Authenticated") {
-    return (
-      <>
-        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-          <h5 >loading....</h5>
-        </div>
-      </>
-    );
-  }
 
   return (
     <AdminLayout>

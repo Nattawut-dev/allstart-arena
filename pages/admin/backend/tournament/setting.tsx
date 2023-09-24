@@ -16,6 +16,23 @@ interface Tournament {
     max_team: number;
     status: number;
 }
+export const getServerSideProps = async ({ req }: any) => {
+    const sessiontoken = req.cookies.sessionToken;
+
+    if (!sessiontoken) {
+        return {
+            redirect: {
+                destination: '/admin/login',
+                permanent: false,
+            },
+        };
+    } else {
+        return {
+            props: {
+            },
+        };
+    }
+}
 
 function Holiday() {
     const [tournament, setTournament] = useState<Tournament[]>([])
@@ -35,30 +52,8 @@ function Holiday() {
     const [show2, setShow2] = useState(false);
 
     const [message, setMessage] = useState('');
-    const router = useRouter();
-    const checkAuthentication = async () => {
-        try {
-            const response = await fetch('/api/admin/check-auth', {
-                method: 'GET',
-                credentials: 'include', // Include cookies in the request
-            });
 
-            const data = await response.json();
-            if (response.ok) {
-                setMessage(data.message);
-            } else {
-                // Redirect to the login page if the user is not authenticated
-                router.push('/admin/login')
-                return;
-            }
-
-        } catch (error) {
-            console.error('Error while checking authentication', error);
-            setMessage('An error occurred. Please try again later.');
-        }
-    };
     useEffect(() => {
-        checkAuthentication();
         getHoliday();
     }, []);
 
@@ -251,26 +246,7 @@ function Holiday() {
             throw error;
         }
     }
-    if (message === 'Not authenticated') {
-        return (
-            <>
-                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-                    <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
-                </div>
-            </>
-        );
-    }
 
-    if (!isTournament || message != "Authenticated") {
-        return (
-            <>
-                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-                    <h5 >loading....</h5>
-                </div>
-            </>
-        );
-
-    }
     return (
         <AdminLayout>
             <Head>

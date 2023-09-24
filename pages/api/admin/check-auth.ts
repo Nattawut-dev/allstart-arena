@@ -5,8 +5,8 @@ import { parse } from 'cookie';
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     // Get the session token from the request cookies
-    const sessionToken = req.cookies.token;
-    console.log("req.cookies", req.cookies.token)
+    const sessionToken = req.cookies.sessionToken;
+    console.log("req.cookies", req.cookies.sessionToken)
     if (!sessionToken) {
       res.status(401).json({ status: false, message: 'Not authenticated' });
       return;

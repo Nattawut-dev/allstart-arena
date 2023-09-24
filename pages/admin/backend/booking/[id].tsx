@@ -5,12 +5,13 @@ import { format, addDays, isAfter, differenceInCalendarDays, parse, differenceIn
 import { utcToZonedTime } from 'date-fns-tz';
 import { GetServerSideProps } from 'next';
 import NotFoundPage from '../../../404'
-import AdminLayout from '@/components/AdminLayout';
 import { Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
 import Head from 'next/head';
+import dynamic from 'next/dynamic';
+const AdminLayout = dynamic(() => import('@/components/AdminLayout'), { ssr: false });
 
 interface TimeSlot {
   id: number;
@@ -47,47 +48,47 @@ interface Props {
   timeZone: string;
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async () => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({ req }: any) => {
+  const sessiontoken = req.cookies.sessionToken;
+  if (!sessiontoken) {
+    return {
+      redirect: {
+        destination: '/admin/login',
+        permanent: false,
+      },
+    };
+  } else {
+    try {
+      const timeZone = 'Asia/Bangkok';
+      const courts = await fetch(`${process.env.HOSTNAME}/api/reserve/courts`);
+      const courts_data = await courts.json();
+      const timeslots = await fetch(`${process.env.HOSTNAME}/api/reserve/time-slots`);
+      const timeslots_data = await timeslots.json();
 
-  try {
-    const response = await fetch(`${process.env.HOSTNAME}/api/admin/check-auth`, { method: 'GET' });
-    const data = await response.json();
-    console.log(response.redirected)
-    if (response.redirected === true) {
+
       return {
-        redirect: {
-          destination: response.url,
-          permanent: false,
+        props: {
+          timeSlots: timeslots_data.timeSlots,
+          courts: courts_data.courts,
+          timeZone: timeZone
+        },
+      }
+
+
+
+    } catch (error) {
+      return {
+        props: {
+          timeSlots: [],
+          courts: [],
+          timeZone: "Asia/Bangkok"
+
         },
       };
     }
-    const timeZone = 'Asia/Bangkok';
-    const courts = await fetch(`${process.env.HOSTNAME}/api/reserve/courts`);
-    const courts_data = await courts.json();
-    const timeslots = await fetch(`${process.env.HOSTNAME}/api/reserve/time-slots`);
-    const timeslots_data = await timeslots.json();
-
-
-    return {
-      props: {
-        timeSlots: timeslots_data.timeSlots,
-        courts: courts_data.courts,
-        timeZone: timeZone
-      },
-    }
-
-
-
-  } catch (error) {
-    return {
-      props: {
-        timeSlots: [],
-        courts: [],
-        timeZone: "Asia/Bangkok"
-
-      },
-    };
   }
+
+
 }
 
 

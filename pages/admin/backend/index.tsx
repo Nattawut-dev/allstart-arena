@@ -3,9 +3,10 @@ import { useRouter } from 'next/router';
 import styles from '@/styles/admin/backend.module.css';
 import NotFoundPage from '@/pages/404';
 import Swal from 'sweetalert2'
-import AdminLayout from '@/components/AdminLayout';
+// import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
-
+import dynamic from 'next/dynamic';
+const AdminLayout = dynamic(() => import('@/components/AdminLayout') , { ssr: false });
 
 interface Rules {
     id: number;
@@ -18,7 +19,23 @@ interface Rules {
 }
 
 
+export async function getServerSideProps({ req }: any) {
+    const sessiontoken = req.cookies.sessionToken;
+    if (!sessiontoken) {
+        return {
+            redirect: {
+                destination: '/admin/login',
+                permanent: false,
+            },
+        };
+    } else {
+        return {
+            props: {
 
+            }
+        }
+    }
+}
 
 export default function Welcome() {
     const router = useRouter();
@@ -40,29 +57,6 @@ export default function Welcome() {
     const [editableFacebookUrl, setEditableFacebookUrl] = useState(false);
     const [facebookUrl, setFacebookUrl] = useState('');
     useEffect(() => {
-        // Fetch data from the server to check if the user is authenticated
-        // You can use this endpoint to verify the session and perform any other checks
-        const checkAuthentication = async () => {
-            try {
-                const response = await fetch('/api/admin/check-auth', {
-                    method: 'GET',
-                    credentials: 'include', // Include cookies in the request
-                });
-
-                const data = await response.json();
-                console.log(response)
-                if (response.ok) {
-                    setMessage(data.message);
-                } else {
-                    // Redirect to the login page if the user is not authenticated
-                    router.push('/admin/login')
-                    return;
-                }
-            } catch (error) {
-                console.error('Error while checking authentication', error);
-                setMessage('An error occurred. Please try again later.');
-            }
-        };
         const rules = async () => {
             try {
                 const response = await fetch(`/api/rules`);
@@ -79,33 +73,10 @@ export default function Welcome() {
                     <NotFoundPage />
                 )
             }
-
         }
         rules();
-        checkAuthentication();
     }, []);
     ;
-
-
-    if (rules.length === 0) {
-        return (
-            <>
-                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-                    <h5 >loading....</h5>
-                </div>
-            </>
-        );
-    }
-
-    if (message != "Authenticated") {
-        return (
-            <>
-                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-                    <h5 >loading....</h5>
-                </div>
-            </>
-        );
-    }
 
 
 

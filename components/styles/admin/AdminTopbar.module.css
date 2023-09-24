@@ -19,6 +19,7 @@
   color: #000000;
   padding: 0 20px;
   box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.2);
+  z-index: 999;
 }
 .sidebarToggle {
   border: none;

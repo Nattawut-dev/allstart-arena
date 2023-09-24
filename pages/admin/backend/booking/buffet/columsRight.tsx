@@ -2,29 +2,18 @@ import { Flex, Text } from "@chakra-ui/react";
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Droppable } from "react-beautiful-dnd";
-export async function getServerSideProps() {
-    try {
-        const response = await fetch(`${process.env.HOSTNAME}/api/admin/check-auth`, { method: 'GET' });
-        if (response.redirected) {
-            return {
-                redirect: {
-                    destination: response.url,
-                    permanent: false,
-                },
-            };
-        }
-    } catch (error) {
-        console.error('Error while checking authentication', error);
-    }
-}
+
 const Column = ({ tasks }: any) => {
     return (
-        <div>
+        <div style={{width : '100%'}}>
             <Droppable droppableId={`right`} direction="horizontal" >
                 {(droppableProvided) => (
                     <Flex
                         maxWidth={"100%"}
-
+                        height={'100%'}
+                        bg={'#0087FF'}
+                        p={"10px"}
+                        rounded={"5px"}
                         {...droppableProvided.droppableProps}
                         ref={droppableProvided.innerRef}
                         css={{

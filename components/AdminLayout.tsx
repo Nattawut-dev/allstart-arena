@@ -9,11 +9,8 @@ type LayoutProps = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  useEffect(() => {
-    setIsSidebarOpen(window.innerWidth >= 768);
-  }, []);
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+// window.innerWidth >= 768
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);

@@ -8,7 +8,23 @@ type BuffetSetting = {
     court_price: number;
     shuttle_cock_price: number;
 };
+export const getServerSideProps = async ({ req }: any) => {
+    const sessiontoken = req.cookies.sessionToken;
 
+    if (!sessiontoken) {
+        return {
+            redirect: {
+                destination: '/admin/login',
+                permanent: false,
+            },
+        };
+    } else {
+        return {
+            props: {
+            },
+        };
+    }
+}
 function BuffetSetting() {
     const [buffetSettings, setBuffetSettings] = useState<BuffetSetting | null>(null);
     const [editBuffetSetting, setEditBuffetSetting] = useState<BuffetSetting | null>(null);

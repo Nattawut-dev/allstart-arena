@@ -42,6 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                     const expirationDate = new Date();
                     expirationDate.setTime(expirationDate.getTime() + 10 * 60 * 60 * 1000); // 10 hours
+                    // expirationDate.setTime(expirationDate.getTime() + 10 * 60); // 10 hours
 
                     // Cookie options
                     const cookieOptions = {
@@ -53,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     };
 
                     // Serialize and set the cookie
-                    const sessionCookie = serialize('token', token, cookieOptions);
+                    const sessionCookie = serialize('sessionToken', token, cookieOptions);
                     res.setHeader('Set-Cookie', sessionCookie);
 
                     // res.setHeader('Set-Cookie', serialize('token', token, { path: '/' }));

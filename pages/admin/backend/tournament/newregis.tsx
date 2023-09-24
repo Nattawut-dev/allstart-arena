@@ -42,16 +42,29 @@ interface Listtournament {
     max_team: number;
     price: number;
 }
+export const getServerSideProps = async ({ req }: any) => {
+    const sessiontoken = req.cookies.sessionToken;
 
+    if (!sessiontoken) {
+        return {
+            redirect: {
+                destination: '/admin/login',
+                permanent: false,
+            },
+        };
+    } else {
+        return {
+            props: {
+            },
+        };
+    }
+}
 function Detail() {
     const router = useRouter();
 
     const [status1, setStatus1] = useState(''); // สถานะ
     const [paymentStatus1, setPaymentStatus1] = useState(''); // สถานะการชำระเงิน
 
-    const [message, setMessage] = useState('');
-    const [isTournament, setIsTournament] = useState(false);
-    const [loading, setIsloading] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState(0);
     const [checkDisabled, setCheckDisabled] = useState(true);
 
@@ -68,34 +81,11 @@ function Detail() {
     const [newTeam_type, setNewTeam_type] = useState('');
 
     const [targetSlip, setTargetSlip] = useState<Detail>();
-    const [slipBtnDisabled, setSlipBtnDisabled] = useState(true);
 
 
     const { status, paymentStatus, listT_id } = router.query;
 
-    const checkAuthentication = async () => {
-        try {
-            const response = await fetch('/api/admin/check-auth', {
-                method: 'GET',
-                credentials: 'include', // Include cookies in the request
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                setMessage(data.message);
-            } else {
-                // Redirect to the login page if the user is not authenticated
-                router.push('/admin/login');
-                return;
-            }
-
-        } catch (error) {
-            console.error('Error while checking authentication', error);
-            setMessage('An error occurred. Please try again later.');
-        }
-    };
     useEffect(() => {
-        checkAuthentication();
         setStatus1(status as string);
         setPaymentStatus1(paymentStatus as string);
         if (status !== undefined && typeof status === 'string') {
@@ -115,13 +105,8 @@ function Detail() {
                 }
                 // setList_T_ID(listTourID);
                 fetchDetail(status, paymentStatus, listTourID);
-                setIsTournament(true);
-
             }
-            else {
-                setIsTournament(false);
 
-            }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -434,15 +419,6 @@ function Detail() {
         </select>
     );
 
-    if (!isTournament || message != "Authenticated" || status == undefined || loading) {
-        return (
-            <>
-                <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-                    <h5 >loading....</h5>
-                </div>
-            </>
-        );
-    }
     return (
         <AdminLayout>
             <Head>

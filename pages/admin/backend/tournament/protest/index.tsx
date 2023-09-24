@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import styles from '@/styles/admin/tournament/Tournament.module.css';
 import Swal from 'sweetalert2';
-import { useRouter } from 'next/router';
 import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
 
@@ -45,14 +44,30 @@ interface Detail {
   status: number;
   paymentStatus: number;
 }
+
+export const getServerSideProps = async ({ req }: any) => {
+  const sessiontoken = req.cookies.sessionToken;
+
+  if (!sessiontoken) {
+      return {
+          redirect: {
+              destination: '/admin/login',
+              permanent: false,
+          },
+      };
+  } else {
+      return {
+          props: {
+          },
+      };
+  }
+}
 const ProtestPage: React.FC = () => {
   const [protestData, setProtestData] = useState<ProtestData[]>([]);
   const [listtournamentData, setListtournamentData] = useState<Listtournament[]>([]);
   const [detail_data, setDetail_data] = useState<Detail>();
-  const [loading, setLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(0);
   const [checkDisabled, setCheckDisabled] = useState(true);
-  const [isTournament, setIsTournament] = useState(false);
   const [show, setShow] = useState(false);
   const [List_T_ID, setList_T_ID] = useState(0);
 
@@ -73,48 +88,16 @@ const ProtestPage: React.FC = () => {
       const listtournament = await response1.json();
       setListtournamentData(listtournament);
       if (response1.ok) {
-        setIsTournament(true);
         const listTourID = listtournament[0].id
         setList_T_ID(listTourID);
         fetchProtest(listTourID);
-        checkAuthentication();
-      }
-      else {
-        setIsTournament(false);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   }
 
-
-  const [message, setMessage] = useState('');
-  const router = useRouter();
-
-  const checkAuthentication = async () => {
-    try {
-      const response = await fetch('/api/admin/check-auth', {
-        method: 'GET',
-        credentials: 'include', // Include cookies in the request
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setMessage(data.message);
-      } else {
-        // Redirect to the login page if the user is not authenticated
-        router.push('/admin/login');
-        return;
-      }
-
-    } catch (error) {
-      console.error('Error while checking authentication', error);
-      setMessage('An error occurred. Please try again later.');
-    }
-  };
-
   useEffect(() => {
-    checkAuthentication();
     fetchTournamentdata();
   }, []);
 
@@ -233,26 +216,6 @@ const ProtestPage: React.FC = () => {
 
       }
     })
-  }
-
-  if (message === 'Not authenticated') {
-    return (
-      <>
-        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-          <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
-        </div>
-      </>
-    );
-  }
-
-  if (!isTournament || message != "Authenticated") {
-    return (
-      <>
-        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-          <h5 >loading....</h5>
-        </div>
-      </>
-    );
   }
 
   return (

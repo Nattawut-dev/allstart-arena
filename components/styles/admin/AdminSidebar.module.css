@@ -12,7 +12,6 @@
   width: 220px;
   box-shadow: 1px 4px 6px rgba(0, 0, 0, 0.2);
   top: 40px;
-  /* เพิ่มค่า top เพื่อให้ Sidebar ไม่ทับ Topbar */
 
 }
 

@@ -2,33 +2,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '@/styles/admin/login.module.css'
 
-// export async function getServerSideProps() {
-//     try {
-//         const response = await fetch(`${process.env.HOSTNAME}/api/admin/check-auth`, { method: 'GET' });
-//         if (response.redirected) {
-//             return {
-//                 redirect: {
-//                     destination: response.url,
-//                     permanent: false,
-//                 },
-//             };
-//         }else {
-//             return {
-//                 redirect: {
-//                     destination: `${process.env.HOSTNAME}/admin/backend`,
-//                     permanent: false,
-//                 },
-//             };
-//         }
-//     } catch (error) {
-//         console.error('Error while checking authentication', error);
-//     }
-// }
 export async function getServerSideProps({ req }: any) {
-    const token = req.cookies.token;
-    // Get the session token from the request cookies
-
-    if (!token) {
+    const sessiontoken = req.cookies.sessionToken;
+    if (!sessiontoken) {
         return {
             props: {
 

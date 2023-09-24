@@ -5,9 +5,10 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/holidays.module.css'
 import Swal from 'sweetalert2'
-import { useRouter } from 'next/router';
-import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
+import dynamic from 'next/dynamic';
+
+const AdminLayout = dynamic(() => import('@/components/AdminLayout'));
 
 interface Holidays {
   id: number;
@@ -16,11 +17,27 @@ interface Holidays {
   status: number;
 }
 
+export async function getServerSideProps({ req }: any) {
+  const sessiontoken = req.cookies.sessionToken;
+  if (!sessiontoken) {
+    return {
+      redirect: {
+        destination: '/admin/login',
+        permanent: false,
+      },
+    };
+  } else {
+    return {
+      props: {
+
+      }
+    }
+  }
+}
+
 function Holiday() {
-  const [message, setMessage] = useState('');
   const [holidays, setHolidays] = useState<Holidays[]>([])
 
-  const [isHoliday, setIsHoliday] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [title, setTitle] = useState('');
   const [id2, setID2] = useState(0);
@@ -34,31 +51,8 @@ function Holiday() {
   const [show, setShow] = useState(false);
   const [show2, setShow2] = useState(false);
 
-  const router = useRouter();
-  const checkAuthentication = async () => {
-    try {
-      const response = await fetch('/api/admin/check-auth', {
-        method: 'GET',
-        credentials: 'include', // Include cookies in the request
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setMessage(data.message);
-      } else {
-        // Redirect to the login page if the user is not authenticated
-        router.push('/admin/login')
-        return;
-      }
-
-    } catch (error) {
-      console.error('Error while checking authentication', error);
-      setMessage('An error occurred. Please try again later.');
-    }
-  };
   useEffect(() => {
     getHoliday();
-    checkAuthentication();
   }, []);
 
   // Function to handle date change
@@ -75,10 +69,8 @@ function Holiday() {
       const data = await response.json();
       if (data.results.length >= 1) {
         setHolidays(data.results);
-        setIsHoliday(true);
       } else {
-        setMessage(data.message)
-        setIsHoliday(false);
+        console.log('noholiday')
       }
     } catch {
       console.log('error');
@@ -232,25 +224,6 @@ function Holiday() {
       console.error('An error occurred while updating the data:', error);
       throw error;
     }
-  }
-  if (message === 'Not authenticated') {
-    return (
-      <>
-        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-          <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
-        </div>
-      </>
-    );
-  }
-
-  if (!isHoliday || message != "Authenticated") {
-    return (
-      <>
-        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-          <h5 >loading....</h5>
-        </div>
-      </>
-    );
   }
 
   return (

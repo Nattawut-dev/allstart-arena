@@ -33,7 +33,6 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 params.push(q_id);
             }
             params.push(targetID)
-            console.log(q_id, params)
             const [results] = await connection.query(queries, params);
             res.json({ results });
 

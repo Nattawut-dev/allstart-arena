@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import AdminLayout from '@/components/AdminLayout';
 import { Button } from 'react-bootstrap';
 import dynamic from 'next/dynamic';
 import { DragDropContext } from "react-beautiful-dnd";
-import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult, NextApiRequest, NextApiResponse } from 'next';
-
+import { Flex } from '@chakra-ui/react';
+import Swal from 'sweetalert2';
+const AdminLayout = dynamic(() => import('@/components/AdminLayout'));
 
 
 interface ItemsType {
@@ -41,10 +41,10 @@ interface Buffet {
     regisDate: string;
     T_value: string;
 }
-export const getServerSideProps = async (req: NextApiRequest, res: NextApiResponse) => {
-    const sessionToken = req.cookies.sessionToken;
+export const getServerSideProps = async ({ req }: any) => {
+    const sessiontoken = req.cookies.sessionToken;
 
-    if (!sessionToken) {
+    if (!sessiontoken) {
         return {
             redirect: {
                 destination: '/admin/login',
@@ -53,19 +53,17 @@ export const getServerSideProps = async (req: NextApiRequest, res: NextApiRespon
         };
     } else {
         return {
-            redirect: {
-                destination: '/admin/backend',
-                permanent: false,
+            props: {
             },
         };
     }
 }
 
 
-
+const ColumsLeft = dynamic(() => import("./columsLeft"), { ssr: false });
+const ColumsRight = dynamic(() => import("./columsRight"), { ssr: false });
 function buffet() {
-    const ColumsLeft = dynamic(() => import("./columsLeft"), { ssr: false });
-    const ColumsRight = dynamic(() => import("./columsRight"), { ssr: false });
+
 
     const [leftItems, setLeftItems] = useState<ItemsType>(initialLeftItems);
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
@@ -75,53 +73,89 @@ function buffet() {
         fetchRegis();
     }, [])
 
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    })
+
     const fetchRegis = async () => {
         try {
-            const res = await fetch(`/api/admin/buffet/getRegis`)
-            const data = await res.json()
-            const newRightItems = { ...leftItems };
-            const notQdata = data.filter((item: Buffet) => item.q_id === null);
-            const newTasks = notQdata.map((item: Buffet) => ({
-                id: item.id,
-                content: `${item.name}(${item.nickname})`,
-                q_list: item.q_list || 0,
-            }));
-            newTasks.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
-            newRightItems['tasks'] = newTasks;
-            setRightItems(newRightItems);
-            const newLeftItems = { ...leftItems };
-            for (let i = 0; i < numberOfProperties; i++) {
-                const colname = `T${i}`;
-                // กรองข้อมูลที่มี q_id เท่ากับ i
-                const QData = data.filter((item: Buffet) => item.q_id !== null && item.q_id === i);
-                // แปลงข้อมูลที่ผ่านการกรองเป็นรูปแบบที่ต้องการ
-                const newTasksLeft = QData.map((item: Buffet) => ({
+            const response = await fetch(`/api/admin/buffet/getRegis`)
+            if (response.ok) {
+                const data = await response.json();
+                const newRightItems = { ...leftItems };
+                const notQdata = data.filter((item: Buffet) => item.q_id === null);
+                const newTasks = notQdata.map((item: Buffet) => ({
                     id: item.id,
                     content: `${item.name}(${item.nickname})`,
                     q_list: item.q_list || 0,
                 }));
-                newTasksLeft.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
-                newLeftItems[colname] = newTasksLeft;
+                newTasks.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
+                newRightItems['tasks'] = newTasks;
+                setRightItems(newRightItems);
+                const newLeftItems = { ...leftItems };
+                for (let i = 0; i < numberOfProperties; i++) {
+                    const colname = `T${i}`;
+                    // กรองข้อมูลที่มี q_id เท่ากับ i
+                    const QData = data.filter((item: Buffet) => item.q_id !== null && item.q_id === i);
+                    // แปลงข้อมูลที่ผ่านการกรองเป็นรูปแบบที่ต้องการ
+                    const newTasksLeft = QData.map((item: Buffet) => ({
+                        id: item.id,
+                        content: `${item.name}(${item.nickname})`,
+                        q_list: item.q_list || 0,
+                    }));
+                    newTasksLeft.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
+                    newLeftItems[colname] = newTasksLeft;
+                }
+                setLeftItems(newLeftItems);
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Updated'
+                })
+            } else {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'error'
+                })
             }
-            setLeftItems(newLeftItems);
         } catch (error) {
             console.error(error)
         }
-
     }
 
 
     for (let i = 0; i < numberOfProperties; i++) {
         const entries = Object.entries(leftItems)
         elements.push(
-            <div className='d-flex flex-row mb-1 p-1' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px' }}>
-                <ColumsLeft key={i} tasks={entries[i][1]} index={i} />
-                <Button className='btn btn-warning' onClick={() => clearArray(entries[i][1], i)}>Clear</Button>
+            <div key={i} className='d-flex flex-row mb-1 p-1 justify-content-end' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px', height: '45px' }}>
+                <Flex
+                    m={"0.2rem"}
+                    p={"0"}
+                    width={"40px"}
+                    rounded="3px"
+                    textAlign="center"
+                    outline="0px solid transparent"
+                    bg={'#FFED00'}
+                    align="center"
+                    flexDirection={"column"}
+                    zIndex={1}
+                >
+                    <span className="p-1 fs-6 text-black ">{i + 1}</span>
+                </Flex>
+                <ColumsLeft tasks={entries[i][1]} index={i} />
+                <Button className='btn btn-warning ' onClick={() => clearArray(entries[i][1], i)}>Clear</Button>
             </div>
-        )
+        );
 
     }
-    const clearArray = (value: any, index: number) => {
+    const clearArray = async (value: any, index: number) => {
 
         const updatedLeftItems: Record<string, any> = { ...leftItems };
 
@@ -137,11 +171,44 @@ function buffet() {
         }
         setLeftItems(updatedLeftItems);
 
-        const updatedRightItems = {
+
+        // setRightItems(updatedRightItems);
+
+        const right: any = value
+        for (let i = 0; i < right.length; i++) {
+            right[i].q_list = i + 1
+        }
+        const newState: any = {
             ...rightItems,
-            tasks: [...rightItems.tasks, ...value],
+            tasks: [...rightItems.tasks, ...right],
+
         };
-        setRightItems(updatedRightItems);
+        setRightItems(newState);
+
+        try {
+            const response = await fetch(`/api/admin/buffet/updateQ?q_id=${null}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(right),
+            });
+
+            if (!response.ok) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'error'
+                })
+                throw new Error('ไม่สามารถดึงข้อมูลได้');
+            } else {
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Updated '
+                })
+            }
+        } catch (err) {
+            console.error(err)
+        }
     };
 
     const onDragEnd = async (result: any) => {
@@ -176,7 +243,16 @@ function buffet() {
                             });
 
                             if (!response.ok) {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'error'
+                                })
                                 throw new Error('ไม่สามารถดึงข้อมูลได้');
+                            } else {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Updated'
+                                })
                             }
                         } catch (err) {
                             console.error(err)
@@ -207,7 +283,16 @@ function buffet() {
                     });
 
                     if (!response.ok) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'error'
+                        })
                         throw new Error('ไม่สามารถดึงข้อมูลได้');
+                    } else {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Updated'
+                        })
                     }
                 } catch (err) {
                     console.error(err)
@@ -254,7 +339,16 @@ function buffet() {
                     });
 
                     if (!response.ok) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'error'
+                        })
                         throw new Error('ไม่สามารถดึงข้อมูลได้');
+                    } else {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Updated'
+                        })
                     }
                 } catch (err) {
                     console.error(err)
@@ -262,23 +356,33 @@ function buffet() {
             }
         }
     };
+
     return (
         <AdminLayout>
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className='container-fluid text-center' style={{ overflow: 'hidden' }}>
-                    <h4>จัดคิวตีบุฟเฟ่ต์</h4>
+                    <div className="d-flex justify-content-between mb-1">
+                        <div></div>
+                        <h4>จัดคิวตีบุฟเฟ่ต์</h4>
+                        <Button className='btn btn-sm' onClick={fetchRegis}>refresh</Button>
+                    </div>
+
                     <div className='row'>
 
                         <div className='col me-3 p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px' }}>
                             <h6 className='fw-bold bg-primary text-white rounded p-1' >คิวการเล่น</h6>
                             {elements}
                         </div>
-                        <div className='col  p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px' }}>
-                            <h6 className='fw-bold bg-primary text-white rounded p-1' >ผู้จองตีบุฟเฟต์วันนี้</h6>
+                        <div className='col p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px' }}>
+                            <h6 className='fw-bold bg-primary text-white rounded p-1' >ผู้จองตีบุฟเฟต์วันนี้ </h6>
                             {rightItems.tasks.length === 0 && (
                                 <div style={{ color: 'red', fontWeight: 'bold' }}>ไม่พบข้อมูล</div>
                             )}
-                            <ColumsRight tasks={rightItems.tasks} />
+                            <div className='row'>
+                                <div className='col' style={{ width: '800px' }}><ColumsRight tasks={rightItems.tasks} /></div>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>

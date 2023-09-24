@@ -1,40 +1,29 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
 import AdminLayout from '@/components/AdminLayout';
 
-const MySwal = withReactContent(Swal);
+export const getServerSideProps = async ({ req }: any) => {
+  const sessiontoken = req.cookies.sessionToken;
 
+  if (!sessiontoken) {
+      return {
+          redirect: {
+              destination: '/admin/login',
+              permanent: false,
+          },
+      };
+  } else {
+      return {
+          props: {
+          },
+      };
+  }
+}
 const Home = () => {
   const [courts, setCourts] = useState<{ id: number; title: string; status: number }[]>([]);
   const [newCourtTitle, setNewCourtTitle] = useState('');
   const [editingCourt, setEditingCourt] = useState<{ id: number; title: string; status: number } | null>(null);
-
-  const [message, setMessage] = useState('');
-  const router = useRouter();
-
-  const checkAuthentication = async () => {
-    try {
-      const response = await fetch('/api/admin/check-auth', {
-        method: 'GET',
-        credentials: 'include', // Include cookies in the request
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setMessage(data.message);
-      } else {
-        // Redirect to the login page if the user is not authenticated
-        router.push('/admin/login')
-        return;
-      }
-
-    } catch (error) {
-      console.error('Error while checking authentication', error);
-      setMessage('An error occurred. Please try again later.');
-    }
-  };
 
 
   const fetchCourts = async () => {
@@ -49,7 +38,7 @@ const Home = () => {
       setCourts(data);
     } catch (error) {
       // แสดง SweetAlert2 ในกรณีเกิดข้อผิดพลาด
-      MySwal.fire({
+      Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'Failed to fetch data. Please try again later.',
@@ -60,14 +49,13 @@ const Home = () => {
 
   useEffect(() => {
     fetchCourts();
-    checkAuthentication();
   }, []);
 
   const addCourt = async () => {
     if (newCourtTitle.trim() === '') return;
 
     // แสดง SweetAlert2 สำหรับการยืนยันการเพิ่ม
-    const result = await MySwal.fire({
+    const result = await Swal.fire({
       title: 'Confirmation',
       text: `ยืนยันการเพิ่มคอร์ทใหม่? หัวข้อ "${newCourtTitle}"`,
       icon: 'warning',
@@ -90,7 +78,7 @@ const Home = () => {
         setNewCourtTitle('');
 
         // แสดง SweetAlert2 ในกรณีเพิ่มสำเร็จ
-        MySwal.fire({
+        Swal.fire({
           icon: 'success',
           title: 'Success',
           text: `เพิ่มคอร์ท "${newCourtTitle}"เรียบร้อยแล้ว`,
@@ -101,7 +89,7 @@ const Home = () => {
 
   const deleteCourt = async (id: number, title: string) => {
     // แสดง SweetAlert2 สำหรับการยืนยันการลบ
-    const result1 = await MySwal.fire({
+    const result1 = await Swal.fire({
       title: `แน่ใจนะว่าจะลบ "${title}"?`,
       text: '**หากลบแล้วรายชื่อที่เคยจองคอร์ทนี้จะไม่ขึ้นชื่อคอร์ท**',
       icon: 'warning',
@@ -110,7 +98,7 @@ const Home = () => {
       cancelButtonText: 'No',
     });
     if (result1.isConfirmed) {
-      const result2 = await MySwal.fire({
+      const result2 = await Swal.fire({
         title: `ถามอีกครั้งว่าจะลบ "${title}" จริงๆเหรอ`,
         text: '**หากลบแล้วรายชื่อที่เคยจองคอร์ทนี้จะไม่ขึ้นชื่อคอร์ทนะ กู้ไม่ได้ด้วยแหละ**',
         icon: 'warning',
@@ -129,7 +117,7 @@ const Home = () => {
           setCourts(updatedCourts);
 
           // แสดง SweetAlert2 ในกรณีลบสำเร็จ
-          MySwal.fire({
+          Swal.fire({
             icon: 'success',
             title: 'สำเร็จ',
             text: `ลบ "${title}" เรียบร้อย!`,
@@ -144,7 +132,7 @@ const Home = () => {
     if (!editingCourt) return;
     const oldTitle = courts.find((item) => item.id === editingCourt.id)
     // แสดง SweetAlert2 สำหรับการยืนยันการแก้ไข
-    const result = await MySwal.fire({
+    const result = await Swal.fire({
       title: 'Confirmation',
       text: `ต้องการเปลี่ยนหัวข้อจาก ${oldTitle?.title} เป็น ${editingCourt.title}`,
       icon: 'question',
@@ -171,7 +159,7 @@ const Home = () => {
         setEditingCourt(null);
 
         // แสดง SweetAlert2 ในกรณีแก้ไขสำเร็จ
-        MySwal.fire({
+        Swal.fire({
           icon: 'success',
           title: 'Success',
           text: 'บันทึกการแก้ไขเรียบร้อยแล้ว',
@@ -202,25 +190,6 @@ const Home = () => {
     }
   };
 
-
-  if (message === 'Not authenticated') {
-    return (
-      <>
-        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-          <h5 >Token หมดอายุ กรุณาล็อคอินใหม่</h5>
-        </div>
-      </>
-    );
-  }
-  if (message != "Authenticated") {
-    return (
-      <>
-        <div style={{ top: "50%", left: "50%", position: "absolute", transform: "translate(-50%,-50%)" }}>
-          <h5 >loading....</h5>
-        </div>
-      </>
-    );
-  }
   return (
     <AdminLayout>
       <div className="container mt-5">
