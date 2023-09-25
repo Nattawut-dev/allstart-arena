@@ -60,11 +60,11 @@ export const getServerSideProps = async ({ req }: any) => {
 }
 
 
-const ColumsLeft = dynamic(() => import("./columsLeft"), { ssr: false });
-const ColumsRight = dynamic(() => import("./columsRight"), { ssr: false });
+
 function buffet() {
-
-
+    const ColumsLeft = dynamic(() => import("./columsLeft"), { ssr: false });
+    const ColumsRight = dynamic(() => import("./columsRight"), { ssr: false });
+    const [data, setData] = useState<Buffet[]>([]);
     const [leftItems, setLeftItems] = useState<ItemsType>(initialLeftItems);
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
     const elements = [];
@@ -90,15 +90,17 @@ function buffet() {
             const response = await fetch(`/api/admin/buffet/getRegis`)
             if (response.ok) {
                 const data = await response.json();
-                const newRightItems = { ...leftItems };
+                setData(data);
+                const newRightItems = { ...rightItems };
                 const notQdata = data.filter((item: Buffet) => item.q_id === null);
-                const newTasks = notQdata.map((item: Buffet) => ({
+                const newTasks = notQdata.map((item: Buffet, index: number) => ({
                     id: item.id,
                     content: `${item.name}(${item.nickname})`,
-                    q_list: item.q_list || 0,
+                    q_list: item.q_list || index + 999,
                 }));
                 newTasks.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
                 newRightItems['tasks'] = newTasks;
+                console.log(newRightItems)
                 setRightItems(newRightItems);
                 const newLeftItems = { ...leftItems };
                 for (let i = 0; i < numberOfProperties; i++) {
@@ -172,7 +174,6 @@ function buffet() {
         setLeftItems(updatedLeftItems);
 
 
-        // setRightItems(updatedRightItems);
 
         const right: any = value
         for (let i = 0; i < right.length; i++) {
@@ -181,34 +182,46 @@ function buffet() {
         const newState: any = {
             ...rightItems,
             tasks: [...rightItems.tasks, ...right],
-
         };
         setRightItems(newState);
+        for (let i = 0; i < 2; i++) {
+            let url = '';
+            let data;
 
-        try {
-            const response = await fetch(`/api/admin/buffet/updateQ?q_id=${null}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(right),
-            });
-
-            if (!response.ok) {
-                Toast.fire({
-                    icon: 'error',
-                    title: 'error'
-                })
-                throw new Error('ไม่สามารถดึงข้อมูลได้');
-            } else {
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Updated '
-                })
+            if (i === 0) {
+                url = `/api/admin/buffet/updateQ_clear`
+                data = updatedLeftItems;
+            } else if (i === 1) {
+                url = `/api/admin/buffet/updateQ?q_id=${null}`
+                data = right
             }
-        } catch (err) {
-            console.error(err)
+
+            try {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'error'
+                    })
+                    throw new Error('ไม่สามารถดึงข้อมูลได้');
+                } else {
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Updated '
+                    })
+                }
+            } catch (err) {
+                console.error(err)
+            }
         }
+
     };
 
     const onDragEnd = async (result: any) => {
@@ -381,12 +394,29 @@ function buffet() {
                             <div className='row'>
                                 <div className='col' style={{ width: '800px' }}><ColumsRight tasks={rightItems.tasks} /></div>
                             </div>
-
-
                         </div>
                     </div>
                 </div>
             </DragDropContext>
+            <div className='mt-2 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px' , height: 'auto', display: 'grid', gridTemplateColumns: "repeat(auto-fill, minmax(200px , 1fr))", gap: "0.1rem", }}>
+                {data.map((item, index) => (
+                    <Flex
+                        m={"0.2rem"}
+                        width={"200px"}
+                        rounded="3px"
+                        textAlign="center"
+                        outline="0px solid transparent"
+                        bg={'#FFED00'}
+                        align="center"
+                        flexDirection={"column"}
+                        zIndex={1}
+                    >
+                        <span className="fs-6 text-black" style={{padding : '3px'}}><span className='me-1'>{item.name+`(${item.nickname})`}</span> <Button className='btn-sm btn me-1 btn-warning'>-</Button> <span className='me-1'>{item.shuttle_cock}</span> <Button className='btn btn-sm me-1' >+</Button></span>
+                    </Flex>
+                ))
+                }
+
+            </div>
         </AdminLayout>
     )
 }

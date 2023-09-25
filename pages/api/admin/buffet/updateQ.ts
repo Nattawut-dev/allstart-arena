@@ -16,6 +16,9 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             const destinationItems = req.body;
             const { q_id } = req.query;
 
+            if (destinationItems.length === 0) {
+                return;
+            }
             let queries = 'UPDATE buffet SET q_list = CASE ';
             const params = [];
             let targetID = []
@@ -35,6 +38,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             params.push(targetID)
             const [results] = await connection.query(queries, params);
             res.json({ results });
+
 
         } catch (error) {
             console.error('Error fetching holidays:', error);

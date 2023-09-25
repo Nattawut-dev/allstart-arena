@@ -440,7 +440,7 @@ const DetailPage = ({ listtournament, detail }: Props) => {
                         <div className={styles.wrapper}>
                             <div className={styles.detail}>
                                 <div>QR code สำหรับชำระเงิน</div>
-                                <img src={'/QR1.jpg'} alt="photo" width="200" height="250" />
+                                <img src={'/QR5.jpg'} alt="photo" width="200" height="250" />
 
                             </div>
                             <div className={styles.detail}>

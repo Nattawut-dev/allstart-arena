@@ -23,7 +23,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         END AS T_value
  FROM buffet
  LEFT JOIN current_buffet_q ON buffet.q_id = current_buffet_q.id 
-         WHERE buffet.usedate = ?; `;
+         WHERE buffet.usedate = ?  ORDER BY buffet.id DESC ;`;
 
             // Execute the SQL query to fetch time slots
             const [results] = await connection.query(query, [usedate]);
