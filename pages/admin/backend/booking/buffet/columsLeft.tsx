@@ -3,7 +3,7 @@ import { Flex } from "@chakra-ui/react";
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Droppable } from "react-beautiful-dnd";
-const Column = ({ tasks, index }: any) => {
+const Column = ({ tasks, index, isMobile }: any) => {
     return (
         <div style={{width : '100%'}}>
             <Droppable droppableId={`left-${index}`} direction="horizontal">
@@ -26,7 +26,8 @@ const Column = ({ tasks, index }: any) => {
                                         <Flex
                                             m={"0.2rem"}
                                             p={"0"}
-                                            width={"150px"}
+                                            width={'150px'}
+                                            maxWidth={"100%"}
                                             bg={draggableSnapshot.isDragging ? "lightblue" : "white"}
                                             rounded="3px"
                                             height={'32px'}
@@ -48,7 +49,7 @@ const Column = ({ tasks, index }: any) => {
                                             {...draggableProvided.draggableProps}
                                             ref={draggableProvided.innerRef}
                                         >
-                                            <span className="p-1 fs-6">{task.content}</span>
+                                            <span className="p-1 " style={{fontSize : `${isMobile? '':'12px'}` }}>{isMobile ? task.content:task.nickname}</span>
                                         </Flex>
                                     )}
                                 </Draggable>
@@ -58,7 +59,7 @@ const Column = ({ tasks, index }: any) => {
                                         p={"0"}
                                         width={"50px"}
                                         height={'32px'}
-
+                                    
                                         rounded="3px"
                                         textAlign="center"
                                         _active={{ bg: "white" }}

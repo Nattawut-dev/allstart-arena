@@ -1,41 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
+import { getToken } from 'next-auth/jwt';
 
-// export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-//     if (req.method === 'GET') {
-//         try {
-//             const { search } = req.query;
-//             const connection = await pool.getConnection();
-//             console.log(search)
-//             let query = 'SELECT  * FROM reserve';
-//             const queryParams = [];
-
-//             if (search) {
-//                 query += ' WHERE name LIKE ? OR phone LIKE ? OR usedate LIKE ?';
-//                 queryParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
-//             }
-
-//             query += ' ORDER BY id DESC LIMIT 1000 ';
-
-
-
-//             const [results] = await connection.query(query, queryParams);
-//             res.json(results);
-//         } catch (error) {
-//             console.error('Error fetching reserve history:', error);
-//             res.status(500).json({ error: 'Error fetching reserve history' });
-//         }
-//     } else {
-//         res.status(405).json({ message: 'Method not allowed' });
-//     }
-// }
 
 export default async function get(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'GET') {
-        // Get the session token from the request cookies
-        const sessionToken = req.cookies.sessionToken;
-
-        if (!sessionToken) {
+        const token = await getToken({ req })
+        if (!token) {
             res.status(401).json({ message: 'Not authenticated' });
             return;
         }

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Button } from 'react-bootstrap';
-import dynamic from 'next/dynamic';
+import { Button, Modal } from 'react-bootstrap';
 import { DragDropContext } from "react-beautiful-dnd";
 import { Flex } from '@chakra-ui/react';
 import Swal from 'sweetalert2';
-const AdminLayout = dynamic(() => import('@/components/AdminLayout'));
-
+import dynamic from 'next/dynamic';
+import Head from 'next/head';
 
 interface ItemsType {
     [key: string]: string[];
@@ -40,37 +39,30 @@ interface Buffet {
     paymentSlip: string;
     regisDate: string;
     T_value: string;
-}
-export const getServerSideProps = async ({ req }: any) => {
-    const sessiontoken = req.cookies.sessionToken;
-
-    if (!sessiontoken) {
-        return {
-            redirect: {
-                destination: '/admin/login',
-                permanent: false,
-            },
-        };
-    } else {
-        return {
-            props: {
-            },
-        };
-    }
+    shuttle_cock_price: number;
 }
 
 
-
-function buffet() {
-    const ColumsLeft = dynamic(() => import("./columsLeft"), { ssr: false });
-    const ColumsRight = dynamic(() => import("./columsRight"), { ssr: false });
+function Buffets() {
+    const ColumsLeft = dynamic(() => import("./columsLeft"), { ssr: true });
+    const ColumsRight = dynamic(() => import("./columsRight"), { ssr: true });
     const [data, setData] = useState<Buffet[]>([]);
+    const [selectDataPayment, setSelectDataPayment] = useState<Buffet | null>();
     const [leftItems, setLeftItems] = useState<ItemsType>(initialLeftItems);
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
+    const [isMobile, setIsMobile] = useState<boolean>(false);
+    const [show, setShow] = useState(false);
+    const [show2, setShow2] = useState(false);
+
+    const [shuttle_cock_price, setShuttle_cock_price] = useState(0);
+    const [total_shuttle_cock_price, setTotal_shuttle_cock_price] = useState(0);
+
     const elements = [];
     const numberOfProperties = Object.keys(leftItems).length;
     useEffect(() => {
         fetchRegis();
+        setIsMobile(window.innerWidth > 768);
+
     }, [])
 
     const Toast = Swal.mixin({
@@ -87,15 +79,19 @@ function buffet() {
 
     const fetchRegis = async () => {
         try {
+            setLeftItems(initialLeftItems)
+            setRightItems(initialRightItems)
             const response = await fetch(`/api/admin/buffet/getRegis`)
             if (response.ok) {
                 const data = await response.json();
                 setData(data);
+                setShuttle_cock_price(data[0].shuttle_cock_price)
                 const newRightItems = { ...rightItems };
                 const notQdata = data.filter((item: Buffet) => item.q_id === null);
                 const newTasks = notQdata.map((item: Buffet, index: number) => ({
                     id: item.id,
                     content: `${item.name}(${item.nickname})`,
+                    nickname: `${item.nickname}`,
                     q_list: item.q_list || index + 999,
                 }));
                 newTasks.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
@@ -111,6 +107,7 @@ function buffet() {
                     const newTasksLeft = QData.map((item: Buffet) => ({
                         id: item.id,
                         content: `${item.name}(${item.nickname})`,
+                        nickname: `${item.nickname}`,
                         q_list: item.q_list || 0,
                     }));
                     newTasksLeft.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
@@ -136,7 +133,7 @@ function buffet() {
     for (let i = 0; i < numberOfProperties; i++) {
         const entries = Object.entries(leftItems)
         elements.push(
-            <div key={i} className='d-flex flex-row mb-1 p-1 justify-content-end' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px', height: '45px' }}>
+            <div key={i} className='d-flex flex-row mb-1 p-1 justify-content-between' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px', height: '45px' }}>
                 <Flex
                     m={"0.2rem"}
                     p={"0"}
@@ -149,10 +146,10 @@ function buffet() {
                     flexDirection={"column"}
                     zIndex={1}
                 >
-                    <span className="p-1 fs-6 text-black ">{i + 1}</span>
+                    <span className="p-1 fs-6 text-black "  >{i + 1}</span>
                 </Flex>
-                <ColumsLeft tasks={entries[i][1]} index={i} />
-                <Button className='btn btn-warning ' onClick={() => clearArray(entries[i][1], i)}>Clear</Button>
+                <ColumsLeft tasks={entries[i][1]} index={i} isMobile={isMobile} />
+                <Button className='btn btn-warning ' style={{ fontSize: `${isMobile ? '' : '12px'}`, display: 'flex', justifyContent: 'end' }} onClick={() => clearArray(entries[i][1], i)} >{!isMobile ? 'C' : 'Clear'}</Button>
             </div>
         );
 
@@ -369,9 +366,75 @@ function buffet() {
             }
         }
     };
+    const add_reduce = async (id: number, shuttle_cock: number) => {
+        try {
+            const response = await fetch('/api/admin/buffet/add_reduce', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, shuttle_cock })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update data');
+            }
+            fetchRegis();
+        } catch (error) {
+            console.error('Error updating data:', error);
+        }
+    }
+
+    const payMethod = async (id: any, method: string) => {
+        Swal.fire({
+            title: `รับชำระด้วย ${method}?`,
+            text: `ลูกค้าชำระค่าลูกแบดด้วย ${method} ทั้งหมด ${total_shuttle_cock_price} บาท`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Confirm "
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    method = method + total_shuttle_cock_price + 'บาท'
+                    const response = await fetch('/api/admin/buffet/pay_shuttle_cock', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id, method })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to update data');
+                    }
+                    fetchRegis();
+                    setShow(false);
+                    Swal.fire({
+                        title: "บันทึกสำเร็จ!",
+                        icon: "success"
+                    });
+                } catch (error) {
+                    console.error('Error updating data:', error);
+                    Swal.fire({
+                        title: "มีข้อผิดพลาด!",
+                        text: "กรุณาลองใหม่อีกครั้ง",
+                        icon: "error"
+                    });
+                }
+
+            }
+        });
+
+    }
+
 
     return (
-        <AdminLayout>
+        <>
+            <Head>
+                <title>Buffet Queue Set</title>
+            </Head>
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className='container-fluid text-center' style={{ overflow: 'hidden' }}>
                     <div className="d-flex justify-content-between mb-1">
@@ -381,7 +444,6 @@ function buffet() {
                     </div>
 
                     <div className='row'>
-
                         <div className='col me-3 p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px' }}>
                             <h6 className='fw-bold bg-primary text-white rounded p-1' >คิวการเล่น</h6>
                             {elements}
@@ -392,33 +454,78 @@ function buffet() {
                                 <div style={{ color: 'red', fontWeight: 'bold' }}>ไม่พบข้อมูล</div>
                             )}
                             <div className='row'>
-                                <div className='col' style={{ width: '800px' }}><ColumsRight tasks={rightItems.tasks} /></div>
+                                <div className='col' style={{ width: '650px' }}><ColumsRight tasks={rightItems.tasks} /></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </DragDropContext>
-            <div className='mt-2 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px' , height: 'auto', display: 'grid', gridTemplateColumns: "repeat(auto-fill, minmax(200px , 1fr))", gap: "0.1rem", }}>
+            <div className='mt-2 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#7A7AF9", borderRadius: '10px', height: 'auto', display: 'flex', gap: "0.1rem", flexDirection: 'row', flexWrap: 'wrap' }}>
                 {data.map((item, index) => (
                     <Flex
-                        m={"0.2rem"}
-                        width={"200px"}
-                        rounded="3px"
+                    key={index}
+                        m={"0.1rem"}
+                        maxWidth={"400px"}
+                        rounded="8px"
                         textAlign="center"
                         outline="0px solid transparent"
-                        bg={'#FFED00'}
+                        bg={'#FFFFFF'}
                         align="center"
                         flexDirection={"column"}
                         zIndex={1}
                     >
-                        <span className="fs-6 text-black" style={{padding : '3px'}}><span className='me-1'>{item.name+`(${item.nickname})`}</span> <Button className='btn-sm btn me-1 btn-warning'>-</Button> <span className='me-1'>{item.shuttle_cock}</span> <Button className='btn btn-sm me-1' >+</Button></span>
+                        <span className="fs-6 text-black" style={{ padding: '3px' }}>
+                            <span className='mx-3'><Button className='btn btn-sm btn-light' onClick={() => { setShow(true); setSelectDataPayment(item); setTotal_shuttle_cock_price((item?.shuttle_cock_price / 4) * item?.shuttle_cock) }} >{item.name + `(${item.nickname})`}</Button></span>
+                            <Button className='btn-sm btn me-1 btn-danger px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock - 1) }} disabled={item.shuttle_cock == 0}>-</Button>
+                            <span className='mx-2'>{item.shuttle_cock}</span>
+                            <Button className='btn btn-sm me-1 px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock + 1) }}>+</Button>
+                        </span>
                     </Flex>
                 ))
                 }
-
             </div>
-        </AdminLayout>
+
+            <Modal show={show} onHide={() => setShow(false)} centered >
+                <Modal.Header closeButton>
+                    <Modal.Title>ชำระค่าลูกแบด</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className='w-75 m-auto'>
+                    <div className='detail'>
+                        <div className='d-flex justify-content-between'>
+                            <p>ชื่อลูกค้า</p>
+                            <p>{selectDataPayment?.name} ({selectDataPayment?.nickname})</p>
+                        </div>
+                        <div className='d-flex justify-content-between'>
+                            <p>จำนวนลูก</p>
+                            <p>{selectDataPayment?.shuttle_cock} ลูก</p>
+                        </div>
+                        <div className='d-flex justify-content-between'>
+                            <p>ค่าลูก</p>
+                            <p>{selectDataPayment?.shuttle_cock_price} บาท / ลูก</p>
+                        </div>
+                        <div className='d-flex justify-content-between'>
+                            <p>ราคาหาร 4</p>
+                            <p>{`${shuttle_cock_price / 4} บาท/คน/ลูก`}</p>
+                        </div>
+
+                        <div className='d-flex justify-content-between'>
+                            <p>จำนวนที่ต้องชำระ</p>
+                            <p> {`${selectDataPayment?.shuttle_cock} * ${shuttle_cock_price / 4} = `} <span className='fw-bold fs-5 text-danger'>{total_shuttle_cock_price}</span> บาท</p>
+                        </div>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer className='d-flex justify-content-between'>
+                    <div>วิธีชำระเงิน</div>
+                    <div>
+                        <Button className='mx-2  btn btn-success' onClick={() => payMethod(selectDataPayment?.id, "เงินสด")} >ผ่านเงินสด</Button>
+                        <Button onClick={() => payMethod(selectDataPayment?.id, "โอนเงิน")} >ผ่านการโอน</Button>
+                    </div>
+                </Modal.Footer>
+            </Modal>
+
+        </>
+
     )
 }
 
-export default buffet
+export default Buffets;

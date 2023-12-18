@@ -9,7 +9,6 @@ import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2'
 import NotFoundPage from '../404'
 import Head from 'next/head';
-import useCountdown from '../countdown';
 interface TimeSlot {
     id: number;
     start_time: string;
@@ -39,37 +38,6 @@ interface Props {
     courts: Court[];
     timeZone: string;
 }
-
-
-// const countdownMinutes = 15;
-
-// const UseCountdown = (targetTime: Date, countdownMinutes: number) => {
-//     const [remainingTime, setRemainingTime] = useState(() => {
-//         const currentTime = new Date();
-//         const timeDifference = targetTime.getTime() - currentTime.getTime();
-//         return timeDifference < 0 ? 0 : timeDifference;
-//     });
-
-//     useEffect(() => {
-//         const intervalId = setInterval(() => {
-//             const currentTime = new Date();
-//             const timeDifference = targetTime.getTime() - currentTime.getTime();
-//             setRemainingTime(timeDifference < 0 ? 0 : timeDifference);
-//         }, 1000);
-
-//         return () => clearInterval(intervalId);
-//     }, [targetTime]);
-
-//     const countdownTime = countdownMinutes * 60 * 1000;
-//     const totalRemainingTime = remainingTime + countdownTime;
-
-//     const minutesRemaining = Math.floor((totalRemainingTime / 1000 / 60) % 60);
-//     const secondsRemaining = Math.floor((totalRemainingTime / 1000) % 60);
-
-//     return { minutesRemaining, secondsRemaining };
-// };
-
-// const TargetTime = new Date(); // Replace this with your target time
 
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
@@ -254,8 +222,6 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                     const remainingTime = (newTargetTime.getTime() + (900 * 1000) - currentTime.getTime());
                     const minutesRemaining = Math.floor(remainingTime / 60000);
                     const secondsRemaining = Math.floor((remainingTime % 60000) / 1000);
-                    console.log(minutesRemaining, secondsRemaining, newTargetTime.getTime() + 900 * 1000, currentTime.getTime(), remainingTime);
-                    console.log(id)
                     if (remainingTime < 0) {
                         clearInterval(id);
                     }
@@ -282,6 +248,13 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
             clearInterval(intervalId); // หยุดการนับถอยหลัง (ถ้ามี interval ที่ถูกสร้าง)
         }
     };
+    const showSlipImg = () => {
+        Swal.fire({
+            imageUrl: "/QR_Court.jpg",
+            imageHeight: 500,
+            imageAlt: "Slip สำหรับชำระเงิน"
+          });
+    }
 
     if (timeSlots.length < 1 || courts.length < 1) {
 
@@ -336,7 +309,6 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                             {reservations
                                 .map((reservation, index) => {
                                     const court = courts.find((c) => c.id === reservation.court_id);
-                                    const timeSlot = timeSlots.find((ts) => ts.id === reservation.time_slot_id);
                                     return (
 
                                         <tr key={reservation.id}>
@@ -364,22 +336,24 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                 </div>
 
                 <Modal
-
+                    contentClassName={styles.Modal}
                     show={show}
                     onHide={() => { handleClose(); }}
                     backdrop="static"
                     keyboard={false}
                     centered
+                    size='lg'
+
                 >
-                    <Modal.Header closeButton className={`${loading ? styles.load : ''}`}>
+                    <Modal.Header closeButton className={`${loading ? styles.load : ''}`} >
                         <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
                     </Modal.Header>
                     <Modal.Body className={`${loading ? styles.load : ''}`}>
                         <div>
                             <div className={styles.wrapper1}>
                                 <div className={styles.img}>
-                                    <Image src={previewImage ? previewImage : '/QR5.jpg'} alt="Qrcode" width="200" height="250" />
-                                    {
+                                    <Image src={previewImage ? previewImage : '/QR_Court.jpg'} alt="QR_Court" width="280" height="280" onClick={() => showSlipImg()}/>
+                                    {/* {
                                         previewImage == null &&
                                         <div className={styles.payment}>
                                             <div className={styles.wrapper4}>
@@ -391,7 +365,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                                 <p>ณัฐวุฒิ กายชาติ</p>
                                             </div>
                                         </div>
-                                    }
+                                    } */}
                                 </div>
                                 <div className={styles.detail}>
                                     <div className={styles.wrapper}>
@@ -466,7 +440,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                     </Modal.Body>
                     <Modal.Footer className={`${loading ? styles.load : ''}`} >
                         <div className={styles.footer1}>
-                            <div className={styles.btn1}><Button className='btn-info '><a href="/QR5.jpg" download="QR.jpg">โหลดสลิป</a></Button></div>
+                            <div className={styles.btn1}><Button className='btn-info '><a href="/QR_Court.jpg" download="QR_Court.jpg">โหลดสลิป</a></Button></div>
                             <div className={styles.slipbtn}>
                                 <label htmlFor="file-input" className={styles.file_input}>
                                     เลือกภาพสลิป

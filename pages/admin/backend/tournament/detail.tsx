@@ -42,23 +42,7 @@ interface Listtournament {
     max_team: number;
     price: number;
 }
-export const getServerSideProps = async ({ req }: any) => {
-    const sessiontoken = req.cookies.sessionToken;
 
-    if (!sessiontoken) {
-        return {
-            redirect: {
-                destination: '/admin/login',
-                permanent: false,
-            },
-        };
-    } else {
-        return {
-            props: {
-            },
-        };
-    }
-}
 function Detail() {
     const router = useRouter();
 

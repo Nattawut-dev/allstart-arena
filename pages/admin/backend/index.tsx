@@ -3,10 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '@/styles/admin/backend.module.css';
 import NotFoundPage from '@/pages/404';
 import Swal from 'sweetalert2'
-// import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
-import dynamic from 'next/dynamic';
-const AdminLayout = dynamic(() => import('@/components/AdminLayout') , { ssr: false });
 
 interface Rules {
     id: number;
@@ -19,27 +16,8 @@ interface Rules {
 }
 
 
-export async function getServerSideProps({ req }: any) {
-    const sessiontoken = req.cookies.sessionToken;
-    if (!sessiontoken) {
-        return {
-            redirect: {
-                destination: '/admin/login',
-                permanent: false,
-            },
-        };
-    } else {
-        return {
-            props: {
-
-            }
-        }
-    }
-}
 
 export default function Welcome() {
-    const router = useRouter();
-    const [message, setMessage] = useState('');
     const [rules, setRules] = useState<Rules[]>([]);
     const [editableTitle, setEditableTitle] = useState(false);
     const [editableContent, setEditableContent] = useState(false);
@@ -214,7 +192,7 @@ export default function Welcome() {
     }
 
     return (
-        <AdminLayout>
+        <>
             <Head>
                 <title>Rules setting</title>
             </Head>
@@ -317,6 +295,6 @@ export default function Welcome() {
 
                 </div>
             </div>
-        </AdminLayout>
+        </>
     );
 }

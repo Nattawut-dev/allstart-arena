@@ -3,8 +3,6 @@ import { Button, Modal } from 'react-bootstrap';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/tournament/setting.module.css'
 import Swal from 'sweetalert2'
-import { useRouter } from 'next/router';
-import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
 
 interface Tournament {
@@ -13,27 +11,20 @@ interface Tournament {
     ordinal: number;
     location: string;
     timebetween: string;
-    max_team: number;
     status: number;
 }
-export const getServerSideProps = async ({ req }: any) => {
-    const sessiontoken = req.cookies.sessionToken;
-
-    if (!sessiontoken) {
-        return {
-            redirect: {
-                destination: '/admin/login',
-                permanent: false,
-            },
-        };
-    } else {
-        return {
-            props: {
-            },
-        };
-    }
+interface Hand_level {
+    id: number;
+    name: string;
+    max_team_number: number;
+    price: number;
 }
-
+interface MaxTeamValues {
+    [key: number]: {
+        value: number;
+        price: number;
+    };
+}
 function Holiday() {
     const [tournament, setTournament] = useState<Tournament[]>([])
     const [isTournament, setIsTournament] = useState(false);
@@ -50,11 +41,14 @@ function Holiday() {
     const [max_team2, setMax_team2] = useState(0);
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
+    const [maxTeamValues, setMaxTeamValues] = useState<MaxTeamValues>({});
 
-    const [message, setMessage] = useState('');
+    const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+    const [hand_levels, setHand_levels] = useState<Hand_level[]>([])
 
     useEffect(() => {
         getHoliday();
+        getAll_hand_level();
     }, []);
 
 
@@ -72,18 +66,23 @@ function Holiday() {
             console.log('error');
         }
     };
+    const getAll_hand_level = async () => {
+        try {
+            const response = await fetch(`/api/tournament/select/get_all`);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error('An error occurred while fetching the data.');
+            }
+            setHand_levels(data)
 
+
+        } catch {
+            console.log('error');
+        }
+    }
     const handleCheckboxChange = async (id: number, currentStatus: number) => {
         const newStatus = currentStatus === 1 ? 0 : 1;
-        const checkIf1 = tournament.find(tournament => tournament.status === 1);
-        if (checkIf1 && newStatus != 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'ข้อผิดพลาด',
-                text: 'สามารถเปิดได้แค่ครั้งละ 1 การแข่งเท่านั้น',
-            })
-            return;
-        }
+
         try {
             const response = await fetch('/api/admin/tournament/statusUpdate', {
                 method: 'PUT',
@@ -134,13 +133,11 @@ function Holiday() {
                         )
                     }
 
-                    // Update the local state to remove the deleted holiday
                     setTournament((prevTournament) =>
                         prevTournament.filter((Tournament) => Tournament.id !== id)
                     );
                 } catch (error: any) {
                     console.error(error.message);
-                    // Handle any error or display an error message
                 }
 
             }
@@ -165,7 +162,7 @@ function Holiday() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ title, ordinal, location, timebetween, max_team }),
+                body: JSON.stringify({ title, ordinal, location, timebetween, max_team, maxTeamValues }),
             });
 
             if (!response.ok) {
@@ -203,11 +200,10 @@ function Holiday() {
         setLocation2(item.location);
         setOrdinal2(item.ordinal);
         setTimebetween2(item.timebetween);
-        setMax_team2(item.max_team)
         setShow2(true);
     }
 
-    async function updateHoliday() {
+    async function updateTournament() {
         try {
             const response = await fetch(`/api/admin/tournament/update`, {
                 method: 'PUT',
@@ -220,7 +216,8 @@ function Holiday() {
                     ordinal: ordinal2,
                     location: location2,
                     timebetween: timebetween2,
-                    max_team: max_team2
+                    max_team: max_team2,
+                    hand_levels: maxTeamValues,
                 }),
             });
 
@@ -246,17 +243,51 @@ function Holiday() {
             throw error;
         }
     }
+    const fetchHand_level = async (tournament_id: number) => {
+        try {
+            const response = await fetch(`/api/tournament/select/hand_level?tournament_id=${tournament_id}`);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error('An error occurred while fetching the data.');
+            }
+            setSelectedOptions([])
+            setMaxTeamValues({})
+            data.map((data1: Hand_level) => {
+                setSelectedOptions(prevSelected => [...prevSelected, data1.id]);
+                setMaxTeamValues(prevState => ({
+                    ...prevState,
+                    [data1.id]: {
+                        value: data1.max_team_number,
+                        price: data1.price
+                    }
+                }));
+            })
 
+        } catch {
+            console.log('error');
+        }
+    }
+    const handleCheckboxChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value);
+        if (e.target.checked) {
+            setSelectedOptions(prevSelected => [...prevSelected, value]);
+        } else {
+            setSelectedOptions(prevSelected => prevSelected.filter(item => item !== value));
+        }
+    };
+    const returnNameHandLevel = (id: number) => {
+        const handlevel = hand_levels.find((h) => h.id == id)
+        return handlevel?.name
+    }
     return (
-        <AdminLayout>
+        <>
             <Head>
                 <title>Setting tournament</title>
             </Head>
             <div className={styles.container}>
-
+            <h5 className='fw-bold d-flex justify-content-center'>จัดการ รายการแข่งขัน</h5>
                 <div className={styles.box}>
-                    <h5 className='fw-bold'>จัดการ รายการแข่งขัน</h5>
-                    <table className="table table-bordered">
+                    <table className="table table-bordered" >
                         <thead className='table-primary'>
                             <tr>
                                 <th scope="col">#</th>
@@ -264,7 +295,6 @@ function Holiday() {
                                 <th scope="col">สถานที่</th>
                                 <th scope="col">วันจัด-วันสิ้นสุด</th>
                                 <th scope="col">ครั้งที่</th>
-                                <th scope="col">จำนวนทีม</th>
                                 <th scope="col">สถานะ</th>
                                 <th scope="col">อัพเดท</th>
                                 <th scope="col">ลบ</th>
@@ -278,7 +308,6 @@ function Holiday() {
                                     <td>{item.location}</td>
                                     <td>{item.timebetween}</td>
                                     <td>{item.ordinal}</td>
-                                    <td>{item.max_team}</td>
                                     <td>
                                         <div className={styles.switch}>
                                             <input
@@ -294,7 +323,8 @@ function Holiday() {
                                         <Button
                                             className="btn-sm"
                                             onClick={() => {
-                                                editSelecter(item)
+                                                editSelecter(item);
+                                                fetchHand_level(item.id)
                                             }}
                                         >
                                             แก้ไข
@@ -315,13 +345,13 @@ function Holiday() {
                         </tbody>
                     </table>
 
-                    <div className='d-flex justify-content-end'> <Button onClick={() => setShow(true)}>เพิ่มงานแข่ง</Button></div>
 
                 </div>
+                <div className='d-flex justify-content-end my-1'> <Button onClick={() => setShow(true)}>เพิ่มงานแข่ง</Button></div>
 
             </div>
 
-            <Modal show={show} onHide={() => setShow(false)} centered>
+            <Modal show={show} onHide={() => { setShow(false); setSelectedOptions([]); setMaxTeamValues({}) }} centered keyboard={false}>
                 <Modal.Header closeButton>
                     <Modal.Title>เพิ่มงานแข่ง</Modal.Title>
                 </Modal.Header>
@@ -366,16 +396,90 @@ function Holiday() {
                                 onChange={(e) => setOrdinal(parseInt(e.target.value))}
                             />
                         </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="max_team" className='mb-1'>จำนวนทีม</label>
-                            <input
-                                type="number"
-                                id="max_team"
-                                value={max_team}
-                                onChange={(e) => setMax_team(parseInt(e.target.value))}
-                            />
-                        </div>
+
                     </div>
+                    <span className='d-flex justify-content-center fw-bold my-2 text-danger'>จัดระดับมือ</span>
+                    <div className={`${styles.hand_level} d-flex flex-row`}>
+                        {hand_levels.map((hand, index) => (
+                            <div className={styles.checkbox_wrapper_33} key={index}>
+                                <label className={styles.checkbox}>
+                                    <input
+                                        className={`${styles.checkbox__trigger} ${styles.visuallyhidden}`}
+                                        type="checkbox"
+                                        key={index}
+                                        id={hand.name}
+                                        value={hand.id}
+                                        checked={selectedOptions.includes(hand.id)}
+                                        onChange={handleCheckboxChange1} />
+
+                                    <span className={styles.checkbox__symbol}>
+                                        <svg aria-hidden="true" className={styles.icon_checkbox} width="28px" height="28px" viewBox="0 0 28 28" version="1" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M4 14l8 7L24 7"></path>
+                                        </svg>
+                                    </span>
+                                    <p className={styles.checkbox__textwrapper}>{hand.name}</p>
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                    {selectedOptions.length > 0 && (
+                        <>
+                            <span className='d-flex justify-content-center fw-bold my-2 text-danger'>จำนวนทีมหลัก **โปรดกรอกทุกช่อง</span>
+                            <div className={`${styles.hand_level} d-flex flex-row`}>
+                                {selectedOptions.map((id, index) => (
+                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '150px' }}>
+                                        <label htmlFor={`max_team_${id}`} className='mb-1'>
+                                            {returnNameHandLevel(id)} =
+                                        </label>
+                                        <input
+                                           key={index} 
+                                            type="number"
+                                            style={{ width: '80px', padding: '2px', margin: '5px' }}
+                                            id={`max_team_${id}`}
+                                            value={maxTeamValues[id].value || ''}
+                                            onChange={(e) => {
+                                                const newValue = parseInt(e.target.value);
+                                                setMaxTeamValues(prevState => ({
+                                                    ...prevState,
+                                                    [id]: {
+                                                        value: newValue,
+                                                        price: maxTeamValues[id].price
+                                                    }
+                                                }));
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            <span className='d-flex justify-content-center fw-bold my-2 text-danger'>ค่าสมัครแข่ง **โปรดกรอกทุกช่อง</span>
+                            <div className={`${styles.hand_level} d-flex flex-row`}>
+                                {selectedOptions.map((id, index) => (
+                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '150px' }}>
+                                        <label htmlFor={`max_team_${id}`} className='mb-1'>
+                                            {returnNameHandLevel(id)} =
+                                        </label>
+                                        <input
+                                          key={index} 
+                                            type="number"
+                                            style={{ width: '80px', padding: '2px', margin: '5px' }}
+                                            id={`max_team_${id}`}
+                                            value={maxTeamValues[id].price || ''}
+                                            onChange={(e) => {
+                                                const newValue = parseInt(e.target.value);
+                                                setMaxTeamValues(prevState => ({
+                                                    ...prevState,
+                                                    [id]: {
+                                                        value: maxTeamValues[id].value,
+                                                        price: newValue
+                                                    }
+                                                }));
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </Modal.Body>
                 <Modal.Footer>
                     <div>
@@ -387,9 +491,9 @@ function Holiday() {
                 </Modal.Footer>
             </Modal>
 
-            <Modal show={show2} onHide={() => setShow2(false)} centered>
+            <Modal show={show2} onHide={() => { setShow2(false); setSelectedOptions([]); setMaxTeamValues({}) }} centered keyboard={false}>
                 <Modal.Header closeButton>
-                    <Modal.Title>แก้ไขงานแข่ง'</Modal.Title>
+                    <Modal.Title>แก้ไขงานแข่ง</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div className={styles.addtournament}>
@@ -432,27 +536,100 @@ function Holiday() {
                                 onChange={(e) => setOrdinal2(parseInt(e.target.value))}
                             />
                         </div>
-                        <div className='d-flex flex-column'>
-                            <label htmlFor="max_team" className='mb-1'>จำนวนทีม</label>
-                            <input
-                                type="number"
-                                id="max_team"
-                                value={max_team2}
-                                onChange={(e) => setMax_team2(parseInt(e.target.value))}
-                            />
-                        </div>
+
                     </div>
+                    <span className='d-flex justify-content-center fw-bold my-2 text-danger'>จัดระดับมือ</span>
+                    <div className={`${styles.hand_level} d-flex flex-row`}>
+                        {hand_levels.map((hand, index) => (
+                            <div className={styles.checkbox_wrapper_33} key={index}>
+                                <label className={styles.checkbox}>
+                                    <input
+                                        className={`${styles.checkbox__trigger} ${styles.visuallyhidden}`}
+                                        type="checkbox"
+                                        key={index}
+                                        id={hand.name}
+                                        value={hand.id}
+                                        checked={selectedOptions.includes(hand.id)}
+                                        onChange={handleCheckboxChange1} />
+
+                                    <span className={styles.checkbox__symbol}>
+                                        <svg aria-hidden="true" className={styles.icon_checkbox} width="28px" height="28px" viewBox="0 0 28 28" version="1" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M4 14l8 7L24 7"></path>
+                                        </svg>
+                                    </span>
+                                    <p className={styles.checkbox__textwrapper}>{hand.name}</p>
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                    {selectedOptions.length > 0 && (
+                        <>
+                            <span className='d-flex justify-content-center fw-bold my-2 text-danger'>จำนวนทีมหลัก **โปรดกรอกทุกช่อง</span>
+                            <div className={`${styles.hand_level} d-flex flex-row`}>
+                                {selectedOptions.map((id, index) => (
+                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '150px' }}>
+                                        <label htmlFor={`max_team_${id}`} className='mb-1'>
+                                            {returnNameHandLevel(id)} =
+                                        </label>
+                                        <input
+                                            type="number"
+                                            style={{ width: '80px', padding: '2px', margin: '5px' }}
+                                            id={`max_team_${id}`}
+                                            value={maxTeamValues[id].value || ''}
+                                            onChange={(e) => {
+                                                const newValue = parseInt(e.target.value);
+                                                setMaxTeamValues(prevState => ({
+                                                    ...prevState,
+                                                    [id]: {
+                                                        value: newValue,
+                                                        price: maxTeamValues[id].price
+                                                    }
+                                                }));
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            <span className='d-flex justify-content-center fw-bold my-2 text-danger'>ค่าสมัครแข่ง **โปรดกรอกทุกช่อง</span>
+                            <div className={`${styles.hand_level} d-flex flex-row`}>
+                                {selectedOptions.map((id, index) => (
+                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '150px' }}>
+                                        <label htmlFor={`max_team_${id}`} className='mb-1'>
+                                            {returnNameHandLevel(id)} =
+                                        </label>
+                                        <input
+                                            type="number"
+                                            style={{ width: '80px', padding: '2px', margin: '5px' }}
+                                            id={`max_team_${id}`}
+                                            value={maxTeamValues[id].price || ''}
+                                            onChange={(e) => {
+                                                const newValue = parseInt(e.target.value);
+                                                setMaxTeamValues(prevState => ({
+                                                    ...prevState,
+                                                    [id]: {
+                                                        value: maxTeamValues[id].value,
+                                                        price: newValue
+                                                    }
+                                                }));
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
                 </Modal.Body>
                 <Modal.Footer>
                     <div>
-                        <Button onClick={updateHoliday}>ยืนยัน</Button>
+                        <Button onClick={updateTournament}>ยืนยัน</Button>
                     </div>
                     <div>
                         <Button className='btn-danger' onClick={() => setShow2(false)}>ยกเลิก</Button>
                     </div>
                 </Modal.Footer>
             </Modal>
-        </AdminLayout>
+        </>
 
     )
 }

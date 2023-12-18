@@ -20,7 +20,7 @@ interface buffet {
     regisDate: string
 }
 
-function infobuffet() {
+function Infobuffet() {
     const [buffets, setBuffets] = useState<buffet[]>([]);
     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
 
@@ -72,7 +72,7 @@ function infobuffet() {
                                             <td>{buffet.name}</td>
                                             <td>{buffet.nickname}</td>
                                             <td className='' style={{ backgroundColor: buffet.paymentStatus === 0 ? '#FDCE4E' : buffet.paymentStatus === 1 ? '#d1e7dd' : '#eccccf' }}>
-                                                {buffet.paymentStatus === 0 ? 'กำลังตรวจสอบ' : buffet.paymentStatus === 1 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
+                                                {buffet.paymentStatus === 0 ? 'กำลังตรวจสอบ' : buffet.paymentStatus === 1 ? 'ชำระแล้ว' : 'สลิปไม่ถูกต้อง'}
                                             </td>
                                         </tr>
                                     );
@@ -92,4 +92,4 @@ function infobuffet() {
     );
 };
 
-export default infobuffet;
+export default Infobuffet;

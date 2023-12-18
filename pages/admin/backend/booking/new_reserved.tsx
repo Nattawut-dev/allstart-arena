@@ -6,8 +6,7 @@ import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import dynamic from 'next/dynamic';
-const AdminLayout = dynamic(() => import('@/components/AdminLayout'));
+
 
 
 interface Reserve {
@@ -36,24 +35,6 @@ interface TimeSlot {
     start_time: string;
     end_time: string;
     price: number;
-}
-
-export const getServerSideProps = async ({ req }: any) => {
-    const sessiontoken = req.cookies.sessionToken;
-
-    if (!sessiontoken) {
-        return {
-            redirect: {
-                destination: '/admin/login',
-                permanent: false,
-            },
-        };
-    } else {
-        return {
-            props: {
-            },
-        };
-    }
 }
 
 function Holiday() {
@@ -390,7 +371,7 @@ function Holiday() {
     };
 
     return (
-        <AdminLayout>
+        <>
             <Head>
                 <title>New reservations</title>
             </Head>
@@ -416,7 +397,7 @@ function Holiday() {
                                 ตรวจสอบแล้ว
                             </Button>
                             <Button
-                                className='mx-2'
+                                className=' d-flex  mx-2 '
                                 onClick={() => {
                                     setCurrentPage(0);
                                     setFilter('1');
@@ -428,7 +409,8 @@ function Holiday() {
                                     color: filter === '1' ? 'white' : 'black',
                                 }}
                             >
-                                โอนแล้ว
+                            <img src='/new-icon.svg' alt='new-icon' width={'20px'}/>การจองใหม่
+                                
                             </Button>
                             <Button
                                 onClick={() => {
@@ -686,7 +668,7 @@ function Holiday() {
                 </Modal.Footer>
             </Modal>
 
-        </AdminLayout>
+        </>
 
     )
 }

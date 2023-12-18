@@ -1,5 +1,5 @@
+import Head from 'next/head';
 import React, { useEffect, useState } from 'react';
-import AdminLayout from '@/components/AdminLayout';
 import { Button } from 'react-bootstrap';
 
 // กำหนดชนิดข้อมูลสำหรับข้อมูล BuffetSetting
@@ -8,23 +8,7 @@ type BuffetSetting = {
     court_price: number;
     shuttle_cock_price: number;
 };
-export const getServerSideProps = async ({ req }: any) => {
-    const sessiontoken = req.cookies.sessionToken;
 
-    if (!sessiontoken) {
-        return {
-            redirect: {
-                destination: '/admin/login',
-                permanent: false,
-            },
-        };
-    } else {
-        return {
-            props: {
-            },
-        };
-    }
-}
 function BuffetSetting() {
     const [buffetSettings, setBuffetSettings] = useState<BuffetSetting | null>(null);
     const [editBuffetSetting, setEditBuffetSetting] = useState<BuffetSetting | null>(null);
@@ -79,7 +63,10 @@ function BuffetSetting() {
     }, []);
 
     return (
-        <AdminLayout>
+        <>
+            <Head>
+                <title>Price buffet setting</title>
+            </Head>
             <div className='container mt-5 '>
                 <div className='d-flex justify-content-center'>
                     <h4 className='fw-bold'>ตั้งค่าตีบุฟเฟ่ต์</h4>
@@ -127,14 +114,14 @@ function BuffetSetting() {
                                             }
                                         />
                                     ) : (
-                                        buffetSettings.shuttle_cock_price 
+                                        buffetSettings.shuttle_cock_price
                                     )}
                                 </td>
                                 <td>
                                     {editBuffetSetting && editing ? (
                                         <div>
                                             <Button
-                                            className='btn btn-success mx-2 btn-sm'
+                                                className='btn btn-success mx-2 btn-sm'
                                                 onClick={() => {
                                                     updateBuffetSetting(buffetSettings.id, editBuffetSetting);
                                                 }}
@@ -142,7 +129,7 @@ function BuffetSetting() {
                                                 บันทึก
                                             </Button>
                                             <Button
-                                            className='btn btn-danger btn-sm'
+                                                className='btn btn-danger btn-sm'
                                                 onClick={() => {
                                                     setEditing(false);
                                                 }}
@@ -153,12 +140,12 @@ function BuffetSetting() {
 
 
                                     ) : (
-                                        <Button 
-                                        className='btn btn-warning btn-sm'
-                                        onClick={() => {
-                                            setEditBuffetSetting(buffetSettings);
-                                            setEditing(true); // เปิดโหมดแก้ไขเมื่อคลิกแก้ไข
-                                        }}>
+                                        <Button
+                                            className='btn btn-warning btn-sm'
+                                            onClick={() => {
+                                                setEditBuffetSetting(buffetSettings);
+                                                setEditing(true); // เปิดโหมดแก้ไขเมื่อคลิกแก้ไข
+                                            }}>
                                             แก้ไข
                                         </Button>
                                     )}
@@ -169,7 +156,7 @@ function BuffetSetting() {
                     </tbody>
                 </table>
             </div>
-        </AdminLayout>
+        </>
     );
 }
 

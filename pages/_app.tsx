@@ -8,35 +8,7 @@ import { useRouter } from 'next/router';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  // const [message, setMessage] = useState('');
-
-  // const checkAuthentication = async () => {
-  //   try {
-  //     const response = await fetch('/api/admin/check-auth', {
-  //       method: 'GET',
-  //       credentials: 'include', // Include cookies in the request
-  //     });
-
-  //     const data = await response.json();
-  //     if (response.ok) {
-  //       setMessage(data.message);
-  //     } else {
-  //       setMessage(data.message);
-  //       return;
-  //     }
-
-  //   } catch (error) {
-  //     console.error('Error while checking authentication', error);
-  //     setMessage('An error occurred. Please try again later.');
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   checkAuthentication();
-  // }, [message]);
-
   const isAdminRoute = router.pathname.startsWith('/admin/backend');
-  const islogin = router.pathname.startsWith('/admin/login');
 
 
   return (
@@ -46,8 +18,11 @@ function MyApp({ Component, pageProps }: AppProps) {
     // </div >
     <div>
 
-      {isAdminRoute || islogin?
-        <Component {...pageProps} /> :
+      {isAdminRoute ?
+        <AdminLayout>
+          <Component {...pageProps} />
+        </AdminLayout>
+        :
         <Layout>
           <Component {...pageProps} />
         </Layout>

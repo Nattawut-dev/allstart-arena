@@ -6,9 +6,6 @@ import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/holidays.module.css'
 import Swal from 'sweetalert2'
 import Head from 'next/head';
-import dynamic from 'next/dynamic';
-
-const AdminLayout = dynamic(() => import('@/components/AdminLayout'));
 
 interface Holidays {
   id: number;
@@ -17,23 +14,6 @@ interface Holidays {
   status: number;
 }
 
-export async function getServerSideProps({ req }: any) {
-  const sessiontoken = req.cookies.sessionToken;
-  if (!sessiontoken) {
-    return {
-      redirect: {
-        destination: '/admin/login',
-        permanent: false,
-      },
-    };
-  } else {
-    return {
-      props: {
-
-      }
-    }
-  }
-}
 
 function Holiday() {
   const [holidays, setHolidays] = useState<Holidays[]>([])
@@ -227,7 +207,7 @@ function Holiday() {
   }
 
   return (
-    <AdminLayout>
+    <>
       <Head>
         <title>Holidays</title>
       </Head>
@@ -383,7 +363,7 @@ function Holiday() {
           </div>
         </Modal.Footer>
       </Modal>
-    </AdminLayout>
+    </>
 
   )
 }

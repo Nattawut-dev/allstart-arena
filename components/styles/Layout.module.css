@@ -4,6 +4,8 @@
   flex-direction: column;
   min-height: 100vh; /* ใช้ min-height เพื่อให้ wrapper ขยายตามเนื้อหา */
   background-color: #ffffff;
+  overflow: auto;
+
 }
 
 .contentWrapper {
@@ -15,9 +17,14 @@
   margin-top: 60px; /* ขยับเนื้อหาขึ้นไปข้างล่างของ Topbar */
   width: calc(95%);
   margin-left: 2.5%;
+  overflow: auto;
+  transition: width 0.3s ease-in-out, margin 0.3s ease-in-out; /* เพิ่ม transition ให้กับ width และ margin */
+
 }
 
 .open .content {
   margin-left: calc(220px + 2.5%); /* ขยับเนื้อหาเมื่อเปิดเมนูด้านข้าง */
   width: calc(95% - 220px);
+  overflow: auto;
+
 }

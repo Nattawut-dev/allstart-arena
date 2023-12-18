@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import styles from './styles/admin/AdminTopbar.module.css';
-import { FaAlignLeft, FaTimes } from 'react-icons/fa';
 
 type TopBarProps = {
   toggleSidebar: () => void;
@@ -12,16 +11,15 @@ type TopBarProps = {
 const TopBar: React.FC<TopBarProps> = ({ toggleSidebar, isOpen }) => {
   return (
     <div className={styles.topBar}>
-      <button className={styles.sidebarToggle} onClick={toggleSidebar}>
-        <span className={styles.sidebarToggleIcon}>
-          <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/menu--v3.png" alt="menu--v3" />
-        </span>
-        {/* <span className={styles.sidebarToggleIcon}>{isOpen ? <FaTimes />:<FaAlignLeft /> }</span> */}
-      </button>
+      <span className={`${styles.sidebarToggleIcon}  ${isOpen ? styles.active : ''} `} onClick={toggleSidebar}>
+        <span className={styles.bar}></span>
+        <span className={styles.bar}></span>
+        <span className={styles.bar}></span>      </span>
+
       <div className={styles.logo}>
-        <Image src="/badminton-logo.jpg" alt="Badminton Logo" width={40} height={40} />
+        <Image src="/logo.jpg" alt="Badminton Logo" width={40} height={40} />
       </div>
-      <div className={styles.title}>Admin Page</div>
+      <div className={styles.title}>All Stars Arena Badminton Admin</div>
     </div>
   );
 };

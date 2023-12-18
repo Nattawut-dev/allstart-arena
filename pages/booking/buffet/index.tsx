@@ -113,14 +113,25 @@ export default function Page({ buffet_setting }: Props) {
 
         if (response.ok) {
           // ถ้าอัปโหลดสำเร็จ แสดง SweetAlert2 ข้อความเสร็จสมบูรณ์
-          Swal.fire({
-            title: 'บันทึกสำเร็จ',
-            icon: 'success',
-            showConfirmButton: false,
-            timer: 1500, // แสดงข้อความเป็นเวลา 1.5 วินาทีแล้วปิด
-          });
-
+          // Swal.fire({
+          //   title: 'บันทึกสำเร็จ',
+          //   icon: 'success',
+          //   showConfirmButton: false,
+          //   timer: 1000, // แสดงข้อความเป็นเวลา 1.5 วินาทีแล้วปิด
+          // });
           // รีเซ็ตค่าฟอร์ม
+          Swal.fire({
+            title: "บันทึกสำเร็จ",
+            icon : 'success',
+            text: "ต้องการไปหน้ารายละเอียดไหม ? ",
+            showCancelButton: true,
+            confirmButtonText: "ตกลง",
+          }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+              router.replace("/booking/buffet/info")
+            }
+          });
           setName('');
           setPhone('');
           setNickname('');
@@ -151,10 +162,24 @@ export default function Page({ buffet_setting }: Props) {
 
   const showQR = () => {
     Swal.fire({
-      imageUrl: '/QR4.jpg',
-      imageHeight: 350,
-      html: 'ชื่อบัญชี : ณัฐวุฒิ กายชาติ<br>พร้อมเพย์ : 0987022613',
-      imageAlt: 'A tall image'
+      imageUrl: '/QR_Buffet.jpg',
+      imageHeight: 400,
+      html: `<button ><a href="/QR_Buffet.jpg" download="QR_Buffet.jpg">ดาวน์โหลดภาพสลิป</a></button>
+      <style>
+      button {
+        border : none;
+        background-color: #0d6efd;
+        padding : 8px;
+        border-radius : 8px;
+      }
+      button a {
+       color: white;
+       text-decoration: none;
+
+      }
+    </style>`,
+      imageAlt: 'QR_code',
+      confirmButtonText: 'ปิดหน้าต่างนี้'
     })
   }
 
@@ -183,6 +208,8 @@ export default function Page({ buffet_setting }: Props) {
           Nickname:
           <input
             type="text"
+            maxLength={10}
+
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder='ชื่อเล่น'
@@ -193,14 +220,14 @@ export default function Page({ buffet_setting }: Props) {
           <input
             type="tel"
             maxLength={10}
-            pattern="[0-9]+"
+            pattern="0[0-9]{9}"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder='เบอร์โทร'
             required
           />
         </label>
-        <h6 style={{ color: "red" }}>ราคา {buffet_setting.court_price} บาท  {"(แค่ค่าสนาม) ค่าลูกจะรวมอีกทีหลังตีเสร็จ"}</h6>
+        <h6 style={{ color: "red" }}>ราคา {buffet_setting.court_price} บาท  {"(แค่ค่าสนาม) ค่าลูกจะคิดอีกทีหลังตีเสร็จ"}</h6>
         <div className='d-flex justify-content-center'>
           <label>
             Payment Slip:
@@ -212,28 +239,29 @@ export default function Page({ buffet_setting }: Props) {
           </label>
         </div>
 
-        {imgUrl && (
+        {imgUrl ? (
           <div className='d-flex justify-content-center border'>
             <img src={imgUrl} alt="Payment Slip Preview" width="200" />
           </div>
+        ) : (
+          <>
+            <span className='d-flex justify-content-center fw-bold'>QRcode สำหรับชำระเงิน</span>
+            <div className='d-flex justify-content-center border' onClick={showQR}>
+              <img src='/QR_buffet.jpg' alt="QR_code" width="200" />
+            </div>
+          </>
+
         )}
-        {/* {!imgUrl &&
-          <div className='d-flex justify-content-center border'>
-            <Button onClick={showQR} className='btn btn-light'>
-              <img src='/QR4.jpg' alt="Payment Slip Preview" width="200" />
-            </Button>
-          </div>
-        } */}
+
         <div>
           <p style={{ color: "red", fontWeight: 'Bold' }}>{error}</p>
         </div>
         <div className='row' >
-          <Button className=' btn btn-success col' onClick={showQR}>ดู QR Code</Button>
+          <Button className=' btn btn-success col' ><a href="/QR_buffet.jpg" style={{textDecoration : 'none' , color : 'white'}} download="QR_buffet.jpg">โหลดภาพสลิป</a></Button>
           <Button className='col mx-2' type="submit">ยืนยันการจอง</Button>
         </div>
 
       </form>
-
     </div>
   );
 }

@@ -4,7 +4,7 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head />
-      <link rel="icon" href="/badminton-logo.jpg" />
+      <link rel="icon" href="/logo.jpg" />
 
       <body>
         <Main />

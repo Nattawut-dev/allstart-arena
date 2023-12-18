@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import styles from '@/styles/admin/tournament/Tournament.module.css';
 import Swal from 'sweetalert2';
-import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
 
 interface ProtestData {
@@ -45,23 +44,6 @@ interface Detail {
   paymentStatus: number;
 }
 
-export const getServerSideProps = async ({ req }: any) => {
-  const sessiontoken = req.cookies.sessionToken;
-
-  if (!sessiontoken) {
-      return {
-          redirect: {
-              destination: '/admin/login',
-              permanent: false,
-          },
-      };
-  } else {
-      return {
-          props: {
-          },
-      };
-  }
-}
 const ProtestPage: React.FC = () => {
   const [protestData, setProtestData] = useState<ProtestData[]>([]);
   const [listtournamentData, setListtournamentData] = useState<Listtournament[]>([]);
@@ -219,13 +201,13 @@ const ProtestPage: React.FC = () => {
   }
 
   return (
-    <AdminLayout>
+    <>
       <Head>
         <title>Protest</title>
       </Head>
       <div style={{ maxWidth: '1200px', textAlign: 'center', margin: 'auto' }}>
         <h4 className='d-flex flex-row ' style={{ width: 'fit-content' }}>
-          <label htmlFor="status" className='text-nowrap mx-2 '>การประท้วง  : </label>
+          <label htmlFor="status" className='text-nowrap mx-2 '>การประท้วง งานแข่ง : </label>
           <select
             className={`text-center form-select `}
             id="status"
@@ -250,6 +232,9 @@ const ProtestPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
+            {protestData.length < 1 && (
+              <td colSpan={4}>ยังไม่มีการประท้วงสำหรับงานนี้</td>
+            ) }
             {protestData.map((protest, index) => {
               return (
                 <tr key={index}>
@@ -347,7 +332,7 @@ const ProtestPage: React.FC = () => {
         </Modal>
 
       </div>
-    </AdminLayout>
+    </>
 
   );
 };

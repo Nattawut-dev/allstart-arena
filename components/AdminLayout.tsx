@@ -20,7 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className={styles.wrapper}>
       <Topbar toggleSidebar={toggleSidebar} isOpen={isSidebarOpen} />
       <div className={`${styles.contentWrapper} ${isSidebarOpen ? styles.open : ''}`}>
-        <Sidebar isOpen={isSidebarOpen} />
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className={styles.content}>
           <div className={styles.box}>
             {children}

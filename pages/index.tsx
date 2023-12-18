@@ -51,15 +51,19 @@ const Rules = ({ rules }: Props) => {
         <title>Rules</title>
       </Head>
       <div className={styles.container}>
-        <h3 className={styles.heading}>{rules[0].title}</h3>
-        <p className={styles.content}>{rules[0].content}</p>
+        <h1 className='fw-bold' style={{ textAlign: 'center', textShadow: '0px 2px 4px rgba(0, 0, 0, 0.5)' }}>All Star Badminton</h1>
+        <div className={styles.box_content}>
+          <h2 className={styles.heading}>{rules[0].title}</h2>
+          <p className={styles.content}>{rules[0].content}</p>
+        </div>
+
         <div className={styles.contect} >
           <div className={styles.box}>
 
-            <p style={{textAlign: "center" , marginBottom : "15px" , fontWeight : "bold"}}>ช่องทางการติดต่อ</p>
+            <p style={{ textAlign: "center", marginBottom: "15px", fontWeight: "bold" }}>ช่องทางการติดต่อ</p>
             <p>ไอดีไลน์ : {rules[0].line_id}</p>
             <p >โทร : {rules[0].tel}</p>
-            <p >Facebook : <a href={rules[0].facebook_url} target="_blank">{rules[0].facebook_title}</a></p>
+            <p >Facebook : <a href={rules[0].facebook_url} target="_blank" className='text-white'>{rules[0].facebook_title}</a></p>
           </div>
         </div>
 

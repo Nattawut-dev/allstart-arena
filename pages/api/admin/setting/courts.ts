@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
+import { getToken } from 'next-auth/jwt';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const sessionToken = req.cookies.sessionToken;
-
-  if (!sessionToken) {
-    res.status(401).json({ message: 'Not authenticated' });
-    return;
+  const token = await getToken({ req })
+  if (!token) {
+      res.status(401).json({ message: 'Not authenticated' });
+      return;
   }
   const connection = await pool.getConnection();
 

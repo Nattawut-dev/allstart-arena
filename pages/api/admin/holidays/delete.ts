@@ -1,15 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { RowDataPacket } from 'mysql2';
+import { getToken } from 'next-auth/jwt';
 
 export default async function deleteHoliday(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'DELETE') {
-    // Get the session token from the request cookies
-    const sessionToken = req.cookies.sessionToken;
-
-    if (!sessionToken) {
-      res.status(401).json({ message: 'Not authenticated' });
-      return;
+    const token = await getToken({ req })
+    if (!token) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
     }
     const connection = await pool.getConnection();
     try {

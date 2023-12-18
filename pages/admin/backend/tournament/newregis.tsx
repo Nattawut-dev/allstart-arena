@@ -4,7 +4,6 @@ import styles from '@/styles/detailTornament.module.css';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { AiFillEdit } from "react-icons/ai";
-import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
 
 interface Detail {
@@ -42,23 +41,7 @@ interface Listtournament {
     max_team: number;
     price: number;
 }
-export const getServerSideProps = async ({ req }: any) => {
-    const sessiontoken = req.cookies.sessionToken;
 
-    if (!sessiontoken) {
-        return {
-            redirect: {
-                destination: '/admin/login',
-                permanent: false,
-            },
-        };
-    } else {
-        return {
-            props: {
-            },
-        };
-    }
-}
 function Detail() {
     const router = useRouter();
 
@@ -420,33 +403,42 @@ function Detail() {
     );
 
     return (
-        <AdminLayout>
+        <>
             <Head>
                 <title>New register </title>
             </Head>
             <div style={{ textAlign: 'center', margin: 'auto' }}>
-                <div className='mb-1' style={{ justifyContent: 'center', textAlign: 'center', display: 'flex' }}>
-                    <label htmlFor="status" className='text-nowrap mx-2 mt-1' >ผู้สมัครแข่ง :</label>
-                    <select
-                        className={`text-center form-select form-select-sm`}
-                        style={{ maxWidth: 'fit-content' }}
-                        id="status"
-                        name="status"
-                        value={listT_id === undefined ? '' : listT_id}
-                        onChange={(e) => {
-                            const ID = parseInt(e.target.value);
-                            fetchDetail(status, paymentStatus, ID);
-                            router.query.listT_id = `${ID}`
-                            router.push(router);
-                        }}
-                    >
-                        {ListournamentOptions}
+                <div className={`mb-1 d-flex ${styles.headerAAAA}`} style={{ justifyContent: 'center', textAlign: 'center', flexWrap: 'wrap' }}>
+                    <div className='d-flex flex-row'>
 
-                    </select>
-                    <label className='text-nowrap mx-2 mt-1' >สถานะ: </label>
-                    {statusSelect}
-                    <label className='text-nowrap mx-2 mt-1' >สถานะการชำระเงิน: </label>
-                    {paymentStatusSelect}
+                        <label htmlFor="status" className='text-nowrap mx-2 mt-1'>ผู้สมัครแข่ง :</label>
+                        <select
+                            className={`text-center form-select form-select-sm`}
+                            style={{ maxWidth: 'fit-content' }}
+                            id="status"
+                            name="status"
+                            value={listT_id === undefined ? '' : listT_id}
+                            onChange={(e) => {
+                                const ID = parseInt(e.target.value);
+                                fetchDetail(status, paymentStatus, ID);
+                                router.query.listT_id = `${ID}`
+                                router.push(router);
+                            }}
+                        >
+                            {ListournamentOptions}
+                        </select>
+                    </div>
+                    <div className="mt-1 d-flex flex-wrap justify-content-center ">
+                        <div className='d-flex flex-row'>
+                            <label className='text-nowrap mx-2 mt-1'>สถานะ: </label>
+                            {statusSelect}
+                        </div>
+                        <div className='d-flex flex-row'>
+
+                            <label className='text-nowrap mx-2 mt-1'>สถานะการชำระเงิน: </label>
+                            {paymentStatusSelect}
+                        </div>
+                    </div>
                 </div>
                 <div className='bg-primary text-white mb-1'>
                     <span className='text-nowrap mx-2 fs-6 my-2'> ระดับมือ {status} </span>
@@ -697,7 +689,7 @@ function Detail() {
                 </Modal>
             </div>
 
-        </AdminLayout>
+        </>
     )
 }
 

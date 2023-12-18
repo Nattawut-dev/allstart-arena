@@ -2,7 +2,6 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import styles from './styles/Layout.module.css';
-// import {isMobile} from 'react-device-detect';
 import { useMediaQuery } from 'react-responsive';
 
 type LayoutProps = {
@@ -10,9 +9,10 @@ type LayoutProps = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  
+  const isMobile = useMediaQuery({ maxWidth: 767 }); // กำหนดจุด breakpoint ของมือถือ
+
   useEffect(() => {
-    setIsSidebarOpen(window.innerWidth >= 768);
+    setIsSidebarOpen(!isMobile);
   }, []);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -23,9 +23,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className={styles.wrapper}>
-      <Topbar toggleSidebar={toggleSidebar} />
+      <Topbar toggleSidebar={toggleSidebar} isOpen={isSidebarOpen} />
       <div className={`${styles.contentWrapper} ${isSidebarOpen ? styles.open : ''}`}>
-        <Sidebar isOpen={isSidebarOpen} />
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className={styles.content}>
           {children}
           {/* {React.Children.map(children, (child:any) =>

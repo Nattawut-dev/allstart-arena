@@ -24,6 +24,7 @@
 }
 .container {
     height: fit-content;
+    overflow-x: auto;
 }
 
 .box {

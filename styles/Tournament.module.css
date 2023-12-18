@@ -16,6 +16,23 @@
 
 }
 
+
+.grid_container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.box {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+
 .spinner {
   width: 60px;
   height: 60px;
@@ -25,6 +42,54 @@
   animation: spinner-rotate 1s linear infinite;
   margin-left: 35px;
 }
+
+.tournamentSelection{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 10%;
+}
+
+.radioContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 40%;
+  text-align: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.radio {
+  flex:   220px; 
+  max-width: 300px; 
+  padding: 16px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  background-color: rgb(255, 255, 255);
+  font-size: 1.1rem;
+  border-radius: 10px;
+  border-color: #a9d6f1;
+  box-shadow: 2px 4px #a9d6f1;
+  white-space: pre-wrap;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+
+
+.selected {
+  background-color: #24a0ed;
+  border-color: #199bec;
+  color: white;
+  font-weight: 500;
+
+}
+
 
 @keyframes spinner-rotate {
   0% {
@@ -201,7 +266,7 @@
   text-transform: uppercase;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
-  width: 100%;
+  width: 80%;
 }
 
 .submit_btn:hover {
@@ -247,15 +312,18 @@
     width: 100%;
   }
 }
+
 .header {
   text-align: center;
   margin: 10px;
   font-size: 18px;
 }
+
 .header div span {
   font-weight: bold;
-  color: #e68e2a;
+  color: #FF6347;
 }
+
 .notnow {
   display: flex;
   justify-content: center;

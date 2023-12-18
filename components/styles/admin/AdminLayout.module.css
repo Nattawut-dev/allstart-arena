@@ -10,6 +10,7 @@
   flex: 1;
   /* ใช้ flex: 1 เพื่อให้ contentWrapper ขยายตามเนื้อหา */
   display: flex;
+
 }
 
 .content {
@@ -17,6 +18,9 @@
   /* ขยับเนื้อหาขึ้นไปข้างล่างของ Topbar */
   width: calc(100%);
   background: #ffffff;
+  overflow: auto;
+  transition: width 0.3s ease-in-out, margin 0.3s ease-in-out; /* เพิ่ม transition ให้กับ width และ margin */
+
 
 }
 
@@ -24,8 +28,11 @@
   margin-left: calc(220px);
   /* ขยับเนื้อหาเมื่อเปิดเมนูด้านข้าง */
   width: calc(100%);
+  overflow: auto;
+
 }
 
 .box{
+
   margin: 1rem;
 }

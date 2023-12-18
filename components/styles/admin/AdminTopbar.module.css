@@ -1,12 +1,4 @@
-/* .topBar {
-  display: flex;
-  align-items: center;
-  height: 60px;
-  background-color: #ffffff;
-  color: #000000;
-  padding: 0 20px;
-  box-shadow: 1px 1px 6px   rgba(0, 0, 0, 0.2);
-} */
+
 .topBar {
   position: fixed;
   top: 0;
@@ -31,12 +23,7 @@
   align-items: center;
 }
 
-.sidebarToggleIcon {
-  font-size: 22px;
-  justify-content: center;
-  display: flex;
-  margin: 0;
-}
+
 
 .logo {
   margin-right: 10px;
@@ -44,5 +31,52 @@
 
 .title {
   font-size: 15px;
-  font-weight: bold;
+  /* font-weight: bold; */
+}
+.sidebarToggleIcon {
+  display: block;
+  width: 25px;
+  height: 18px;
+  position: relative;
+  cursor: pointer;
+  margin-right: 20px;
+}
+.sidebarToggleIcon .bar {
+  display: block;
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  background: #000; /* สีของแถบ */
+  border-radius: 3px;
+  transition: transform 0.3s, opacity 0.3s ease-in-out;
+}
+
+/* การจัดตำแหน่งของแถบ */
+.sidebarToggleIcon .bar:nth-child(1) {
+  top: 0;
+}
+
+.sidebarToggleIcon .bar:nth-child(2) {
+  top: 50%;
+  transform-origin: center;
+}
+
+.sidebarToggleIcon .bar:nth-child(3) {
+  bottom: 0;
+}
+
+/* ส่วนของการเปิด */
+.sidebarToggleIcon.active .bar:nth-child(1) {
+  top: 8px;
+  transform: translateY(50%) rotate(50deg);
+}
+
+.sidebarToggleIcon.active .bar:nth-child(2) {
+  opacity: 0;
+}
+
+.sidebarToggleIcon.active .bar:nth-child(3) {
+  bottom: 6px;
+  transform: translateY(-50%) rotate(-50deg);
+
 }

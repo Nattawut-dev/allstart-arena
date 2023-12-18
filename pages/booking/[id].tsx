@@ -359,7 +359,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         return (
             <div className={`${styles.container} `}>
                 <Head>
-                    <title>Reservation Court</title>
+                    <title>Reservation Courts</title>
                 </Head>
                 <div>
                     <div className={styles.tableWrapper}>
@@ -473,7 +473,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                 </label>
                                 <label>
                                     Phone:
-                                    <input type="tel" maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='เบอร์โทร' required />
+                                    <input type="tel" maxLength={10} pattern="0[0-9]{9}" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='เบอร์โทร' required />
                                 </label>
                                 <div><p style={{ color: "red" }}>{error}</p></div>
                             </form>

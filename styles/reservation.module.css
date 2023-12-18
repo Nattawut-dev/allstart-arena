@@ -2,6 +2,7 @@
 .table-container {
   width: 100%;
   overflow-x: auto;
+
 }
 
 .schedule-table {
@@ -9,6 +10,7 @@
   border: 1px solid rgb(145, 126, 126);
   border-collapse: collapse;
   margin-top: 20px;
+
 }
 
 .schedule-table th,
@@ -17,12 +19,13 @@
   border: 1px solid #ddd;
   border-color: rgb(131, 131, 163);
   text-align: center;
-  padding: 10px;
+  padding: 5px;
 }
 
 .schedule-table th {
   font-weight: bold;
   background-color: #d3dee7;
+  
 }
 
 .schedule-table tbody tr:nth-child(even) {
@@ -338,4 +341,8 @@
 .load {
   pointer-events: none;
   opacity: 0.1;
+}
+.Modal{
+  width: 600px;
+  margin: 0 auto;
 }

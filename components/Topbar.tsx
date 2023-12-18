@@ -3,19 +3,22 @@ import Image from 'next/image';
 import styles from './styles/Topbar.module.css';
 
 type TopBarProps = {
+  isOpen: boolean;
   toggleSidebar: () => void;
 };
 
-const TopBar: React.FC<TopBarProps> = ({ toggleSidebar }) => {
+const TopBar: React.FC<TopBarProps> = ({ isOpen, toggleSidebar }) => {
   return (
     <div className={styles.topBar}>
-      <button className={styles.sidebarToggle} onClick={toggleSidebar}>
-        <span className={styles.sidebarToggleIcon}>&#9776;</span>
-      </button>
+      <span className={`${styles.sidebarToggleIcon}  ${isOpen ? styles.active : ''} `} onClick={toggleSidebar}>
+        <span className={styles.bar}></span>
+        <span className={styles.bar}></span>
+        <span className={styles.bar}></span>      </span>
+
       <div className={styles.logo}>
-        <Image src="/badminton-logo.jpg" alt="Badminton Logo" width={40} height={40} />
+        <Image src="/logo.jpg" alt="Badminton Logo" width={40} height={40} />
       </div>
-      <div className={styles.title}>สนามแบดมินตัน</div>
+      <div className={styles.title}>All Stars Arena Badminton</div>
     </div>
   );
 };

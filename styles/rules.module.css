@@ -1,26 +1,64 @@
 /* rules.module.css */
 .heading {
-  font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 10px;
+  text-shadow: 0px 2px 4px rgba(12, 12, 12, 0.4);
+  text-align: center;
+  padding: 1rem;
+
 }
 
 .content {
   white-space: pre-wrap;
 }
 
+.box_content {
+  width: fit-content;
+  padding: 1rem;
+  margin-top: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+  border: 3px solid rgb(8, 196, 221);
+  background-color: #0e5cb6;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+  font-size: 1.2rem;
+  border-radius: 10px;
+  max-width: 1000px;
+
+
+}
+
 .container {
+  display: flex;
+  flex-direction: column;
   padding: 20px;
+  margin-top: 2.5%;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+  max-height: 100%;
+  height: calc(100% - 60px - 2.5%);
+  background: rgb(218, 255, 228);
+  background: linear-gradient(325deg, rgba(218, 255, 228, 1) 0%, rgba(0, 208, 139, 1) 0%, rgba(103, 159, 222, 1) 54%, rgba(113, 167, 231, 1) 69%, rgba(23, 87, 170, 1) 100%);
+  color: white;
+  border-radius: 10px;
+  position: relative;
+  /* Ensure   sition for absolute children */
+  overflow: auto;
 }
 
 .box {
-  border-radius: 8px;
-  border: 1px solid black;
-  padding: 15px;
-  justify-content: flex-end;
-  text-align: end;
-  font-size: 1rem;
-  background-color: aliceblue;
+  width: fit-content;
+  padding: 1rem;
+  margin-top: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+  border: 3px solid rgb(8, 196, 221);
+  background-color: #2476d3;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
+  font-size: 1.1rem;
+  border-radius: 10px;
+  max-width: 1000px;
 }
 
 .contect {
@@ -29,8 +67,39 @@
   padding: 12px;
   border-radius: 10px;
   align-items: flex-end;
+  color: white;
 }
 
 .contect p {
   margin: 3px;
+}
+
+@media screen and (max-width: 768px) {
+  .box_content {
+    font-size: 1rem;
+
+  }
+
+  .box {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  .container {
+    height: calc(100% - 1rem);
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .container {
+    padding: 10px;
+  }
+
+  .box_content {
+    font-size: 0.9rem;
+  }
+
+  .box {
+    font-size: 0.9rem;
+  }
 }

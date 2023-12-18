@@ -1,25 +1,8 @@
-import { useRouter } from 'next/router';
+import Head from 'next/head';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import AdminLayout from '@/components/AdminLayout';
 
-export const getServerSideProps = async ({ req }: any) => {
-  const sessiontoken = req.cookies.sessionToken;
 
-  if (!sessiontoken) {
-      return {
-          redirect: {
-              destination: '/admin/login',
-              permanent: false,
-          },
-      };
-  } else {
-      return {
-          props: {
-          },
-      };
-  }
-}
 const Home = () => {
   const [courts, setCourts] = useState<{ id: number; title: string; status: number }[]>([]);
   const [newCourtTitle, setNewCourtTitle] = useState('');
@@ -116,7 +99,6 @@ const Home = () => {
           const updatedCourts = courts.filter((court) => court.id !== id);
           setCourts(updatedCourts);
 
-          // แสดง SweetAlert2 ในกรณีลบสำเร็จ
           Swal.fire({
             icon: 'success',
             title: 'สำเร็จ',
@@ -191,7 +173,10 @@ const Home = () => {
   };
 
   return (
-    <AdminLayout>
+    <>
+      <Head>
+        <title>Courts setting</title>
+      </Head>
       <div className="container mt-5">
         <h1>Court List</h1>
 
@@ -297,7 +282,7 @@ const Home = () => {
         </div>
         <p className='text-danger'>**ไม่แนะนำให้ลบคอร์ท แต่แนะนำให้ ปิด/เปิดสถานะ หรือ แก้ไขชื่อคอร์ท เมื่อต้องการเปลี่ยนแปลงแทนการเพิ่ม เนื่องจากหากมีคนจองคอร์ทนั้นที่เราลบ ทุกรายการจะไม่ขึ้นชื่อคอร์ท **</p>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

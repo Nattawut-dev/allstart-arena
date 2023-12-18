@@ -8,8 +8,7 @@ import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
 import { utcToZonedTime } from 'date-fns-tz';
 import Head from 'next/head';
-import dynamic from 'next/dynamic';
-const AdminLayout = dynamic(() => import('@/components/AdminLayout'));
+
 
 interface Reserve {
     id: number;
@@ -386,7 +385,7 @@ function Holiday() {
     };
     const [searchby, setSearchby] = useState(true);
 
-    const itemsPerPage = 30; // จำนวนรายการต่อหน้า
+    const itemsPerPage = 30; 
 
     const startIndex = (currentPage - 1) * itemsPerPage;
 
@@ -399,7 +398,7 @@ function Holiday() {
     };
 
     return (
-        <AdminLayout>
+        <>
             <Head>
                 <title>History reserveations</title>
             </Head>
@@ -446,7 +445,7 @@ function Holiday() {
                     </div>
 
 
-                    <table className={`${styles.table} table table-bordered table-striped  table-sm`}>
+                    <table className={`${styles.table} table table-bordered table-striped table-sm`}>
                         <thead className='table-primary'>
                             <tr >
                                 <th scope="col" className={styles.hide_on_mobile}>#</th>
@@ -692,7 +691,7 @@ function Holiday() {
 
                 </Modal.Footer>
             </Modal>
-        </AdminLayout>
+        </>
     )
 }
 

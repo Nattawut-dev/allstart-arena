@@ -1,13 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
+import { getToken } from 'next-auth/jwt';
 
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'PUT') {
         // Get the session token from the request cookies
-        const sessionToken = req.cookies.sessionToken;
-
-        if (!sessionToken) {
+        const token = await getToken({ req })
+        if (!token) {
             res.status(401).json({ message: 'Not authenticated' });
             return;
         }

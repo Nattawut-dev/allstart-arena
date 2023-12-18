@@ -4,14 +4,12 @@ import styles from '@/styles/admin/ReserveBadmintonCourt.module.css';
 import { format, addDays, isAfter, differenceInCalendarDays, parse, differenceInHours } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import { GetServerSideProps } from 'next';
-import NotFoundPage from '../../../404'
 import { Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
-const AdminLayout = dynamic(() => import('@/components/AdminLayout'), { ssr: false });
 
 interface TimeSlot {
   id: number;
@@ -48,46 +46,36 @@ interface Props {
   timeZone: string;
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ req }: any) => {
-  const sessiontoken = req.cookies.sessionToken;
-  if (!sessiontoken) {
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
+
+  try {
+    const timeZone = 'Asia/Bangkok';
+    const courts = await fetch(`${process.env.HOSTNAME}/api/reserve/courts`);
+    const courts_data = await courts.json();
+    const timeslots = await fetch(`${process.env.HOSTNAME}/api/reserve/time-slots`);
+    const timeslots_data = await timeslots.json();
+
+
     return {
-      redirect: {
-        destination: '/admin/login',
-        permanent: false,
+      props: {
+        timeSlots: timeslots_data.timeSlots,
+        courts: courts_data.courts,
+        timeZone: timeZone
+      },
+    }
+
+
+
+  } catch (error) {
+    return {
+      props: {
+        timeSlots: [],
+        courts: [],
+        timeZone: "Asia/Bangkok"
+
       },
     };
-  } else {
-    try {
-      const timeZone = 'Asia/Bangkok';
-      const courts = await fetch(`${process.env.HOSTNAME}/api/reserve/courts`);
-      const courts_data = await courts.json();
-      const timeslots = await fetch(`${process.env.HOSTNAME}/api/reserve/time-slots`);
-      const timeslots_data = await timeslots.json();
-
-
-      return {
-        props: {
-          timeSlots: timeslots_data.timeSlots,
-          courts: courts_data.courts,
-          timeZone: timeZone
-        },
-      }
-
-
-
-    } catch (error) {
-      return {
-        props: {
-          timeSlots: [],
-          courts: [],
-          timeZone: "Asia/Bangkok"
-
-        },
-      };
-    }
   }
-
 
 }
 
@@ -98,7 +86,6 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [foundHoliday, setFoundHoliday] = useState<Holidays[]>([])
   const [isHoliday, setIsHoliday] = useState(false);
-  const [message, setMessage] = useState('');
   const [show, setShow] = useState(false);
   const [price, setPrice] = useState<number>();
   const [startvalue, setStartvalue] = useState('');
@@ -114,7 +101,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   }
 
   const getReservations = async (usedate: string) => {
-    const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
+    const response = await fetch(`/api/admin/reserved/get?usedate=${usedate}`);
     const data = await response.json();
     setReservations(data);
   };
@@ -168,7 +155,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     price: number,
     usedate: string
   ) => {
-    const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
+    const response = await fetch(`/api/admin/reserved/get?usedate=${usedate}&parsedId=${parsedId}`);
     const data: Reservation = await response.json();
     const reservation = data.find(
       (reservation: Reservation) =>
@@ -287,78 +274,70 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const date = format(selectedDate, 'dd MMMM yyyy')
-    if (name == '' || phone == '') {
-      setError("กรุณากรอกฟิลให้ครบ")
-      return;
-    }
-    else if (phone.length < 10) {
-      setError("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 ตัว")
-      return;
-    }
-    else {
-      const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.addEventListener('mouseenter', Swal.stopTimer)
-          toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-      })
-      try {
-        const response = await fetch('/api/reserve/reservations', {
-          method: 'POST',
-          body: JSON.stringify({
-            name,
-            phone,
-            court_id: courtID,
-            time_slot_id: time_slot_id,
-            startvalue,
-            endvalue,
-            usedate: date,
-            price: price,
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
 
-        if (response.ok) {
-          // Reset form fields if needed
-          setName('');
-          setPhone('');
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+      }
+    })
+    try {
+      const response = await fetch('/api/admin/reserved/reservations', {
+        method: 'POST',
+        body: JSON.stringify({
+          name : name? name : 'admin',
+          phone,
+          court_id: courtID,
+          time_slot_id: time_slot_id,
+          startvalue,
+          endvalue,
+          usedate: date,
+          price: 0,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // Reset form fields if needed
+        setName('');
+        setPhone('');
+        const usedate = format(selectedDate, 'dd MMMM yyyy');
+        getReservations(usedate);
+        setShow(false);
+
+        Toast.fire({
+          icon: 'success',
+          title: 'บันทึกสำเร็จ'
+        })
+
+      } else {
+        Toast.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด'
+        }).then(() => {
           const usedate = format(selectedDate, 'dd MMMM yyyy');
           getReservations(usedate);
-          setShow(false);
 
-          Toast.fire({
-            icon: 'success',
-            title: 'บันทึกสำเร็จ'
-          })
+        })
+        console.error('Error submitting data');
 
-        } else {
-          Toast.fire({
-            icon: 'error',
-            title: 'เกิดข้อผิดพลาด'
-          }).then(() => {
-            const usedate = format(selectedDate, 'dd MMMM yyyy');
-            getReservations(usedate);
-
-          })
-          console.error('Error submitting data');
-
-        }
-      } catch (error) {
-        console.error('Error:', error);
       }
+    } catch (error) {
+      console.error('Error:', error);
     }
+
 
   };
 
   return (
-    <AdminLayout>
+    <>
       <Head>
         <title>Booking</title>
       </Head>
@@ -502,7 +481,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
           <Modal.Body>
             <div className={styles['reserve-form-container']}>
               <h2>จองสนามแบดมินตันคอร์ท {courtID} </h2>
-              <h3>ราคารวม {price} บาท</h3>
+              <h3>ราคารวม {0} บาท</h3>
               <h6>
                 เวลา{' '}
                 <select className={styles.select} onChange={(e) => handleTimeSlotChange(e.target.value)}>
@@ -512,11 +491,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
               <form id="myForm" onSubmit={handleSubmit}>
                 <label>
                   Name:
-                  <input type="text" maxLength={16} value={name} onChange={(e) => setName(e.target.value)} placeholder='ชื่อ (ไม่เกิน 16 ตัวอักษร)' required />
-                </label>
-                <label>
-                  Phone:
-                  <input type="tel" maxLength={10} pattern="[0-9]+" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='เบอร์โทร' required />
+                  <input type="text" maxLength={16} value={name || 'admin'} onChange={(e) => setName(e.target.value)} placeholder='ชื่อ (ไม่เกิน 16 ตัวอักษร)' />
                 </label>
                 <div><p style={{ color: "red" }}>{error}</p></div>
               </form>
@@ -529,7 +504,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         </Modal>
 
       </div >
-    </AdminLayout>
+    </>
   );
 
 }
