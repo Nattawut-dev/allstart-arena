@@ -29,27 +29,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 res.status(500).json({ error: 'Server error' });
                 return;
             }
-            if (req.method !== 'POST') {
-                res.status(405).json({ error: 'Method not allowed' });
-                return;
-            }
-
-            const file = files.paymentimg[0];
-
-            const result = await cloudinary.v2.uploader.upload(file.path, {
-                folder: 'upload', // Set the desired folder name
-                resource_type: 'image', // Specify the resource type (image, video, raw)
-            });
-
-            const name = fields.name;
-            const nickname = fields.nickname;
-            const usedate = fields.usedate;
-            const phone = fields.phone;
-            const price = fields.price;
-            if (result.secure_url) {
-                const query = `INSERT INTO buffet (name, nickname, usedate, phone, price, paymentSlip) VALUES (?, ?, ?, ?, ?, ?)`;
+            if (req.method == 'POST') {
+                const nickname = fields.nickname;
+                const usedate = fields.usedate;
+                const phone = fields.phone;
+                const query = `INSERT INTO buffet (nickname, usedate, phone) VALUES (?, ?, ?)`;
                 // Execute the SQL query to insert data
-                const [results] = await connection.query(query, [name, nickname, usedate, phone, price, result.secure_url]);
+                const [results] = await connection.query(query, [nickname, usedate, phone]);
 
                 // Check if the results contain any data to determine success
                 if ((results as any).affectedRows > 0) {
@@ -57,15 +43,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 } else {
                     res.status(500).json({ success: false, message: 'Error inserting data' });
                 }
-            } else {
-                res.status(500).json({ error: 'Failed to upload image to Cloudinary' });
+            } else if (req.method == 'PUT') {
+                const file = files.file[0];
+                const id = fields.id;
+
+
+
+                // Upload the image to Cloudinary
+                const result = await cloudinary.v2.uploader.upload(file.path, {
+                    folder: 'upload', // Set the desired folder name
+                    resource_type: 'image', // Specify the resource type (image, video, raw)
+                });
+
+                if (result.secure_url) {
+                    try {
+
+                        await connection.query(`
+                            UPDATE 
+                            buffet AS b
+                        JOIN (
+                            SELECT 
+                                bs.shuttle_cock_price, 
+                                bs.court_price, 
+                                (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4))) AS total_shuttle_cock
+                            FROM 
+                                buffet_setting bs
+                            JOIN 
+                                buffet b ON b.id = ?
+                            WHERE 
+                                bs.id = 1
+                            GROUP BY 
+                                bs.shuttle_cock_price, 
+                                bs.court_price
+                        ) AS subquery ON b.id = ?
+                        SET 
+                            b.paymentSlip = ?, 
+                            b.price = subquery.total_shuttle_cock;
+                        `,
+                            [id,id, result.secure_url]);
+                        return res.status(200).json({ imageUrl: result.secure_url });
+
+
+                    } catch {
+                        return res.status(500).json({ error: 'Server error' });
+                    }
+                } else {
+                    return res.status(500).json({ error: 'Failed to upload image to Cloudinary' });
+                }
+            }
+            else {
+                res.status(405).json({ error: 'Method not allowed' });
                 return;
             }
+
+
+
         })
 
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error inserting data' });
     } finally {
-        connection.release(); // Release the connection back to the pool when done
+        connection.release();
     }
 }

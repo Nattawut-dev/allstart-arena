@@ -6,12 +6,11 @@ import { format, utcToZonedTime } from 'date-fns-tz';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     const connection = await pool.getConnection()
     try {
-        const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
-        const usedate = format(dateInBangkok, 'dd MMMM yyyy')
-        const query = 'SELECT id, nickname, usedate, price, shuttle_cock, paymentStatus, regisDate FROM buffet WHERE usedate = ? ';
+        const {id} = req.query
+        const query = 'SELECT id, nickname, usedate, price, shuttle_cock, paymentStatus, regisDate FROM buffet WHERE id = ? ';
 
         // Execute the SQL query to fetch time slots
-        const [results] = await connection.query(query, [usedate]);
+        const [results] = await connection.query(query, [id]);
         res.json(results);
     } catch (error) {
         console.error('Error fetching :', error);

@@ -38,11 +38,10 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
     if (!selectedTournament || !selectHandlevel) {
       router.replace('/Tournament')
     }
-    fetchData();
   }, [selectedTournament, selectHandlevel]);
 
-  const fetchData = async () => {
-    const response = await fetch('/api/tournament/check');
+  const fetchData = async (team_name : string) => {
+    const response = await fetch(`/api/tournament/check?team_name=${team_name}`);
     const jsonData = await response.json();
     setTeamname(jsonData.results);
   }
@@ -84,7 +83,6 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    fetchData();
     checkTeamname(title);
 
     const formData = new FormData(e.target);
@@ -254,6 +252,7 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
   const [teamname, setTeamname] = useState<TeamData[]>([]);
   const [team_name_1, setIsTeam_name_1] = useState(false);
   const checkTeamname = async (teamName: string) => {
+    fetchData(teamName)
     const find = teamname.find((t) => t.team_name === teamName);
 
     if (find) {

@@ -19,7 +19,7 @@
     "@mui/material": "^5.13.7",
     "@types/cookie": "^0.5.2",
     "@types/node": "20.3.1",
-    "@types/react": "18.2.14",
+    "@types/react": "^18.2.14",
     "@types/react-datepicker": "^4.15.0",
     "@types/react-dom": "18.2.6",
     "axios": "^1.4.0",

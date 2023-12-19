@@ -28,7 +28,6 @@ const initialRightItems = {
 }
 interface Buffet {
     id: number;
-    name: string;
     nickname: string;
     usedate: string;
     phone: string;
@@ -197,7 +196,6 @@ function Buffets() {
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
     const [isMobile, setIsMobile] = useState<boolean>(false);
     const [show, setShow] = useState(false);
-    const [show2, setShow2] = useState(false);
 
     const [shuttle_cock_price, setShuttle_cock_price] = useState(0);
     const [total_shuttle_cock_price, setTotal_shuttle_cock_price] = useState(0);
@@ -207,9 +205,21 @@ function Buffets() {
     useEffect(() => {
         fetchRegis();
         setIsMobile(window.innerWidth > 768);
-
+        getSelectedOptions()
     }, [])
-
+    const getSelectedOptions = async () => {
+        try {
+            const response = await fetch('/api/admin/buffet/save-selected-options');
+            if (response.ok) {
+                const data = await response.json();
+                setSelectedOptions(data[0].selected_options)
+            } else {
+                console.error('Failed to fetch selected options.');
+            }
+        } catch (error) {
+            console.error('Error occurred while fetching selected options:', error);
+        }
+    };
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -235,13 +245,12 @@ function Buffets() {
                 const notQdata = data.filter((item: Buffet) => item.q_id === null);
                 const newTasks = notQdata.map((item: Buffet, index: number) => ({
                     id: item.id,
-                    content: `${item.name}(${item.nickname})`,
+                    content: `${item.nickname}`,
                     nickname: `${item.nickname}`,
                     q_list: item.q_list || index + 999,
                 }));
                 newTasks.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
                 newRightItems['tasks'] = newTasks;
-                console.log(newRightItems)
                 setRightItems(newRightItems);
                 const newLeftItems = { ...leftItems };
                 for (let i = 0; i < numberOfProperties; i++) {
@@ -251,7 +260,7 @@ function Buffets() {
                     // แปลงข้อมูลที่ผ่านการกรองเป็นรูปแบบที่ต้องการ
                     const newTasksLeft = QData.map((item: Buffet) => ({
                         id: item.id,
-                        content: `${item.name}(${item.nickname})`,
+                        content: `${item.nickname}`,
                         nickname: `${item.nickname}`,
                         q_list: item.q_list || 0,
                     }));
@@ -273,46 +282,98 @@ function Buffets() {
             console.error(error)
         }
     }
+    const [selectedOptions, setSelectedOptions] = useState(Array(numberOfProperties).fill(''));
+    const handleSelectChange = async (index: number, event: any) => {
+        const options = [...selectedOptions]; // ค่าเดิม array ของ selectedOptions
+        options[index] = event.target.value; // อัปเดตค่าใน index ที่ระบุ
+        setSelectedOptions(options); // อัปเดตสถานะ selectedOptions
+        // upload ไปที่ database
+        updateCurrent_cock(options)
+    };
+    const updateCurrent_cock = async (options: any) => {
+        try {
+            const response = await fetch('/api/admin/buffet/save-selected-options', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ options }),
+            });
 
-
+            if (response.ok) {
+                console.log('Selected options saved successfully!');
+            } else {
+                console.error('Failed to save selected options.');
+            }
+        } catch (error) {
+            console.error('Error occurred while saving selected options:', error);
+        }
+    }
     for (let i = 0; i < numberOfProperties; i++) {
         const entries = Object.entries(leftItems)
         elements.push(
-            <div key={i} className='d-flex flex-row mb-1 p-1 justify-content-between' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px', height: '45px' }}>
-                <Flex
-                    m={"0.2rem"}
-                    p={"0"}
-                    width={"40px"}
-                    rounded="3px"
-                    textAlign="center"
-                    outline="0px solid transparent"
-                    bg={'#FFED00'}
-                    align="center"
-                    flexDirection={"column"}
-                    zIndex={1}
-                >
-                    <span className="p-1 fs-6 text-black "  >{i + 1}</span>
-                </Flex>
-                <ColumsLeft tasks={entries[i][1]} index={i} isMobile={isMobile} />
-                <Button className='btn btn-warning ' style={{ fontSize: `${isMobile ? '' : '12px'}`, display: 'flex', justifyContent: 'end' }} onClick={() => clearArray(entries[i][1], i)} >{!isMobile ? 'C' : 'Clear'}</Button>
+            <div>
+                <div key={i} className='d-flex flex-row mb-1 p-1 justify-content-between' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px', height: '45px' }}>
+                    <Flex
+                        m={"0.2rem"}
+                        p={"0"}
+                        width={"40px"}
+                        rounded="3px"
+                        textAlign="center"
+                        outline="0px solid transparent"
+                        bg={'#FFED00'}
+                        align="center"
+                        flexDirection={"column"}
+                        zIndex={1}
+                    >
+                        <span className="p-1 fs-6 text-black "  >{i + 1}</span>
+                    </Flex>
+                    <ColumsLeft tasks={entries[i][1]} index={i} isMobile={isMobile} />
+                    <select key={i + 1} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} style={{ width: '40PX' }} value={selectedOptions[i]} onChange={(event) => handleSelectChange(i, event)}>
+                        <option>0</option>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                    </select>
+
+                    <Button className='btn btn-warning ' style={{ fontSize: `${isMobile ? '' : '12px'}`, display: 'flex', justifyContent: 'end' }} onClick={() => clearArray(entries[i][1], i)} >{!isMobile ? 'C' : 'Clear'}</Button>
+                    <select key={i + 2} className="form-control mx-1" id="exampleFormControlSelect1" style={{ width: '40PX' }}>
+                        <option>-</option>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                    </select>
+
+                </div>
             </div>
         );
-
     }
     const clearArray = async (value: any, index: number) => {
 
         const updatedLeftItems: Record<string, any> = { ...leftItems };
+        const updatedOptions=  [...selectedOptions ];
 
         for (let i = index; i < numberOfProperties - 1; i++) {
             const currentColName = `T${i}`;
             const nextColName = `T${i + 1}`;
-
+            updatedOptions[i] = [selectedOptions[i+1]];
             // Copy data from the next column to the current column
             updatedLeftItems[currentColName] = [...leftItems[nextColName]];
 
             // Clear the next column
             updatedLeftItems[nextColName] = [];
         }
+        
         setLeftItems(updatedLeftItems);
 
 
@@ -334,7 +395,7 @@ function Buffets() {
                 url = `/api/admin/buffet/updateQ_clear`
                 data = updatedLeftItems;
             } else if (i === 1) {
-                url = `/api/admin/buffet/updateQ?q_id=${null}`
+                url = `/api/admin/buffet/updateQ?q_id=${null}&shuttle_cock=${selectedOptions[index]}`
                 data = right
             }
 
@@ -358,6 +419,9 @@ function Buffets() {
                         icon: 'success',
                         title: 'Updated '
                     })
+                    setSelectedOptions(updatedOptions); // อัปเดตสถานะ selectedOptions
+                    updateCurrent_cock(updatedOptions)
+                    fetchRegis();
                 }
             } catch (err) {
                 console.error(err)
@@ -620,7 +684,7 @@ function Buffets() {
                         zIndex={1}
                     >
                         <span className="fs-6 text-black" style={{ padding: '3px' }}>
-                            <span className='mx-3'><Button className='btn btn-sm btn-light' onClick={() => { setShow(true); setSelectDataPayment(item); setTotal_shuttle_cock_price((item?.shuttle_cock_price / 4) * item?.shuttle_cock) }} >{item.name + `(${item.nickname})`}</Button></span>
+                            <span className='mx-3'><Button className='btn btn-sm btn-light' onClick={() => { setShow(true); setSelectDataPayment(item); setTotal_shuttle_cock_price((item?.shuttle_cock_price / 4) * item?.shuttle_cock) }} >{`${item.nickname}`}</Button></span>
                             <Button className='btn-sm btn me-1 btn-danger px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock - 1) }} disabled={item.shuttle_cock == 0}>-</Button>
                             <span className='mx-2'>{item.shuttle_cock}</span>
                             <Button className='btn btn-sm me-1 px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock + 1) }}>+</Button>
@@ -638,7 +702,7 @@ function Buffets() {
                     <div className='detail'>
                         <div className='d-flex justify-content-between'>
                             <p>ชื่อลูกค้า</p>
-                            <p>{selectDataPayment?.name} ({selectDataPayment?.nickname})</p>
+                            <p>{selectDataPayment?.nickname}</p>
                         </div>
                         <div className='d-flex justify-content-between'>
                             <p>จำนวนลูก</p>

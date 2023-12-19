@@ -25,9 +25,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         FROM buffet
         LEFT JOIN current_buffet_q ON buffet.q_id = current_buffet_q.id 
         LEFT JOIN buffet_setting ON buffet_setting.id = 1
-        WHERE buffet.usedate = ?  AND buffet.paymethod_shuttlecock = '' AND buffet.paymentStatus = 1
+        WHERE buffet.usedate = ?  AND buffet.paymethod_shuttlecock = '' 
         ORDER BY buffet.id DESC;
         `;
+        
 
             // Execute the SQL query to fetch time slots
             const [results] = await connection.query(query, [usedate]);

@@ -17,9 +17,11 @@
     border: 1px solid #ddd;
     border-color: rgb(131, 131, 163);
     text-align: center;
-    padding: 8px;
+    padding: 5px;
 }
-
+.schedule-table thead{
+    background-color: #0058c1;
+}
 .schedule-table th {
     font-weight: bold;
     background-color: #d3dee7;
@@ -41,11 +43,13 @@
     width: 100vw;
     overflow: hidden;
 }
+
 .title {
     justify-content: center;
     text-align: center;
     width: 100%;
-  }
+}
+
 /* Responsive CSS */
 @media screen and (max-width: 768px) {
     .container {
@@ -63,6 +67,163 @@
         text-align: center;
         width: 100%;
         font-size: 16px;
-      }
+    }
 
+}
+
+.Modal {
+    width: 600px;
+    margin: 0 auto;
+}
+
+
+
+.wrapper1 {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.img div a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.detail {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0px 20px 10px 10px;
+    padding: 0;
+    justify-content: center;
+}
+
+.wrapper4 {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.footer1 {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn1 {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.btn1 a {
+    color: white;
+    text-decoration: none;
+}
+
+.slipbtn {
+    display: flex;
+}
+
+.slipbtn button {
+    margin-left: 1rem;
+}
+
+.slip {
+    background-color: #0070f3;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 8px;
+}
+
+.file_input {
+    background-color: #0070f3;
+    color: #fff;
+    border: none;
+    padding: 10px 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 8px;
+}
+
+.file_input:hover {
+    background-color: #0058c1;
+}
+
+
+.disabled {
+    background-color: #67839e;
+    cursor: default;
+    pointer-events: none;
+
+}
+
+.title {
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+}
+
+.btn_wrapper {
+    justify-content: space-between;
+    text-align: center;
+}
+
+.payment {
+    /* justify-content: space-around;
+    text-align: center;
+    display: flex; */
+    width: 100%;
+
+}
+
+.payment p {
+    margin: 0;
+
+}
+
+
+/* Responsive CSS */
+@media screen and (max-width: 768px) {
+
+    .btn {
+        margin-right: 10px;
+        font-size: 12px;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .wrapper1 {
+        flex-direction: column;
+    }
+
+    .detail {
+        margin: 20px 20px 0px 0px;
+        padding: 10px;
+        width: 100%;
+    }
+
+    .btnPay {
+        font-size: 12px;
+        margin: 0;
+    }
 }

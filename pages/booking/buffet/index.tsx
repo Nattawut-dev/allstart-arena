@@ -42,46 +42,28 @@ export default function Page({ buffet_setting }: Props) {
   const router = useRouter();
   const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
 
-  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [nickname, setNickname] = useState('');
-  const [price, setPrice] = useState(0);
-
+  const [unique_nickname, setUnique_nickname] = useState(false)
   const [error, setError] = useState('');
-  const [paymentSlip, setPaymentSlip] = useState(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imgUrl, setImgUrl] = useState('')
 
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files && event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-
-      // Preview the selected image
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target && typeof event.target.result === 'string') {
-          const imageUrl = event.target.result;
-          setImgUrl(imageUrl);
-        }
-
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setError("")
-    if (name == '' || phone == '' || !nickname) {
+    if (phone == '' || !nickname) {
       setError("กรุณากรอกฟิลให้ครบ")
       return;
-    } else if (!selectedFile) {
-      setError("กรุณาอัพโหลดภาพสลิป")
     } else if (phone.length < 10) {
       setError("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 ตัว")
+      return;
+    }
+    else if (unique_nickname) {
+      Swal.fire({
+        icon: "error",
+        title: "ชื่อนี้มีคนใช้แล้ว",
+        text: "ชื่อซ้ำกรุณาเปลี่ยนชื่อ",
+      });
       return;
     }
     else {
@@ -89,19 +71,19 @@ export default function Page({ buffet_setting }: Props) {
         title: 'กำลังบันทึก...',
         text: 'โปรดอย่าปิดหน้านี้',
         timerProgressBar: true,
+        allowOutsideClick: false, 
+        allowEscapeKey: false, 
+        allowEnterKey: false, 
         didOpen: () => {
-          Swal.showLoading()
+            Swal.showLoading();
         },
-      });
+    });
 
       try {
         const formData = new FormData();
-        formData.append('name', name);
         formData.append('nickname', nickname);
         formData.append('usedate', format(dateInBangkok, 'dd MMMM yyyy'));
         formData.append('phone', phone);
-        formData.append('price', buffet_setting.court_price.toString());
-        formData.append('paymentimg', selectedFile);
 
         const response = await fetch('/api/buffet/add', {
           method: 'POST',
@@ -112,17 +94,10 @@ export default function Page({ buffet_setting }: Props) {
         });
 
         if (response.ok) {
-          // ถ้าอัปโหลดสำเร็จ แสดง SweetAlert2 ข้อความเสร็จสมบูรณ์
-          // Swal.fire({
-          //   title: 'บันทึกสำเร็จ',
-          //   icon: 'success',
-          //   showConfirmButton: false,
-          //   timer: 1000, // แสดงข้อความเป็นเวลา 1.5 วินาทีแล้วปิด
-          // });
-          // รีเซ็ตค่าฟอร์ม
+
           Swal.fire({
             title: "บันทึกสำเร็จ",
-            icon : 'success',
+            icon: 'success',
             text: "ต้องการไปหน้ารายละเอียดไหม ? ",
             showCancelButton: true,
             confirmButtonText: "ตกลง",
@@ -132,12 +107,9 @@ export default function Page({ buffet_setting }: Props) {
               router.replace("/booking/buffet/info")
             }
           });
-          setName('');
           setPhone('');
           setNickname('');
-          setSelectedFile(null);
-          setPreviewImage(null);
-          setImgUrl('');
+
         } else {
           // ถ้ามีข้อผิดพลาดในการอัปโหลด แสดง SweetAlert2 ข้อความข้อผิดพลาด
           Swal.fire({
@@ -160,27 +132,24 @@ export default function Page({ buffet_setting }: Props) {
 
   };
 
-  const showQR = () => {
-    Swal.fire({
-      imageUrl: '/QR_Buffet.jpg',
-      imageHeight: 400,
-      html: `<button ><a href="/QR_Buffet.jpg" download="QR_Buffet.jpg">ดาวน์โหลดภาพสลิป</a></button>
-      <style>
-      button {
-        border : none;
-        background-color: #0d6efd;
-        padding : 8px;
-        border-radius : 8px;
-      }
-      button a {
-       color: white;
-       text-decoration: none;
+  const nick_name_check = async (nick_name: string) => {
+    setNickname(nick_name)
+    const response = await fetch(`/api/buffet/check_nick_name?nickname=${nick_name}&usedate=${format(dateInBangkok, 'dd MMMM yyyy')}`);
+    const jsonData = await response.json();
 
+    if (jsonData.length > 0) {
+      if (jsonData[0].nickname == nick_name) {
+        setError("ชื่อเล่นมีผู้ใช้แล้วโปรดเปลี่ยนชื่อ")
+        setUnique_nickname(true)
+      } else {
+        setError('')
+        setUnique_nickname(false)
       }
-    </style>`,
-      imageAlt: 'QR_code',
-      confirmButtonText: 'ปิดหน้าต่างนี้'
-    })
+    } else {
+      setError('')
+      setUnique_nickname(false)
+    }
+
   }
 
   return (
@@ -193,26 +162,16 @@ export default function Page({ buffet_setting }: Props) {
       <br />
 
       <form onSubmit={handleSubmit}>
-        <label>
-          Name:
-          <input
-            type="text"
-            maxLength={16}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder='ชื่อ (ไม่เกิน 16 ตัวอักษร)'
-            required
-          />
-        </label>
+
         <label>
           Nickname:
           <input
             type="text"
             maxLength={10}
-
             value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            onChange={(e) => nick_name_check(e.target.value)}
             placeholder='ชื่อเล่น'
+            required
           />
         </label>
         <label>
@@ -227,37 +186,14 @@ export default function Page({ buffet_setting }: Props) {
             required
           />
         </label>
-        <h6 style={{ color: "red" }}>ราคา {buffet_setting.court_price} บาท  {"(แค่ค่าสนาม) ค่าลูกจะคิดอีกทีหลังตีเสร็จ"}</h6>
-        <div className='d-flex justify-content-center'>
-          <label>
-            Payment Slip:
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-          </label>
-        </div>
 
-        {imgUrl ? (
-          <div className='d-flex justify-content-center border'>
-            <img src={imgUrl} alt="Payment Slip Preview" width="200" />
-          </div>
-        ) : (
-          <>
-            <span className='d-flex justify-content-center fw-bold'>QRcode สำหรับชำระเงิน</span>
-            <div className='d-flex justify-content-center border' onClick={showQR}>
-              <img src='/QR_buffet.jpg' alt="QR_code" width="200" />
-            </div>
-          </>
-
-        )}
 
         <div>
           <p style={{ color: "red", fontWeight: 'Bold' }}>{error}</p>
         </div>
+        <h6 >ค่าตีก๊วน <span style={{ color: "red" }} > {buffet_setting.court_price} </span>  บาทต่อคน  ค่าลูกต่อ 1 ลูก<span style={{ color: "red" }} > {buffet_setting.shuttle_cock_price} </span> บาท</h6>
+
         <div className='row' >
-          <Button className=' btn btn-success col' ><a href="/QR_buffet.jpg" style={{textDecoration : 'none' , color : 'white'}} download="QR_buffet.jpg">โหลดภาพสลิป</a></Button>
           <Button className='col mx-2' type="submit">ยืนยันการจอง</Button>
         </div>
 

@@ -14,8 +14,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         const connection = await pool.getConnection()
         try {
             const destinationItems = req.body;
-            const { q_id } = req.query;
-
+            const { q_id ,shuttle_cock} = req.query;
             if (destinationItems.length === 0) {
                 return;
             }
@@ -29,6 +28,16 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 targetID.push(id)
             }
             queries += 'ELSE q_list END ,'
+            if (shuttle_cock) {
+                queries += ' shuttle_cock = CASE '
+                for (const item of destinationItems) {
+                    let { id } = item;
+                    queries += ' WHEN id = ? THEN shuttle_cock + ? ';
+                    params.push(id, shuttle_cock);
+                }
+                queries += 'ELSE shuttle_cock END,'
+            }
+
             queries += 'q_id = ? WHERE id IN (?)'
             if (q_id === 'null') {
                 params.push(null);

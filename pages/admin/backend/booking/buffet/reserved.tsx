@@ -30,7 +30,7 @@ function BuffetReserved() {
     const [editBuffet, setEditBuffet] = useState<Buffet | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(15); // จำนวนรายการต่อหน้า
+    const [itemsPerPage] = useState(15); 
     useEffect(() => {
         loadData();
     }, []);

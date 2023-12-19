@@ -253,7 +253,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
             imageUrl: "/QR_Court.jpg",
             imageHeight: 500,
             imageAlt: "Slip สำหรับชำระเงิน"
-          });
+        });
     }
 
     if (timeSlots.length < 1 || courts.length < 1) {
@@ -343,7 +343,6 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                     keyboard={false}
                     centered
                     size='lg'
-
                 >
                     <Modal.Header closeButton className={`${loading ? styles.load : ''}`} >
                         <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
@@ -352,20 +351,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                         <div>
                             <div className={styles.wrapper1}>
                                 <div className={styles.img}>
-                                    <Image src={previewImage ? previewImage : '/QR_Court.jpg'} alt="QR_Court" width="280" height="280" onClick={() => showSlipImg()}/>
-                                    {/* {
-                                        previewImage == null &&
-                                        <div className={styles.payment}>
-                                            <div className={styles.wrapper4}>
-                                                <p>พร้อมเพย์ :</p>
-                                                <p>0987022613</p>
-                                            </div>
-                                            <div className={styles.wrapper4}>
-                                                <p>ชื่อบัญชี :</p>
-                                                <p>ณัฐวุฒิ กายชาติ</p>
-                                            </div>
-                                        </div>
-                                    } */}
+                                    <Image src={previewImage ? previewImage : '/QR_Court.jpg'} alt="QR_Court" width="280" height="280" onClick={() => showSlipImg()} />
                                 </div>
                                 <div className={styles.detail}>
                                     <div className={styles.wrapper}>
@@ -422,17 +408,10 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                                             {reservations1?.status === 2 && (
 
                                                 <div><h5> สถานะ   <span style={{ color: 'green' }}>ชำระเงินสำเร็จ</span></h5></div>
-
                                             )}
                                         </div>
 
                                     )}
-
-
-
-
-
-                                    {/* <button  className={styles.slip}>แนบสลิป</button> */}
                                 </div>
                             </div>
 
@@ -465,7 +444,6 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
                             </div>
 
                         </div>
-                        {/* <Button onClick={handleClose}>asdfsadf</Button> */}
                     </Modal.Footer>
                 </Modal>
 
