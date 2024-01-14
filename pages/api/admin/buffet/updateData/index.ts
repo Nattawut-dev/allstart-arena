@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
+import { format, utcToZonedTime } from 'date-fns-tz';
 
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
@@ -13,9 +14,13 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
 
         const connection = await pool.getConnection()
         try {
-            const query = `UPDATE buffet SET name = ?, nickname = ?, phone = ?, shuttle_cock = ?, price = ? , usedate = ? , paymethod_shuttlecock = ? WHERE id = ?`;
-            const { id, name, nickname, phone, shuttle_cock, price, usedate , paymethod_shuttlecock } = req.body;
-            const [results] = await connection.query(query, [name, nickname, phone, shuttle_cock, price, usedate, paymethod_shuttlecock  ,  id]);
+  
+            const query = `UPDATE buffet SET  nickname = ?, phone = ?, shuttle_cock = ?, price = ? , usedate = ? , paymethod_shuttlecock = ? , paymentStatus = ? , pay_date = ? , isStudent = ? WHERE id = ?`;
+            const { id, nickname, phone, shuttle_cock, price, usedate , paymethod_shuttlecock ,pay_date , isStudent} = req.body;
+            const payment_status = paymethod_shuttlecock != '0' && paymethod_shuttlecock != '4'? 2 : 0
+            const payment_date = paymethod_shuttlecock != '0' ? pay_date : null
+
+            const [results] = await connection.query(query, [nickname, phone, shuttle_cock, price, usedate, paymethod_shuttlecock  , payment_status,payment_date , isStudent,  id]);
             res.json({ results });
         } catch (error) {
             console.error('Error :', error);

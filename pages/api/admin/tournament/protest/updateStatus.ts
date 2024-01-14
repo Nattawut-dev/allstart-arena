@@ -12,9 +12,27 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const connection = await pool.getConnection()
         try {
-            const query = 'UPDATE tournament SET status = ? WHERE id = ?;';
-            const { id, newStatus } = req.body
-            const [results] = await connection.query(query, [newStatus, id]);
+            const query = `
+            UPDATE tournament AS t
+            SET t.status = ?,
+                t.team_type = CASE
+                    WHEN ? != 2 THEN ?
+                    ELSE CASE
+                        WHEN (
+                            SELECT lt.max_team_number >= LENGTH(t.level)
+                            FROM listtournament_handlevel AS lt
+                            INNER JOIN hand_level AS hl ON lt.hand_level_id = hl.id
+                            WHERE lt.tournament_id = t.listT_id AND hl.name = t.level
+                        ) THEN 'ทีมหลัก'
+                        ELSE 'ทีมสำรอง'
+                    END
+                END
+            WHERE t.id = ?;
+        `;
+        
+        const { id, newStatus, team_type } = req.body;
+        
+            const [results] = await connection.query(query, [newStatus,newStatus, team_type , id ]);
             res.json({ results });
         } catch (error) {
             console.error('Error updating tournament:', error);

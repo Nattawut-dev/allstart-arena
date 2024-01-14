@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
 import pool from '@/db/db';
+import { format, utcToZonedTime } from 'date-fns-tz';
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -48,11 +49,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const startvalue = fields.startvalue;
         const endvalue = fields.endvalue;
         const usedate = fields.usedate;
-
+        const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
+        const today = format(dateInBangkok, 'dd MMMM yyyy')
         if (result.secure_url) {
           try {
-            await connection.query('UPDATE reserve SET slip = ? ,status =? WHERE name = ? AND court_id = ? AND start_time = ? AND end_time = ? AND usedate = ?', [
-              result.secure_url, 1, name, court_id, startvalue, endvalue, usedate
+            await connection.query('UPDATE reserve SET slip = ? ,status =? , pay_date = ? WHERE name = ? AND court_id = ? AND start_time = ? AND end_time = ? AND usedate = ?', [
+              result.secure_url, 1, today, name, court_id, startvalue, endvalue, usedate
             ]);
             return res.status(200).json({ imageUrl: result.secure_url });
           } catch {

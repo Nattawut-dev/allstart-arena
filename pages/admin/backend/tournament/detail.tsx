@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { AiFillEdit } from "react-icons/ai";
 import AdminLayout from '@/components/AdminLayout';
 import Head from 'next/head';
+import Image from 'next/image';
 
 interface Detail {
     id: number;
@@ -479,7 +480,7 @@ function Detail() {
 
                         <div className={styles.wrapper}>
                             <div className={styles.detail}>
-                                <img src={team_detail?.image_1} alt="photo" width="200" height="250" />
+                                <Image src={`${team_detail?.image_1}`} alt="photo" width="200" height="250" />
                                 <div> <span>ชื่อ {team_detail?.Name_1} ({team_detail?.Nickname_1})</span></div>
                                 <div><span>อายุ {team_detail?.age_1} ปี  : เพศ {team_detail?.gender_1}</span></div>
                                 <div> <span>สังกัด {team_detail?.affiliation_1}</span></div>
@@ -487,7 +488,7 @@ function Detail() {
 
                             </div>
                             <div className={styles.detail}>
-                                <img src={team_detail?.image_2} alt="photo" width="200" height="250" />
+                                <Image src={`${team_detail?.image_2}`} alt="photo" width="200" height="250" />
                                 <div><span>ชื่อ {team_detail?.Name_2} ({team_detail?.Nickname_2})</span></div>
                                 <div><span>อายุ {team_detail?.age_2} ปี  : เพศ {team_detail?.gender_2}</span></div>
                                 <div><span>สังกัด {team_detail?.affiliation_2}</span></div>
@@ -546,7 +547,7 @@ function Detail() {
                     </Modal.Header>
                     <Modal.Body>
                         <div className='d-flex justify-content-center'>
-                            {targetSlip?.slipurl ? <img src={targetSlip?.slipurl} alt="slip" width={364} height={512} style={{ borderRadius: "13px" }} /> :
+                            {targetSlip?.slipurl ? <Image src={targetSlip?.slipurl} alt="slip" width={364} height={512} style={{ borderRadius: "13px" }} /> :
                                 <h5>Not found Slip</h5>
                             }
                         </div>

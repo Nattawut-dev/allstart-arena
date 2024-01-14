@@ -4,6 +4,8 @@ import styles from '../../styles/Tournament.module.css';
 import Head from 'next/head';
 import { Button } from 'react-bootstrap';
 import { useMediaQuery } from 'react-responsive';
+import Image from 'next/image'
+
 
 interface TeamData {
   team_name: string;
@@ -40,11 +42,6 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
     }
   }, [selectedTournament, selectHandlevel]);
 
-  const fetchData = async (team_name : string) => {
-    const response = await fetch(`/api/tournament/check?team_name=${team_name}`);
-    const jsonData = await response.json();
-    setTeamname(jsonData.results);
-  }
   const [title, setTitle] = useState('');
   const [Name_1, setName_1] = useState('');
   const [Nickname_1, setNickname_1] = useState('');
@@ -61,11 +58,11 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
   const [otherGender2, setOtherGender2] = useState('');
   const [affiliation_2, setAffiliation_2] = useState('');
   const [tel_2, setTel_2] = useState('');
-  const [image_2, setImage_2] = useState<File | null>(null);
+  const [image_2, setImage_2] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleImageChange_1 = (e: any) => {
+  const handleImageChange_1 = async (e: any) => {
     const file = e.target.files[0];
     if (file) {
       setImage_1(file);
@@ -83,7 +80,6 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    checkTeamname(title);
 
     const formData = new FormData(e.target);
     const otherGender1 = formData.get('gender_1');
@@ -91,6 +87,7 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
 
     const gender1Value = otherGender1 === 'อื่นๆ' ? gender_1 : otherGender1 || '';
     const gender2Value = otherGender2 === 'อื่นๆ' ? gender_2 : otherGender2 || '';
+
     if (tel_1.length < 10) {
 
       Swal.fire({
@@ -125,14 +122,6 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
       return;
 
     }
-    else if (team_name_1 != true && team_name_1 != null) {
-      Swal.fire({
-        icon: 'error',
-        text: 'ชื่อทีมนี้มีผู้ใช้แล้วกรุณาเปลี่ยนชื่อทีม',
-      })
-      return;
-
-    }
     else if (gender1Value === '' || gender2Value === '') {
       Swal.fire({
         icon: 'error',
@@ -144,7 +133,6 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
 
     else if (
       selectedTournament &&
-      title &&
       Name_1 &&
       Nickname_1 &&
       age_1 &&
@@ -161,84 +149,118 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
       image_2 &&
       selectHandlevel
     ) {
+      Swal.fire({
+        title: 'กำลังบันทึก...',
+        text: 'โปรดอย่าปิดหน้านี้',
+        timerProgressBar: true,
+        allowOutsideClick : false,
+        allowEscapeKey : false,
+        allowEnterKey : false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      });
+      const uploadResults = [];
 
-      // setIsLoading(true)
+      for (let i = 1; i <= 2; i++) {
+        try {
+          const formData = new FormData();
+          const file = i == 1 ? image_1 : image_2;
+          formData.append('file', file);
+          formData.append('upload_preset', 'upload'); // แทนที่ด้วย upload preset ของคุณ
+          formData.append('cloud_name', 'dxwab1sqe'); // แทนที่ด้วยชื่อ cloud ของคุณ
 
-      try {
-        Swal.fire({
-          title: 'กำลังบันทึก...',
-          text: 'โปรดอย่าปิดหน้านี้',
-          timerProgressBar: true,
-          didOpen: () => {
-            Swal.showLoading()
-          },
-        });
-  
-        const formData = new FormData();
-        formData.append('listT_id', selectedTournament.id.toString());
-        formData.append('title', title);
-        formData.append('Name_1', Name_1);
-        formData.append('Nickname_1', Nickname_1);
-        formData.append('age_1', age_1);
-        formData.append('gender_1', gender1Value);
-        formData.append('affiliation_1', affiliation_1);
-        formData.append('tel_1', tel_1);
-        formData.append('image_1', image_1);
-        formData.append('Name_2', Name_2);
-        formData.append('Nickname_2', Nickname_2);
-        formData.append('age_2', age_2);
-        formData.append('gender_2', gender2Value);
-        formData.append('affiliation_2', affiliation_2);
-        formData.append('tel_2', tel_2);
-        formData.append('image_2', image_2);
-        formData.append('level', selectHandlevel?.name);
+          const response = await fetch('https://api.cloudinary.com/v1_1/dxwab1sqe/image/upload/', {
+            method: 'POST',
+            body: formData,
+          });
 
-
-        const response = await fetch('/api/tournament/regis', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (response.ok) {
-          setTitle('');
-          setName_1('');
-          setNickname_1('');
-          setAge_1('');
-          setGender_1('');
-          setAffiliation_1('');
-          setTel_1('');
-          setImage_1(null);
-          setName_2('');
-          setNickname_2('');
-          setAge_2('');
-          setGender_2('');
-          setAffiliation_2('');
-          setTel_2('');
-          setImage_2(null);
-          setError('');
-          setIsLoading(false)
-
-          Swal.fire({
-            icon: 'success',
-            title: 'บันทึกข้อมูลเรียบร้อยแล้ว',
-            text: 'เรากำลังพาไปหน้ารายละเอียด',
-            showConfirmButton: false,
-            timer: 1000,
-
-          })
-          router.replace(`/Tournament/detail?tournament=${selectedTournament.id}&hand_level=${encodeURIComponent(selectHandlevel?.name)}`)
-          setMessage('Post added successfully!');
-        } else {
-          setIsLoading(false);
-          Swal.fire({
-            icon: 'error',
-            text: 'เกิดข้อผิดพลาด',
-          })
-          throw new Error('Something went wrong');
+          if (response.ok) {
+            const data = await response.json();
+            uploadResults.push(data.secure_url);
+          } else {
+            console.error('Error uploading file:', response.status, response.statusText);
+            uploadResults.push(null);
+          }
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          uploadResults.push(null);
         }
-      } catch (error: any) {
-        setError(error.message);
       }
+
+      if (uploadResults.length == 2) {
+        try {
+          const formData = new FormData();
+          formData.append('listT_id', selectedTournament.id.toString());
+          formData.append('Name_1', Name_1);
+          formData.append('Nickname_1', Nickname_1);
+          formData.append('age_1', age_1);
+          formData.append('gender_1', gender1Value);
+          formData.append('affiliation_1', affiliation_1);
+          formData.append('tel_1', tel_1);
+          formData.append('Name_2', Name_2);
+          formData.append('Nickname_2', Nickname_2);
+          formData.append('age_2', age_2);
+          formData.append('gender_2', gender2Value);
+          formData.append('affiliation_2', affiliation_2);
+          formData.append('tel_2', tel_2);
+          formData.append('level', selectHandlevel?.name);
+          formData.append('hand_level_id', selectHandlevel?.id.toString());
+          formData.append('imageUrl1', uploadResults[0]);
+          formData.append('imageUrl2', uploadResults[1]);
+
+
+          const response = await fetch('/api/tournament/regis', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (response.ok) {
+            setName_1('');
+            setNickname_1('');
+            setAge_1('');
+            setGender_1('');
+            setAffiliation_1('');
+            setTel_1('');
+            setImage_1(null);
+            setName_2('');
+            setNickname_2('');
+            setAge_2('');
+            setGender_2('');
+            setAffiliation_2('');
+            setTel_2('');
+            setImage_2(null);
+            setError('');
+            setIsLoading(false)
+
+            Swal.fire({
+              icon: 'success',
+              title: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+              text: 'เรากำลังพาไปหน้ารายละเอียด',
+              showConfirmButton: false,
+              timer: 1000,
+
+            })
+            router.replace(`/Tournament/detail?tournament=${selectedTournament.id}&hand_level=${encodeURIComponent(selectHandlevel?.id)}`)
+            setMessage('Post added successfully!');
+          } else {
+            setIsLoading(false);
+            Swal.fire({
+              icon: 'error',
+              text: 'เกิดข้อผิดพลาด',
+            })
+            throw new Error('Something went wrong');
+          }
+        } catch (error: any) {
+          setError(error.message);
+        }
+      }else{
+        Swal.fire({
+          icon: 'error',
+          text: 'มีปัญหาด้านการอัพโหลดภาพ',
+        })
+      }
+
     } else {
       // setError('All fields are required!');
       Swal.fire({
@@ -251,21 +273,6 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
   const [isLoading, setIsLoading] = useState(false);
   const [teamname, setTeamname] = useState<TeamData[]>([]);
   const [team_name_1, setIsTeam_name_1] = useState(false);
-  const checkTeamname = async (teamName: string) => {
-    fetchData(teamName)
-    const find = teamname.find((t) => t.team_name === teamName);
-
-    if (find) {
-      setMessage('ชื่อทีมนี้มีผู้ใช้แล้ว');
-      setTitle(teamName);
-      setIsTeam_name_1(false)
-
-    } else {
-      setTitle(teamName);
-      setIsTeam_name_1(true)
-      setMessage('');
-    }
-  };
 
 
   const starRed = <span style={{ color: 'red' }}>*</span>
@@ -292,7 +299,7 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
       <div className={`${styles.content} ${isLoading ? styles.load : ''}`}>
         <div className={styles.centeredContent}>
           <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles['form-group']}>
+            {/* <div className={styles['form-group']}>
               <div className={styles['form-col']}>
                 <label htmlFor="title">ชื่อทีม {starRed}</label>
                 <input
@@ -307,7 +314,7 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
                   <div style={{ color: 'red' }}>{message}</div>
                 ) : ''}
               </div>
-            </div>
+            </div> */}
 
             <h6 className={styles.h6}>ผู้เข้าแข่งขัน 1</h6>
 
@@ -418,10 +425,12 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
                 </div>
               </div>
 
-              <img
+              <Image
                 src={`${image_1 ? URL.createObjectURL(image_1) : '/user.png'}`}
                 alt="Participant 1"
                 className={styles.imagePreview}
+                width={200}
+                height={250}
               />
 
             </div>
@@ -534,10 +543,12 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
                 </div>
 
               </div>
-              <img
+              <Image
                 src={`${image_2 ? URL.createObjectURL(image_2) : '/user.png'}`}
                 alt="Participant 2"
                 className={styles.imagePreview}
+                width={200}
+                height={250}
               />
 
             </div>

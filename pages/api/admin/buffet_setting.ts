@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async  function handler (req: NextApiRequest, res: NextApiResponse)  {
     const token = await getToken({ req })
     if (!token) {
         res.status(401).json({ message: 'Not authenticated' });

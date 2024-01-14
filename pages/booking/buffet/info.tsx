@@ -16,7 +16,8 @@ interface buffet {
     shuttle_cock: number;
     paymentStatus: number;
     paymentSlip: string;
-    regisDate: string
+    regisDate: string;
+    isStudent: number;
 }
 
 interface Buffet_setting {
@@ -80,7 +81,7 @@ function Infobuffet({ buffet_setting }: Props) {
 
     const showSlipImg = () => {
         Swal.fire({
-            imageUrl: "/QR_Court.jpg",
+            imageUrl: "/QR_Buffet.jpg",
             imageHeight: 300,
             imageAlt: "Slip สำหรับชำระเงิน"
         });
@@ -110,15 +111,13 @@ function Infobuffet({ buffet_setting }: Props) {
             formData.append('file', selectedFile);
             formData.append('id', buffetSelcted!.id.toString());
 
-
             try {
                 Swal.fire({
                     title: 'กำลังบันทึก...',
                     text: 'โปรดอย่าปิดหน้านี้',
                     timerProgressBar: true,
                     allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    allowEnterKey: false,
+
                     didOpen: () => {
                         Swal.showLoading();
                     },
@@ -137,9 +136,11 @@ function Infobuffet({ buffet_setting }: Props) {
                         icon: 'success',
                         title: 'บันทึกสำเร็จ',
                         showConfirmButton: false,
-                        timer: 1500,
+                        timer: 900,
                     }).then(() => {
-
+                        fetchbuffet()
+                        setSelectedFile(null);
+                        setPreviewImage(null);
                     })
 
                 } else {
@@ -179,14 +180,26 @@ function Infobuffet({ buffet_setting }: Props) {
                 const buffet: buffet = data[0]
                 setBuffetSelcted(buffet);
                 if (buffet) {
-                    const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
-                    const calculatedPrice = buffet_setting.court_price + (buffet?.shuttle_cock * calculatePricePerOne);
-                    setPrice(calculatedPrice);
-                    setSummaryContent(
-                        <div>
-                            {`${buffet_setting.court_price} + (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
-                        </div>
-                    );
+
+                    if (buffet.isStudent === 1) {
+                        const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
+                        const calculatedPrice = (buffet?.shuttle_cock * calculatePricePerOne);
+                        setPrice(calculatedPrice);
+                        setSummaryContent(
+                            <div>
+                                {`0 +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
+                            </div>
+                        );
+                    } else {
+                        const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
+                        const calculatedPrice = buffet_setting.court_price + (buffet?.shuttle_cock * calculatePricePerOne);
+                        setPrice(calculatedPrice);
+                        setSummaryContent(
+                            <div>
+                                {`${buffet_setting.court_price} + (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
+                            </div>
+                        );
+                    }
                     setShow(true);
                 } else {
                     setSummaryContent(
@@ -210,7 +223,7 @@ function Infobuffet({ buffet_setting }: Props) {
     // -------------------------------------------------------------------------------------------------------------------
     return (
         <>
-            <div className={styles.container}>
+            <div className={styles.container} style={{ overflow: 'auto' }}>
                 <Head>
                     <title>ข้อมูลตีบุีฟเฟ่ต์</title>
                 </Head>
@@ -218,7 +231,7 @@ function Infobuffet({ buffet_setting }: Props) {
                 <h5 className={styles.title}>ข้อมูลการจองตีบุ๊ฟเฟต์ วันที่ <span style={{ color: 'red' }}>{format(dateInBangkok, 'dd MMMM yyyy')}</span></h5>
                 <div className={`${styles['table-container']}`}>
                     <table className={`table  table-bordered table-striped table-striped`}>
-                        <thead  className={'table-primary'}style={{backgroundColor : 'red'}}>
+                        <thead className={'table-primary'} style={{ backgroundColor: 'red' }}>
                             <tr>
                                 <th>#</th>
                                 <th>ชื่อเล่น</th>
@@ -235,8 +248,8 @@ function Infobuffet({ buffet_setting }: Props) {
                                             <td>{index + 1}</td>
                                             <td>{buffet.nickname}</td>
                                             <td>{buffet.shuttle_cock}</td>
-                                            <td className='' style={{ backgroundColor: buffet.paymentStatus === 0 ? '#eccccf' : buffet.paymentStatus === 1 ? '#d1e7dd' : '#eccccf' }}>
-                                                {buffet.paymentStatus === 0 ? 'ยังไม่ชำระ' : buffet.paymentStatus === 1 ? 'ชำระแล้ว' : 'สลิปไม่ถูกต้อง'}
+                                            <td className='' style={{ backgroundColor: buffet.paymentStatus === 0 ? '#eccccf' : buffet.paymentStatus === 1 ? '#FDCE4E' : buffet.paymentStatus === 2 ? '#d1e7dd' : '#eccccf' }}>
+                                                {buffet.paymentStatus === 0 ? 'ยังไม่ชำระ' : buffet.paymentStatus === 1 ? 'รอตรวจสอบ' : buffet.paymentStatus === 2 ? 'ชำระแล้ว' : 'สลิปไม่ถูกต้อง'}
                                             </td>
                                             <td><Button className='btn btn-sm' onClick={() => { calculateSummary(buffet.id); }}>ชำระเงิน</Button></td>
                                         </tr>
@@ -261,15 +274,17 @@ function Infobuffet({ buffet_setting }: Props) {
                 keyboard={false}
                 centered
                 size='lg'
+                dialogClassName={styles.Modal1}
+            // scrollable={true}
             >
                 <Modal.Header closeButton >
-                    <Modal.Title>ข้อมูลการจองตีก๊วน / ชำระเงิน</Modal.Title>
+                    <Modal.Title>ข้อมูลการจองตีก๊วน / ชำระเงิน  {buffetSelcted?.isStudent === 1 ? <h6>นักเรียน / นักศึกษา</h6> : ''}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body >
                     <div>
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
-                                <Image src={previewImage ? previewImage : '/QR_Court.jpg'} alt="QR_Court" width="280" height="280" onClick={() => showSlipImg()} />
+                                <Image src={previewImage ? previewImage : '/QR_Buffet.jpg'} alt="QR_Buffet" width="280" height="280" onClick={() => showSlipImg()} />
                                 {buffetSelcted?.paymentStatus !== 0 && (
                                     <div style={{ textAlign: "center" }}>
                                         {buffetSelcted?.paymentStatus === 1 && (
@@ -279,6 +294,10 @@ function Infobuffet({ buffet_setting }: Props) {
                                         {buffetSelcted?.paymentStatus === 2 && (
 
                                             <div><h5> สถานะ   <span style={{ color: 'green' }}>ชำระเงินสำเร็จ</span></h5></div>
+                                        )}
+                                        {buffetSelcted?.paymentStatus === 3 && (
+
+                                            <div><h5> สถานะ   <span style={{ color: 'red' }}>ปฏิเสธสลิป</span></h5></div>
                                         )}
                                     </div>
 
@@ -300,7 +319,9 @@ function Infobuffet({ buffet_setting }: Props) {
 
                                 <div className={styles.wrapper}>
                                     <p>ค่าสนาม</p>
-                                    <p>{buffet_setting?.court_price} บาท / คน</p>
+                                    {/* <p>{buffet_setting?.court_price} บาท / คน</p> */}
+                                    <p>{buffetSelcted?.isStudent === 1 ? "0" : buffet_setting?.court_price} บาท / คน</p>
+
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>ราคาลูก</p>
@@ -326,7 +347,7 @@ function Infobuffet({ buffet_setting }: Props) {
                     <div className={styles.footer1}>
                         <div className={styles.btn1}><Button className='btn-info '><a href="/QR_Court.jpg" download="QR_Court.jpg">โหลดสลิป</a></Button></div>
                         <div className={styles.slipbtn}>
-                            <label htmlFor="file-input"   className={`${styles.file_input} ${buffetSelcted?.paymentStatus === 1 ? styles.disabled : ''}`} >
+                            <label htmlFor="file-input" className={`${styles.file_input} ${buffetSelcted?.paymentStatus === 1 ? styles.disabled : ''}`} >
                                 เลือกภาพสลิป
                             </label>
                             <input
@@ -340,7 +361,7 @@ function Infobuffet({ buffet_setting }: Props) {
                             />
                             <button
                                 onClick={confirm}
-                                disabled={!selectedFile || buffetSelcted?.paymentStatus != 1}
+                                disabled={!selectedFile || buffetSelcted?.paymentStatus != 0}
                                 className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
 
                             >

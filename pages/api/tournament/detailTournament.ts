@@ -4,22 +4,21 @@ import pool from '@/db/db';
 
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  const connection= await pool.getConnection()
+  const connection = await pool.getConnection()
 
   try {
-    const {listT_id , level} = req.query;
-
-    const query = `SELECT id	,listT_id, team_name	,Name_1	,Nickname_1	,age_1	,gender_1,	affiliation_1	,image_1	,Name_2	,Nickname_2	,age_2	,gender_2	,affiliation_2,image_2	,level,status,	paymentStatus	,note FROM tournament  WHERE listT_id = ? AND level= ?`;
+    const { listT_id, level } = req.query;
+    const query = `SELECT tournament.id	, tournament.listT_id,  tournament.team_name	, tournament.Name_1	, tournament.Nickname_1		, tournament.gender_1,	 tournament.affiliation_1	, tournament.image_1	, tournament.Name_2	, tournament.Nickname_2	, tournament.age_2	, tournament.gender_2	, tournament.affiliation_2, tournament.image_2	, tournament.level , tournament.status, tournament.team_type,	 tournament.paymentStatus	, tournament.note , hand_level.name as hand_level_name FROM tournament, hand_level  WHERE tournament.listT_id = ? AND tournament.hand_level_id = ? AND tournament.hand_level_id = hand_level.id`;
 
     // Execute the SQL query to fetch time slots
-    const [results] = await connection.query(query ,[listT_id , level]);
-   res.json({ detail :results });
+    const [results] = await connection.query(query, [listT_id, level]);
+    res.json({ detail: results });
 
-    
+
   } catch (error) {
     console.error('Error fetching time slots:', error);
     res.status(500).json({ error: 'Error fetching time slots' });
-  }finally {
+  } finally {
     connection.release(); // Release the connection back to the pool when done
   }
 };

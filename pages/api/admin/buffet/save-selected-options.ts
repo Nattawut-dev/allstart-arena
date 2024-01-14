@@ -15,16 +15,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     try {
         if (req.method === 'PUT') {
             const { options } = req.body;
-
+            const {id} = req.query
             // Insert selectedOptions data into the database
-            const sql = 'UPDATE current_cock SET  selected_options = ? WHERE id = 1';
+            const sql = 'UPDATE current_cock SET  selected_options = ? WHERE id = ?';
 
-            await connection.query(sql, [JSON.stringify(options)])
+            await connection.query(sql, [JSON.stringify(options) , id])
             res.status(200).json('success')
         } else if (req.method === 'GET') {
-            const sql = 'SELECT selected_options FROM current_cock WHERE id = 1';
+            const sql = 'SELECT selected_options FROM current_cock ';
 
-            const [result] = await connection.query(sql)
+            const [result] = await connection.query(sql )
             res.status(200).json(result)
         } else {
             res.status(405).json({ message: 'Method not allowed' });

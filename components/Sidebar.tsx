@@ -3,6 +3,10 @@ import Link from 'next/link';
 import styles from './styles/Sidebar.module.css';
 import { useRouter } from 'next/router';
 import { FaChalkboard, FaChevronCircleRight, FaChevronCircleDown, FaCalendarPlus, FaCalendarDay, FaCalendarAlt, FaPencilAlt, FaHandPointRight, FaRegClock, FaTh, FaAngellist } from "react-icons/fa";
+import { IoMdAdd  } from "react-icons/io";
+import { BiDetail } from "react-icons/bi";
+import { HiOutlineQueueList } from "react-icons/hi2";
+
 import { useMediaQuery } from 'react-responsive';
 interface SidebarProps {
   isOpen: boolean;
@@ -42,9 +46,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               <ul className={`${styles['sub-menu']}  ${selectedSubMenu1 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>
                 <Link href="/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span> จองสนามแบดมินตัน</span> </li></Link>
                 <Link href="/reservations/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarAlt className='mx-1' /> <span>ข้อมูลการจอง</span> </li></Link>
-                <Link href="/booking/buffet" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>จองตีบุฟเฟ่ต์</span> </li></Link>
-                <Link href="/booking/buffet/info" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/info' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>ข้อมูลตีบุฟเฟ่ต์</span> </li></Link>
-                <Link href="/booking/buffet/queue" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/queue' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>คิวตีบุฟเฟ่ต์</span> </li></Link>
+                <Link href="/booking/buffet" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet' ? styles.activeSubMenu : ''}`} ><IoMdAdd  className='mx-1' /> <span>จองตีบุฟเฟ่ต์</span> </li></Link>
+                <Link href="/booking/buffet/info" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/info' ? styles.activeSubMenu : ''}`} ><BiDetail className='mx-1' /> <span>ข้อมูลตีบุฟเฟ่ต์</span> </li></Link>
+                <Link href="/booking/buffet/queue" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/queue' ? styles.activeSubMenu : ''}`} ><HiOutlineQueueList  className='mx-1' /> <span>คิวตีบุฟเฟ่ต์</span> </li></Link>
 
               </ul>
             )}

@@ -8,15 +8,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const connection = await pool.getConnection()
   const token = await getToken({ req })
   if (!token) {
-      res.status(401).json({ message: 'Not authenticated' });
-      return;
+    res.status(401).json({ message: 'Not authenticated' });
+    return;
   }
   try {
     if (req.method === 'GET') {
       // ป้องการการ query วันที่ที่ไม่ต้องการให้เห็น 
 
       const { usedate } = req.query
-     {
+      {
+        const deleteReserve = `DELETE FROM reserve WHERE reserved_date < (NOW() - INTERVAL 15 MINUTE) AND status = 0;`
+        await connection.query(deleteReserve);
         const query = 'SELECT id,name, court_id, time_slot_id,reserved_date, usedate ,start_time,end_time, price ,status FROM reserve WHERE usedate = ?';
         const [reservations] = await connection.query(query, [usedate]);
         res.json(reservations);

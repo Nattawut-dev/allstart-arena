@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
-import { it } from 'node:test';
 import { getToken } from 'next-auth/jwt';
 
 interface ItemsType {
@@ -16,17 +15,18 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const connection = await pool.getConnection()
         try {
+
             const destinationItems = req.body;
-            let qIdQueries = 'UPDATE buffet SET q_id = CASE ';
-            
             const qIdParams: any[] = [];
             const targetID: any[] = [];
             const keys = Object.keys(destinationItems);
-            
+
+            let qIdQueries = 'UPDATE buffet SET q_id = CASE ';
+
             keys.forEach((key, index) => {
                 const q_id = index;
                 const newdes = destinationItems[key];
-            
+
                 newdes.forEach((item: ItemsType) => {
                     const { id } = item;
                     qIdQueries += 'WHEN id = ? THEN ? ';
@@ -34,13 +34,14 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                     targetID.push(id);
                 });
             });
-            
+
             qIdQueries += 'ELSE q_id END WHERE id IN (?)';
             qIdParams.push(targetID);
-            
-            
+
+
             await connection.query(qIdQueries, qIdParams);
-            
+
+
             res.json({ message: 'Update successful' });
 
         } catch (error) {

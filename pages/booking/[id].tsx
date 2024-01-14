@@ -148,7 +148,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         startTime: string,
         endTime: string,
         price: number,
-        usedate : string
+        usedate: string
     ) => {
         const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
         const data: Reservation = await response.json();
@@ -210,16 +210,22 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     };
     const handleTimeSlotChange = (value: string) => {
         const [startTime, endTime] = value.split('+');
+
         setStartvalue(startTime)
         setEndvalue(endTime)
         const totalPrice = calculateTotalPrice(startTime, endTime);
         setPrice(totalPrice);
     };
 
-
     const timeSlotOptions = timeSlots.map((timeSlot) => {
         const hours = differenceInHours(new Date(`2000-01-01T${timeSlot.end_time}`), new Date(`2000-01-01T${startTime}`));
+        // let lastHouse = Math.abs(hours); // ใช้ Math.abs เพื่อให้ lastHouse เป็นค่าบวก
+
+        // if (hours < 0) {
+        //     lastHouse = 24 + hours + 1000; // กำหนดค่า lastHouse เมื่อ hours เป็นค่าลบ
+        // }
         if (hours >= 1) {
+
             const isTimeSlotReserved = reservations.some(
                 (reservation) =>
                     reservation.court_id === courtID &&
@@ -228,19 +234,43 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                         (reservation.start_time <= (startTime as string) && reservation.end_time > (startTime as string)) ||
                         (reservation.start_time < timeSlot.end_time && reservation.end_time >= timeSlot.end_time)
                     )
-            );
+            )
 
             if (isTimeSlotReserved) {
                 return null; // ไม่สร้างตัวเลือก
             }
 
             // แสดงตัวเลือกเมื่อไม่มีการจอง
+            const hourss = timeSlot.start_time == '23:00'  ? hours +1 : hours
             return (
                 <option
                     key={timeSlot.id}
                     value={`${startTime}+${timeSlot.end_time}`}
                 >
-                    {startTime} - {timeSlot.end_time} ({hours} ชั่วโมง)
+                    {startTime} - {timeSlot.end_time} ({hourss} ชั่วโมง)
+                </option>
+            );
+        }
+        else if (timeSlot.start_time == '23:00' ) {
+
+            const isTimeSlotReserved = reservations.some(
+                (reservation) =>
+                    reservation.court_id === courtID &&
+                    reservation.usedate === format(selectedDate, 'dd MMMM yyyy') &&
+                    (
+                        (reservation.start_time <= (startTime as string) && reservation.end_time > (startTime as string)) ||
+                        (reservation.start_time < timeSlot.end_time && reservation.end_time >= timeSlot.end_time)
+                    )
+            )
+            if (isTimeSlotReserved) {
+                return null; // ไม่สร้างตัวเลือก
+            }
+            return (
+                <option
+                    key={timeSlot.id}
+                    value={`${startTime}+${timeSlot.end_time}`}
+                >
+                    {startTime} - {timeSlot.end_time} ({1  } ชั่วโมง)
                 </option>
             );
         }
@@ -409,7 +439,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                                             (reservation) =>
                                                                 reservation.court_id === court.id &&
                                                                 (
-                                                                    // (reservation.start_time >= timeSlot.start_time && reservation.start_time < timeSlot.end_time) ||  // กรณีการจองเริ่มต้นในช่วงเวลาที่กำหนด
+                                                                    // ( reservation.start_time > '00:00') ||  // กรณีการจองเริ่มต้นในช่วงเวลาที่กำหนด
                                                                     // (reservation.end_time > timeSlot.start_time && reservation.end_time <= timeSlot.end_time) ||  // กรณีการจองสิ้นสุดในช่วงเวลาที่กำหนด
                                                                     (reservation.start_time <= timeSlot.start_time && reservation.end_time >= timeSlot.end_time)  // กรณีการจองที่ครอบคลุมช่วงเวลาที่กำหนด
                                                                 )
@@ -429,7 +459,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                                                             timeSlot.start_time,
                                                                             timeSlot.end_time,
                                                                             timeSlot.price,
-                                                                            format(selectedDate , 'dd MMMM yyyy')
+                                                                            format(selectedDate, 'dd MMMM yyyy')
                                                                         );
                                                                     }
                                                                 }}

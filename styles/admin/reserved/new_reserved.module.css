@@ -236,6 +236,7 @@
   border-radius: 5px;
   border: 1px solid #410653;
 }
+
 .searchForm {
   display: flex;
   gap: 3px;
@@ -257,6 +258,7 @@
   border-radius: 3px;
   cursor: pointer;
 }
+
 @media screen and (max-width: 768px) {
   .wrapper1 {
     flex-direction: column;

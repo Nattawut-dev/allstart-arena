@@ -6,7 +6,7 @@ import { FiLogOut } from 'react-icons/fi';
 import { MdFiberNew } from 'react-icons/md';
 import { signOut } from 'next-auth/react';
 
-import { FaChalkboard, FaChevronCircleRight, FaChevronCircleDown, FaCalendarPlus, FaCalendarDay, FaCalendarAlt, FaPencilAlt, FaHandPointRight, FaRegClock, FaTh } from "react-icons/fa";
+import { FaChalkboard, FaChevronCircleRight, FaChevronCircleDown, FaCalendarPlus, FaCalendarDay, FaCalendarAlt, FaPencilAlt, FaHandPointRight, FaRegClock, FaTh ,FaRegMoneyBillAlt , FaSearch  } from "react-icons/fa";
 import { useMediaQuery } from 'react-responsive';
 interface SidebarProps {
   isOpen: boolean;
@@ -31,6 +31,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen  ,toggleSidebar}) => {
         <ul className={styles['menu-list']}>
 
           <Link href="/admin/backend" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend' ? styles.activeMenuItem : ''}`}> <div><FaChalkboard /> <span> ตั้งค่ากฎ</span></div> </li></Link>
+          <Link href="/admin/backend/dailySummary" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/dailySummary' ? styles.activeMenuItem : ''}`}> <div><FaRegMoneyBillAlt /> <span> สรุปยอดรายวัน</span></div> </li></Link>
+
           <li
             className={`${styles['menu-item']} ${router.pathname.startsWith('/admin/backend/booking/') ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu1(!selectedSubMenu1)}
@@ -44,8 +46,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen  ,toggleSidebar}) => {
                 <Link href="/admin/backend/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} > <div><FaCalendarPlus /> <span> จองสนาม</span></div></li></Link>
                 <Link href="/admin/backend/booking/holidays" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/holidays' ? styles.activeSubMenu : ''}`} ><div><FaCalendarDay /> <span>วันหยุด</span> </div></li></Link>
                 <Link href="/admin/backend/booking/new_reserved?state=1" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/new_reserved' ? styles.activeSubMenu : ''}`} ><div><MdFiberNew /> <span>การจองใหม่</span> </div></li></Link>
-                <Link href="/admin/backend/booking/bookinghistory" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/bookinghistory' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt /> <span>ค้นหาการจอง</span></div></li></Link>
-                <Link href="/admin/backend/booking/buffet/reserved" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/buffet/reserved' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt /> <span>บุฟเฟต์/สลิป</span></div></li></Link>
+                <Link href="/admin/backend/booking/bookinghistory" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/bookinghistory' ? styles.activeSubMenu : ''}`} ><div><FaSearch /> <span>ค้นหาการจอง</span></div></li></Link>
+                <Link href="/admin/backend/booking/buffet/reserved" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/buffet/reserved' ? styles.activeSubMenu : ''}`} ><div><FaSearch /> <span>บุฟเฟต์/สลิป</span></div></li></Link>
                 <Link href="/admin/backend/booking/buffet" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/booking/buffet' ? styles.activeSubMenu : ''}`} ><div><FaCalendarAlt /> <span>คิวบุฟเฟ่ต์/ค่าลูก</span></div></li></Link>
 
               </ul>

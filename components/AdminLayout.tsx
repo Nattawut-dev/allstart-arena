@@ -1,17 +1,19 @@
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import Sidebar from './AdminSidebar';
 import Topbar from './AdminTopbar';
 import styles from './styles/admin/AdminLayout.module.css';
-import { useRouter } from 'next/router';
+import { useMediaQuery } from 'react-responsive';
 
 type LayoutProps = {
   children: ReactNode;
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-// window.innerWidth >= 768
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
+  const isMobile = useMediaQuery({ maxWidth: 767 }); // กำหนดจุด breakpoint ของมือถือ
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  useEffect(() => {
+    setIsSidebarOpen(!isMobile);
+  }, []);
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };

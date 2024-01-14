@@ -24,7 +24,9 @@ interface Detail {
     image_2: string;
     level: string;
     status: number;
+    team_type: string;
     paymentStatus: number;
+    hand_level_name: string;
 }
 interface Listtournament {
     id: number;
@@ -74,7 +76,7 @@ const DetailPage = ({ allListtournament }: Props) => {
         const data = await res.json();
         setListtournament(data.results)
         setTournament_id(data.results[0].id)
-        
+
         setSelectedTournament(data.results[0])
         const response = await fetch(`/api/tournament/select/hand_level?tournament_id=${data.results[0].id}`, {
             method: "GET",
@@ -83,16 +85,15 @@ const DetailPage = ({ allListtournament }: Props) => {
 
         setHandlevel(handLevel);
 
-        const level = handLevel.find((h : Handlevel) => h.name == hand_level)
-        console.log(data.results[0].id , level , hand_level , handlevel , data.results[0])
-        if(level){
+        const level = handLevel.find((h: Handlevel) => h.id.toString() == hand_level)
+        if (level) {
             setSelectedHandlevel(level)
         }
         fetchDetail()
     }
 
     const fetchDetail = async () => {
-        const res = await fetch(`/api/tournament/detailTournament?listT_id=${tournament}&level=${encodeURIComponent(hand_level as string)}`);
+        const res = await fetch(`/api/tournament/detailTournament?listT_id=${tournament}&level=${hand_level}`);
         const data = await res.json();
         setDetail(data.detail)
     }
@@ -162,7 +163,14 @@ const DetailPage = ({ allListtournament }: Props) => {
         }
     }
 
-
+    const showImg = (target : number) => {
+        const url = target === 1 ? detail_data?.image_1 : detail_data?.image_2
+        Swal.fire({
+            imageUrl: url,
+            imageHeight: 'auto',
+            imageAlt: "image"
+        });
+    }
 
     const note = async (id: number, listTournament_id: number) => {
         const findData2 = detail.find((d) => d.id === id);
@@ -257,7 +265,7 @@ const DetailPage = ({ allListtournament }: Props) => {
     const handleContinue2 = async () => {
         setSelected(true)
         router.query.tournament = `${selectedTournament?.id}`
-        router.query.hand_level = `${selectHandlevel?.name}`
+        router.query.hand_level = `${selectHandlevel?.id}`
         router.push(router);
     };
 
@@ -306,7 +314,7 @@ const DetailPage = ({ allListtournament }: Props) => {
                         ))}
                     </div>
                     <div >
-                        <Button className='btn btn-lg btn-danger mx-2' onClick={() => { setHandlevel([]); setSelectedHandlevel(null) ;router.push('/Tournament/detail');}}>
+                        <Button className='btn btn-lg btn-danger mx-2' onClick={() => { setHandlevel([]); setSelectedHandlevel(null); router.push('/Tournament/detail'); }}>
                             ย้อนกลับ
                         </Button>
                         <Button className='btn btn-lg mx-2' disabled={!selectHandlevel} onClick={handleContinue2}>
@@ -324,7 +332,7 @@ const DetailPage = ({ allListtournament }: Props) => {
                                 <h6>รายการแข่งแบดมินตัน <span>{listtournament[0]?.title}</span> ครั้งที่ <span> {listtournament[0]?.ordinal}</span></h6>
                                 <h6>ณ สถานที่ <span> {listtournament[0]?.location}</span></h6>
                                 <h6>ระหว่างวันที่ <span>{listtournament[0]?.timebetween}</span></h6>
-                                <h6>ระดับมือ <span style={{ fontWeight: 'bolder' }}>{hand_level}</span>  ค่าสมัคร <span style={{ fontWeight: 'bolder' }}>{selectHandlevel?.price?.toLocaleString()}</span> บาท </h6>
+                                <h6>ระดับมือ <span style={{ fontWeight: 'bolder' }}>{selectHandlevel?.name}</span>  ค่าสมัคร <span style={{ fontWeight: 'bolder' }}>{selectHandlevel?.price?.toLocaleString()}</span> บาท </h6>
                             </div>
                         )
                         }
@@ -334,13 +342,12 @@ const DetailPage = ({ allListtournament }: Props) => {
                             <thead className='table-info'>
                                 <tr>
                                     <th>#</th>
-                                    <th>ชื่อทีม</th>
                                     <th>ชื่อนักกีฬา 1</th>
+                                    <th>ทีม/สังกัด</th>
 
-                                    {/* <th>ภาพชื่อนักกีฬา 1</th> */}
                                     <th>ชื่อนักกีฬา 2</th>
+                                    <th>ทีม/สังกัด</th>
 
-                                    {/* <th>ภาพชื่อนักกีฬา 2</th> */}
                                     <th>ผลการพิจารณา</th>
 
                                     <th>สถานะการชำระ</th>
@@ -354,39 +361,42 @@ const DetailPage = ({ allListtournament }: Props) => {
                             </thead>
                             <tbody>
 
-                                {detail
+                                {detail.map((item, index) => (
+                                    <tr key={item.id}>
+                                        <td>{index + 1}</td>
+                                        <td>{item.Name_1} ({item.Nickname_1})</td>
+                                        <td>{item.affiliation_1}</td>
 
-                                    .filter(item => item.level === hand_level)
-                                    .map((item, index) => (
-                                        <tr key={item.id}>
-                                            <td>{index + 1}</td>
-                                            <td>{item.team_name}</td>
-                                            <td>{item.Name_1} ({item.Nickname_1})</td>
-                                            <td>{item.Name_2}  ({item.Nickname_2})</td>
+                                        <td>{item.Name_2}  ({item.Nickname_2})</td>
+                                        <td>{item.affiliation_2}</td>
 
-                                            {item.status === 0 && (
-                                                <td className="table-warning">ระหว่างพิจารณา</td>
-                                            )}
-                                            {item.status === 2 && <td className="table-success">ผ่าน</td>}
-                                            {item.status === 1 && <td className="table-danger">ไม่ผ่าน</td>}
+                                        {item.status === 0 && (
+                                            <td className="table-warning">ระหว่างพิจารณา</td>
+                                        )}
+                                        {item.status === 2 && <td className="table-success">ผ่าน</td>}
+                                        {item.status === 1 && <td className="table-danger">ไม่ผ่าน</td>}
 
 
-                                            {item.paymentStatus === 0 && <td className="table-danger">ยังไม่ชำระ</td>}
-                                            {item.paymentStatus === 1 && <td className="table-warning">รอตรวจสอบ</td>}
-                                            {item.paymentStatus === 2 && <td className="table-success">ชำระแล้ว</td>}
-                                            <td>
-                                                <Button variant="primary btn-sm" onClick={() => details(item.id)} className={styles.btn}>
-                                                    รายละเอียด
-                                                </Button>
-                                            </td>
-                                            <td><Button variant="danger btn-sm" onClick={() => note(item.id, item.listT_id)} className={styles.btn}>
-                                                ประท้วง
-                                            </Button></td>
-                                            <td className='fw-bold'>{listtournament[0]?.max_team > index ? <span className='text-success'>ทีมหลัก</span> : <span className='text-warning'>ทีมสำรอง</span>}</td>
+                                        {item.paymentStatus === 0 && <td className="table-danger">ยังไม่ชำระ</td>}
+                                        {item.paymentStatus === 1 && <td className="table-warning">รอตรวจสอบ</td>}
+                                        {item.paymentStatus === 2 && <td className="table-success">ชำระแล้ว</td>}
+                                        <td>
+                                            <Button variant="primary btn-sm" onClick={() => details(item.id)} className={styles.btn}>
+                                                รายละเอียด
+                                            </Button>
+                                        </td>
+                                        <td><Button variant="danger btn-sm" onClick={() => note(item.id, item.listT_id)} className={styles.btn}>
+                                            ประท้วง
+                                        </Button></td>
+                                        <td className='fw-bold'> {item.team_type === "ทีมหลัก" ? (
+                                            <span className='text-success'>ทีมหลัก </span>
+                                        ) : (
+                                            <span className={`${item.team_type === 'ไม่ผ่าน' ? 'text-danger' : 'text-warning'} `}>{item.team_type} </span>
+                                        )}</td>
 
-                                        </tr>
-                                    ))}
-                                {detail.filter(item => item.level === hand_level).length === 0 &&
+                                    </tr>
+                                ))}
+                                {detail.length === 0 &&
                                     <tr>
                                         <td colSpan={9} >ยังไม่มีผู้สมัคร</td>
                                     </tr>
@@ -411,7 +421,7 @@ const DetailPage = ({ allListtournament }: Props) => {
                         <Modal.Header closeButton>
                             <Modal.Title>
                                 <div className={styles.titleM}>
-                                    <h5>รายละเอียดทีม <span style={{ fontWeight: 'bolder' }}> {detail_data?.team_name}  </span>ระดับมือ {hand_level}</h5>
+                                    <h5><span style={{ fontWeight: 'bolder' }}> </span>ระดับมือ {detail_data?.hand_level_name}</h5>
 
 
                                     {/* {detail_data?.status === 0 && (
@@ -430,15 +440,15 @@ const DetailPage = ({ allListtournament }: Props) => {
                         <Modal.Body>
                             <div className={styles.wrapper}>
                                 <div className={styles.detail}>
-                                    <img src={detail_data?.image_1} alt="photo" width="200" height="250" />
+                                    <Image src={`${detail_data?.image_1}`} alt="photo" width="200" height="250" onClick={() => showImg(1)} style={{cursor : "pointer"}}/>
                                     <div> <span>ชื่อ {detail_data?.Name_1} ({detail_data?.Nickname_1})</span></div>
-                                    <div><span>อายุ {detail_data?.age_1} ปี  : เพศ {detail_data?.gender_1}</span></div>
+                                    <div><span> เพศ {detail_data?.gender_1}</span></div>
                                     <div> <span>สังกัด {detail_data?.affiliation_1}</span></div>
                                 </div>
                                 <div className={styles.detail}>
-                                    <img src={detail_data?.image_2} alt="photo" width="200" height="250" />
+                                    <Image src={`${detail_data?.image_2}`} alt="photo" width="200" height="250" onClick={() => showImg(2)} style={{cursor : "pointer"}}/>
                                     <div><span>ชื่อ {detail_data?.Name_2} ({detail_data?.Nickname_2})</span></div>
-                                    <div><span>อายุ {detail_data?.age_2} ปี  : เพศ {detail_data?.gender_2}</span></div>
+                                    <div><span> เพศ {detail_data?.gender_2}</span></div>
                                     <div><span>สังกัด {detail_data?.affiliation_2}</span></div>
                                 </div>
                             </div>
@@ -489,7 +499,7 @@ const DetailPage = ({ allListtournament }: Props) => {
                         <Modal.Header closeButton>
                             <Modal.Title>
                                 <div className={styles.titleM}>
-                                    <h5>การชำระเงิน <span style={{ fontWeight: 'bolder' }}> {detail_data?.team_name}  </span>ระดับมือ {hand_level}</h5>
+                                    <h5>การชำระเงิน <span style={{ fontWeight: 'bolder' }}> </span>ระดับมือ {detail_data?.hand_level_name}</h5>
 
                                 </div>
 
@@ -513,7 +523,7 @@ const DetailPage = ({ allListtournament }: Props) => {
                             <div className={styles.wrapper}>
                                 <div className={styles.detail}>
                                     <div>QR code สำหรับชำระเงิน</div>
-                                    <img src={'/QR_Buffet.jpg'} alt="photo" width="200" height="250" />
+                                    <Image src={'/QR_Buffet.jpg'} alt="photo" width="200" height="250" />
 
                                 </div>
                                 <div className={styles.detail}>

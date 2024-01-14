@@ -1,16 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
-import { format, utcToZonedTime } from 'date-fns-tz';
 
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     const connection = await pool.getConnection()
     try {
-        const {id} = req.query
-        const query = 'SELECT id, nickname, usedate, price, shuttle_cock, paymentStatus, regisDate ,isStudent FROM buffet WHERE id = ? ';
+        const sql = 'SELECT selected_options FROM current_cock ';
 
-        // Execute the SQL query to fetch time slots
-        const [results] = await connection.query(query, [id]);
+        const [results] = await connection.query(sql )
         res.json(results);
     } catch (error) {
         console.error('Error fetching :', error);

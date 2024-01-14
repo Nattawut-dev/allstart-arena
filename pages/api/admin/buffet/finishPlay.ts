@@ -3,27 +3,22 @@ import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
 
 
-
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'GET') {
+    if (req.method === 'PUT') {
         const token = await getToken({ req })
         if (!token) {
             res.status(401).json({ message: 'Not authenticated' });
             return;
         }
         const connection = await pool.getConnection()
-        const { id } = req.query
         try {
-            const query = `SELECT tournament.*, hand_level.name as hand_level_name
-            FROM tournament, hand_level WHERE tournament.id = ? AND tournament.hand_level_id = hand_level.id`;
-
-            // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query, [id]);
-            res.json(results);
-
+            const query = 'UPDATE buffet SET paymethod_shuttlecock = 4 WHERE id = ?;';
+            const { id } = req.body
+            const [results] = await connection.query(query, [ id]);
+            res.json({ results });
         } catch (error) {
-            console.error('Error fetching tournament:', error);
-            res.status(500).json({ error: 'Error fetching tournament' });
+            console.error('Error fetching holidays:', error);
+            res.status(500).json({ error: 'Error fetching holidays' });
         } finally {
             connection.release(); // Release the connection back to the pool when done
         }

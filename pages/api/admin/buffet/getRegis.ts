@@ -21,14 +21,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 WHEN current_buffet_q.id IS NULL THEN NULL
                 ELSE current_buffet_q.T_value
             END AS T_value,
-            buffet_setting.shuttle_cock_price
+            buffet_setting.shuttle_cock_price,
+            buffet_setting.court_price
         FROM buffet
         LEFT JOIN current_buffet_q ON buffet.q_id = current_buffet_q.id 
         LEFT JOIN buffet_setting ON buffet_setting.id = 1
-        WHERE buffet.usedate = ?  AND buffet.paymethod_shuttlecock = '' 
-        ORDER BY buffet.id DESC;
-        `;
-        
+        WHERE buffet.usedate = ?  AND buffet.paymethod_shuttlecock = '0' AND paymentStatus = 0 `;
+
 
             // Execute the SQL query to fetch time slots
             const [results] = await connection.query(query, [usedate]);

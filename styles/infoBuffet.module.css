@@ -200,7 +200,10 @@
 
 /* Responsive CSS */
 @media screen and (max-width: 768px) {
-
+    .Modal1{
+        margin: 0;
+        height: 100%;
+        }
     .btn {
         margin-right: 10px;
         font-size: 12px;

@@ -5,10 +5,9 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
-import { useRouter } from 'next/router';
 import { utcToZonedTime } from 'date-fns-tz';
 import Head from 'next/head';
-
+import Image from 'next/image'
 
 interface Reserve {
     id: number;
@@ -45,7 +44,7 @@ function Holiday() {
     const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
     const [reservations1, setReservations1] = useState<Reserve>();
     const [show, setShow] = useState(false);
-    const [selectedOption, setSelectedOption] = useState(0); 
+    const [selectedOption, setSelectedOption] = useState(0);
     const [name, setName] = useState<string>('');
     const [phone, setPhone] = useState<string>('');
     const [selectedCourtID, setselectedCourtID] = useState<number>(0);
@@ -124,11 +123,6 @@ function Holiday() {
         }
     };
 
-    useEffect(() => {
-        getReserve('');
-        getCourt();
-        getTimeslot();
-    }, []);
 
 
     const getReserve = async (searchTerm: string) => {
@@ -143,7 +137,7 @@ function Holiday() {
             const data = await response.json();
             if (response.ok) {
                 setreserve(data);
-            } 
+            }
         } catch {
             console.log('error');
         }
@@ -159,6 +153,11 @@ function Holiday() {
         }
 
     }
+    useEffect(() => {
+        getReserve('');
+        getCourt();
+        getTimeslot();
+    }, []);
 
     const deletereserve = async (item: Reserve) => {
         Swal.fire({
@@ -385,7 +384,7 @@ function Holiday() {
     };
     const [searchby, setSearchby] = useState(true);
 
-    const itemsPerPage = 30; 
+    const itemsPerPage = 30;
 
     const startIndex = (currentPage - 1) * itemsPerPage;
 
@@ -542,7 +541,7 @@ function Holiday() {
                     <div>
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
-                                <button onClick={() => { showslip() }}><img src={reservations1?.slip === null ? '/No_image_available.png' : reservations1?.slip} alt="Qrcode" width="200" height="250" /></button>
+                                <button onClick={() => { showslip() }}><Image src={`${reservations1?.slip === null ? '/No_image_available.png' : reservations1?.slip}`} alt="Qrcode" width="200" height="250" /></button>
                                 <div className={styles.payment}>
                                     <h4>{price} <span>บาท</span></h4>
                                 </div>
@@ -597,15 +596,7 @@ function Holiday() {
                                         </select>
                                     </div>
 
-                                    {/* <input
-                                        type="text"
-                                        value={`${startTime} - ${endTime}`}
-                                        onChange={(e) => {
-                                            const [newStartTime, newEndTime] = e.target.value.split(' - ');
-                                            setStartTime(newStartTime);
-                                            setEndTime(newEndTime);
-                                        }}
-                                    /> */}
+
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>ราคา</p>
@@ -617,7 +608,6 @@ function Holiday() {
                                     />
                                 </div>
 
-                                {/* <div><h5> สถานะ </h5></div> */}
                                 <div className={styles.container_radio}>
                                     <div className={styles.wrapper_radio}>
                                         <label className={`${styles.option} ${selectedOption === 0 ? styles.checked : ''}`}>

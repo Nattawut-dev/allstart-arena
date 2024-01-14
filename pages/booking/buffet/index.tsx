@@ -71,19 +71,20 @@ export default function Page({ buffet_setting }: Props) {
         title: 'กำลังบันทึก...',
         text: 'โปรดอย่าปิดหน้านี้',
         timerProgressBar: true,
-        allowOutsideClick: false, 
-        allowEscapeKey: false, 
-        allowEnterKey: false, 
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
         didOpen: () => {
-            Swal.showLoading();
+          Swal.showLoading();
         },
-    });
+      });
 
       try {
         const formData = new FormData();
         formData.append('nickname', nickname);
         formData.append('usedate', format(dateInBangkok, 'dd MMMM yyyy'));
         formData.append('phone', phone);
+        formData.append('isStudent', isStudent.toString());
 
         const response = await fetch('/api/buffet/add', {
           method: 'POST',
@@ -109,7 +110,7 @@ export default function Page({ buffet_setting }: Props) {
           });
           setPhone('');
           setNickname('');
-
+          setIsStudent(0)
         } else {
           // ถ้ามีข้อผิดพลาดในการอัปโหลด แสดง SweetAlert2 ข้อความข้อผิดพลาด
           Swal.fire({
@@ -151,7 +152,10 @@ export default function Page({ buffet_setting }: Props) {
     }
 
   }
-
+  const [isStudent, setIsStudent] = useState(0)
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsStudent(event.target.checked ? 1 : 0)
+  };
   return (
     <div className={styles['reserve-form-container']}>
       <Head>
@@ -186,12 +190,19 @@ export default function Page({ buffet_setting }: Props) {
             required
           />
         </label>
+        <div className={`${styles.checkbox_wrapper} d-flex mt-3`}>
+          <input type="checkbox" id="cbtest-19" value={isStudent} onChange={handleCheckboxChange} checked={isStudent == 1} />
+          <label htmlFor="cbtest-19" className={styles.check_box}></label>
+          <p className='mx-2' style={{ padding: '0' }}>นักเรียน / นักศึกษา</p>
+        </div>
 
 
         <div>
           <p style={{ color: "red", fontWeight: 'Bold' }}>{error}</p>
         </div>
-        <h6 >ค่าตีก๊วน <span style={{ color: "red" }} > {buffet_setting.court_price} </span>  บาทต่อคน  ค่าลูกต่อ 1 ลูก<span style={{ color: "red" }} > {buffet_setting.shuttle_cock_price} </span> บาท</h6>
+        <h6 >ค่าตีก๊วน <span style={{ color: "red" }} > {isStudent===1 ? "0" :  buffet_setting.court_price}</span>  บาทต่อคน  ค่าลูกต่อ 1 ลูก
+          <span style={{ color: "red" }} > {buffet_setting.shuttle_cock_price} </span> บาท  </h6>
+        <h6>(คนละ <span style={{ color: "red" }} > {buffet_setting.shuttle_cock_price / 4} </span> บาท/ลูก)</h6>
 
         <div className='row' >
           <Button className='col mx-2' type="submit">ยืนยันการจอง</Button>

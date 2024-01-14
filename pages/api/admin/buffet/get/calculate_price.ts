@@ -12,18 +12,24 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             return;
         }
         const connection = await pool.getConnection()
-        const { id } = req.query
         try {
-            const query = `SELECT tournament.*, hand_level.name as hand_level_name
-            FROM tournament, hand_level WHERE tournament.id = ? AND tournament.hand_level_id = hand_level.id`;
+            const {id} = req.query
+            const query = `SELECT 
+            (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4))) AS total_shuttle_cock
+        FROM 
+            buffet_setting bs
+        JOIN 
+            buffet b ON b.id = ?
+        WHERE 
+            bs.id = 1
+`;
 
             // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query, [id]);
+            const [results] = await connection.query(query ,[id]);
             res.json(results);
-
         } catch (error) {
-            console.error('Error fetching tournament:', error);
-            res.status(500).json({ error: 'Error fetching tournament' });
+            console.error('Error fetching holidays:', error);
+            res.status(500).json({ error: 'Error fetching holidays' });
         } finally {
             connection.release(); // Release the connection back to the pool when done
         }

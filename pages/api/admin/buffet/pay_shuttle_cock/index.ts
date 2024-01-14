@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
+import { format, utcToZonedTime } from 'date-fns-tz';
 
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
@@ -12,9 +13,11 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const connection = await pool.getConnection()
         try {
-            const query = 'UPDATE buffet SET paymethod_shuttlecock = ? WHERE id = ?;';
-            const { id, method } = req.body
-            const [results] = await connection.query(query, [method, id]);
+            const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
+            const today = format(dateInBangkok, 'dd MMMM yyyy')
+            const query = 'UPDATE buffet SET paymethod_shuttlecock = ?,price = ? , pay_date= ? ,paymentStatus = 2 WHERE id = ?;';
+            const { id, method ,total_shuttle_cock_price} = req.body
+            const [results] = await connection.query(query, [method, total_shuttle_cock_price , today, id]);
             res.json({ results });
         } catch (error) {
             console.error('Error fetching holidays:', error);

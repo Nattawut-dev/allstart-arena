@@ -33,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if ((result as any).affectedRows === 1) {
           res.status(200).json({ success: true, message: 'Data inserted successfully' });
+          
         } else {
           res.status(400).json({ message: 'Duplicate data' });
         }

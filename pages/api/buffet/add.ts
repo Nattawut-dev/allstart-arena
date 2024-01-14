@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
 import pool from '@/db/db';
+import { format, utcToZonedTime } from 'date-fns-tz';
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -33,9 +34,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const nickname = fields.nickname;
                 const usedate = fields.usedate;
                 const phone = fields.phone;
-                const query = `INSERT INTO buffet (nickname, usedate, phone) VALUES (?, ?, ?)`;
+                const isStudent = fields.isStudent;
+
+                const query = `INSERT INTO buffet (nickname, usedate, phone ,isStudent ) VALUES (?, ?, ? , ?)`;
                 // Execute the SQL query to insert data
-                const [results] = await connection.query(query, [nickname, usedate, phone]);
+                const [results] = await connection.query(query, [nickname, usedate, phone , isStudent]);
 
                 // Check if the results contain any data to determine success
                 if ((results as any).affectedRows > 0) {
@@ -56,16 +59,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 });
 
                 if (result.secure_url) {
+                    const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
+                    const today = format(dateInBangkok, 'dd MMMM yyyy')
                     try {
 
                         await connection.query(`
-                            UPDATE 
-                            buffet AS b
+                        UPDATE buffet AS b
                         JOIN (
                             SELECT 
                                 bs.shuttle_cock_price, 
                                 bs.court_price, 
-                                (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4))) AS total_shuttle_cock
+                                CASE
+                                    WHEN b.isStudent = 1 THEN ((b.shuttle_cock * (bs.shuttle_cock_price / 4)))
+                                    ELSE (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4)))
+                                END AS total_shuttle_cock
                             FROM 
                                 buffet_setting bs
                             JOIN 
@@ -78,9 +85,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         ) AS subquery ON b.id = ?
                         SET 
                             b.paymentSlip = ?, 
-                            b.price = subquery.total_shuttle_cock;
+                            b.price = subquery.total_shuttle_cock,
+                            b.paymentStatus = 1,
+                            b.pay_date = ?,
+                            b.paymethod_shuttlecock = 3;
                         `,
-                            [id,id, result.secure_url]);
+                            [id, id, result.secure_url, today]);
                         return res.status(200).json({ imageUrl: result.secure_url });
 
 

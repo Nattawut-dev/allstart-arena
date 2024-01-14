@@ -3,6 +3,7 @@ import { Button, Modal } from 'react-bootstrap';
 import styles from '@/styles/admin/tournament/Tournament.module.css';
 import Swal from 'sweetalert2';
 import Head from 'next/head';
+import Image from 'next/image';
 
 interface ProtestData {
   id: number;
@@ -276,7 +277,7 @@ const ProtestPage: React.FC = () => {
 
             <div className={styles.wrapper}>
               <div className={styles.detail}>
-                <img src={detail_data?.image_1} alt="photo" width="200" height="250" />
+                <Image src={`${detail_data?.image_1}`} alt="photo" width="200" height="250" />
                 <div> <span>ชื่อ {detail_data?.Name_1} ({detail_data?.Nickname_1})</span></div>
                 <div><span>อายุ {detail_data?.age_1} ปี  : เพศ {detail_data?.gender_1}</span></div>
                 <div> <span>สังกัด {detail_data?.affiliation_1}</span></div>
@@ -284,7 +285,7 @@ const ProtestPage: React.FC = () => {
 
               </div>
               <div className={styles.detail}>
-                <img src={detail_data?.image_2} alt="photo" width="200" height="250" />
+                <Image src={`${detail_data?.image_2}`} alt="photo" width="200" height="250" />
                 <div><span>ชื่อ {detail_data?.Name_2} ({detail_data?.Nickname_2})</span></div>
                 <div><span>อายุ {detail_data?.age_2} ปี  : เพศ {detail_data?.gender_2}</span></div>
                 <div><span>สังกัด {detail_data?.affiliation_2}</span></div>

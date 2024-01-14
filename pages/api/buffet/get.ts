@@ -8,7 +8,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     try {
         const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
         const usedate = format(dateInBangkok, 'dd MMMM yyyy')
-        const query = 'SELECT id, nickname, usedate, price, shuttle_cock, paymentStatus, regisDate FROM buffet WHERE usedate = ? ';
+        const query = 'SELECT id, nickname, usedate, price, shuttle_cock, paymentStatus, regisDate , isStudent FROM buffet WHERE usedate = ? ';
 
         // Execute the SQL query to fetch time slots
         const [results] = await connection.query(query, [usedate]);

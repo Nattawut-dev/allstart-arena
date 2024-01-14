@@ -6,7 +6,7 @@ import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-
+import Image from 'next/image'
 
 
 interface Reserve {
@@ -409,7 +409,7 @@ function Holiday() {
                                     color: filter === '1' ? 'white' : 'black',
                                 }}
                             >
-                            <img src='/new-icon.svg' alt='new-icon' width={'20px'}/>การจองใหม่
+                            <Image src='/new-icon.svg' alt='new-icon' width={20} height={20}/>การจองใหม่
                                 
                             </Button>
                             <Button
@@ -518,7 +518,7 @@ function Holiday() {
                     <div>
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
-                                <button onClick={() => { showslip() }}><img src={reservations1?.slip === null ? '/No_image_available.png' : reservations1?.slip} alt="Qrcode" width="200" height="250" /></button>
+                                <button onClick={() => { showslip() }}><Image src={`${reservations1?.slip === null ? '/No_image_available.png' : reservations1?.slip}`} alt="Qrcode" width="200" height="250" /></button>
                                 <div className={styles.payment}>
                                     <h4>{price} <span>บาท</span></h4>
                                 </div>

@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
 import pool from '@/db/db';
+import { format, utcToZonedTime } from 'date-fns-tz';
 
 
 // Configure Cloudinary
@@ -43,8 +44,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         resource_type: 'image', // Specify the resource type (image, video, raw)
       });
       const id = fields.id;
-      await connection.query('UPDATE tournament SET slipurl = ? , paymentStatus = ? WHERE id = ? ', [result.secure_url,1,id]);
-
+      const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
+      const today = format(dateInBangkok, 'dd MMMM yyyy')
+      // await connection.query('UPDATE tournament SET slipurl = ? , paymentStatus = ? , pay_date = ? , price = ? WHERE id = ? ', [result.secure_url,1,today , id]);
+      await connection.query(`
+      UPDATE tournament AS t
+      JOIN listtournament_handlevel AS hl ON t.hand_level_id = hl.hand_level_id AND t.listT_id = hl.tournament_id
+      SET t.price = hl.price , slipurl = ? , paymentStatus = ? , pay_date = ? 
+      WHERE t.id = ?;`, 
+      [result.secure_url,1,today , id]);
       // Return the Cloudinary image URL
       res.status(200).json({ imageUrl: result.secure_url });
     } catch (error) {

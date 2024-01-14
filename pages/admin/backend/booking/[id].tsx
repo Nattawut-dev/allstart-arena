@@ -109,13 +109,6 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   const dateInBangkok = utcToZonedTime(new Date(), timeZone);
   const parsedId = parseInt(router.query.id as string)
 
-  useEffect(() => {
-    getHoliday();
-    const usedate = format(selectedDate, 'dd MMMM yyyy');
-    getReservations(usedate);
-    selectDate(parsedId);
-  }, [parsedId]);
-
   const [selectedDate, setSelectedDate] = useState(addDays(dateInBangkok, parsedId));
 
   const selectDate = (id: number) => {
@@ -140,6 +133,14 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
       console.log('error');
     }
   };
+
+  useEffect(() => {
+    getHoliday();
+    const usedate = format(selectedDate, 'dd MMMM yyyy');
+    getReservations(usedate);
+    selectDate(parsedId);
+  }, [parsedId ]);
+
 
 
   const setbtn = (addDay: number) => {

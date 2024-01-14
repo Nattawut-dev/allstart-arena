@@ -9,11 +9,13 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             res.status(401).json({ message: 'Not authenticated' });
             return;
         }
-        const { status, paymentStatus, listT_id } = req.query
+        const { status, paymentStatus, listT_id , hand_level } = req.query
+        console.log("hand_level" , hand_level)
         if (status) {
             const connection = await pool.getConnection();
             try {
-                let query = `SELECT * FROM tournament WHERE 1`; // เพิ่ม WHERE 1 เพื่อให้สามารถเรียงเงื่อนไขต่อไปได้
+                let query = `SELECT tournament.*, hand_level.name as hand_level_name
+                FROM tournament, hand_level  WHERE tournament.hand_level_id = hand_level.id`; // เพิ่ม WHERE 1 เพื่อให้สามารถเรียงเงื่อนไขต่อไปได้
                 let params = [];
 
                 if (status !== 'all') {
@@ -29,6 +31,10 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 if (listT_id) {
                     query += ` AND listT_id = ?`;
                     params.push(listT_id);
+                }
+                if (hand_level !== 'all' && hand_level) {
+                    query += ` AND hand_level_id = ?`;
+                    params.push(hand_level);
                 }
 
                 const [results] = await connection.query(query, params);

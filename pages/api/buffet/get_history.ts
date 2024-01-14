@@ -5,22 +5,38 @@ import { format, utcToZonedTime } from 'date-fns-tz';
 
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'GET') {
 
+    if (req.method === 'GET') {
         const connection = await pool.getConnection()
         try {
             const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
             const usedate = format(dateInBangkok, 'dd MMMM yyyy')
-            const query = `SELECT buffet.id , buffet.nickname, buffet.usedate, buffet.price, buffet.shuttle_cock, buffet.paymentStatus ,buffet.q_list ,buffet.q_id , buffet.couterPlay ,  buffet.isStudent ,
-        CASE 
-            WHEN current_buffet_q.id IS NULL THEN NULL
-            ELSE current_buffet_q.T_value
-        END AS T_value
-            FROM buffet
-            LEFT JOIN current_buffet_q ON buffet.q_id = current_buffet_q.id 
-            WHERE buffet.usedate = ?  AND buffet.paymethod_shuttlecock = '0' AND paymentStatus = 0  `;
+            let queries = `
+            SELECT 
+                b1.nickname AS player1_nickname,
+                b2.nickname AS player2_nickname,
+                b3.nickname AS player3_nickname,
+                b4.nickname AS player4_nickname,
+                h.shuttle_cock,
+                h.court,
+                h.time
+
+            FROM 
+                history_buffet h
+            LEFT JOIN 
+                buffet b1 ON h.player1_id = b1.id
+            LEFT JOIN 
+                buffet b2 ON h.player2_id = b2.id
+            LEFT JOIN 
+                buffet b3 ON h.player3_id = b3.id
+            LEFT JOIN 
+                buffet b4 ON h.player4_id = b4.id
+            WHERE 
+                h.usedate = ?
+            ORDER BY 
+                h.id DESC; `;
             // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query, [usedate]);
+            const [results] = await connection.query(queries, [usedate]);
 
             res.json(results);
         } catch (error) {

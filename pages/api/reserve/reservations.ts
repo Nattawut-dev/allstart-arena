@@ -16,9 +16,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(405).json({ message: 'Not Allowed' });
         return;
       } else {
-        const query = 'SELECT id,name, court_id, time_slot_id,reserved_date, usedate ,start_time,end_time, price ,status FROM reserve WHERE usedate = ?';
+        const deleteReserve = `DELETE FROM reserve WHERE reserved_date < (NOW() - INTERVAL 15 MINUTE) AND status = 0;`
+        await connection.query(deleteReserve);
+        const query = 'SELECT id,name, court_id, time_slot_id,reserved_date, usedate ,start_time,end_time, price ,status FROM reserve WHERE usedate = ? ';
         const [reservations] = await connection.query(query, [usedate]);
         res.json(reservations);
+
       }
     }
     else if (req.method === 'POST') {

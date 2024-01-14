@@ -14,7 +14,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         const connection = await pool.getConnection()
         try {
             const destinationItems = req.body;
-            const { q_id ,shuttle_cock} = req.query;
+            const { q_id, shuttle_cock, finish } = req.query;
             if (destinationItems.length === 0) {
                 return;
             }
@@ -28,7 +28,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 targetID.push(id)
             }
             queries += 'ELSE q_list END ,'
-            if (shuttle_cock) {
+            if (shuttle_cock !== 'null' && shuttle_cock != null && shuttle_cock != undefined && shuttle_cock != 'undefined') {
                 queries += ' shuttle_cock = CASE '
                 for (const item of destinationItems) {
                     let { id } = item;
@@ -37,7 +37,18 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 }
                 queries += 'ELSE shuttle_cock END,'
             }
+            // update couter
+            if (finish == 'true') {
+                queries += ' couterPlay = CASE '
+                for (const item of destinationItems) {
+                    let { id } = item;
+                    queries += ' WHEN id = ? THEN couterPlay + 1 ';
+                    params.push(id);
+                }
+                queries += 'ELSE couterPlay END,'
+            }
 
+            // end
             queries += 'q_id = ? WHERE id IN (?)'
             if (q_id === 'null') {
                 params.push(null);

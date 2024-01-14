@@ -351,7 +351,7 @@ function Holiday() {
 
             </div>
 
-            <Modal show={show} onHide={() => { setShow(false); setSelectedOptions([]); setMaxTeamValues({}) }} centered keyboard={false}>
+            <Modal show={show} onHide={() => { setShow(false); setSelectedOptions([]); setMaxTeamValues({}) }} centered keyboard={false} size='lg'>
                 <Modal.Header closeButton>
                     <Modal.Title>เพิ่มงานแข่ง</Modal.Title>
                 </Modal.Header>
@@ -427,7 +427,7 @@ function Holiday() {
                             <span className='d-flex justify-content-center fw-bold my-2 text-danger'>จำนวนทีมหลัก **โปรดกรอกทุกช่อง</span>
                             <div className={`${styles.hand_level} d-flex flex-row`}>
                                 {selectedOptions.map((id, index) => (
-                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '150px' }}>
+                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '220px' }}>
                                         <label htmlFor={`max_team_${id}`} className='mb-1'>
                                             {returnNameHandLevel(id)} =
                                         </label>
@@ -436,14 +436,14 @@ function Holiday() {
                                             type="number"
                                             style={{ width: '80px', padding: '2px', margin: '5px' }}
                                             id={`max_team_${id}`}
-                                            value={maxTeamValues[id].value || ''}
+                                            value={maxTeamValues[id]?.value || ''}
                                             onChange={(e) => {
                                                 const newValue = parseInt(e.target.value);
                                                 setMaxTeamValues(prevState => ({
                                                     ...prevState,
                                                     [id]: {
                                                         value: newValue,
-                                                        price: maxTeamValues[id].price
+                                                        price: maxTeamValues[id]?.price
                                                     }
                                                 }));
                                             }}
@@ -454,7 +454,7 @@ function Holiday() {
                             <span className='d-flex justify-content-center fw-bold my-2 text-danger'>ค่าสมัครแข่ง **โปรดกรอกทุกช่อง</span>
                             <div className={`${styles.hand_level} d-flex flex-row`}>
                                 {selectedOptions.map((id, index) => (
-                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '150px' }}>
+                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '220px' }}>
                                         <label htmlFor={`max_team_${id}`} className='mb-1'>
                                             {returnNameHandLevel(id)} =
                                         </label>
@@ -463,13 +463,13 @@ function Holiday() {
                                             type="number"
                                             style={{ width: '80px', padding: '2px', margin: '5px' }}
                                             id={`max_team_${id}`}
-                                            value={maxTeamValues[id].price || ''}
+                                            value={maxTeamValues[id]?.price || ''}
                                             onChange={(e) => {
                                                 const newValue = parseInt(e.target.value);
                                                 setMaxTeamValues(prevState => ({
                                                     ...prevState,
                                                     [id]: {
-                                                        value: maxTeamValues[id].value,
+                                                        value: maxTeamValues[id]?.value,
                                                         price: newValue
                                                     }
                                                 }));
@@ -491,7 +491,7 @@ function Holiday() {
                 </Modal.Footer>
             </Modal>
 
-            <Modal show={show2} onHide={() => { setShow2(false); setSelectedOptions([]); setMaxTeamValues({}) }} centered keyboard={false}>
+            <Modal show={show2} onHide={() => { setShow2(false); setSelectedOptions([]); setMaxTeamValues({}) }} centered keyboard={false} size='lg'>
                 <Modal.Header closeButton>
                     <Modal.Title>แก้ไขงานแข่ง</Modal.Title>
                 </Modal.Header>
@@ -567,7 +567,7 @@ function Holiday() {
                             <span className='d-flex justify-content-center fw-bold my-2 text-danger'>จำนวนทีมหลัก **โปรดกรอกทุกช่อง</span>
                             <div className={`${styles.hand_level} d-flex flex-row`}>
                                 {selectedOptions.map((id, index) => (
-                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '150px' }}>
+                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '220px' }}>
                                         <label htmlFor={`max_team_${id}`} className='mb-1'>
                                             {returnNameHandLevel(id)} =
                                         </label>
@@ -575,14 +575,14 @@ function Holiday() {
                                             type="number"
                                             style={{ width: '80px', padding: '2px', margin: '5px' }}
                                             id={`max_team_${id}`}
-                                            value={maxTeamValues[id].value || ''}
+                                            value={maxTeamValues[id]?.value || ''}
                                             onChange={(e) => {
                                                 const newValue = parseInt(e.target.value);
                                                 setMaxTeamValues(prevState => ({
                                                     ...prevState,
                                                     [id]: {
                                                         value: newValue,
-                                                        price: maxTeamValues[id].price
+                                                        price: maxTeamValues[id]?.price
                                                     }
                                                 }));
                                             }}
@@ -593,7 +593,7 @@ function Holiday() {
                             <span className='d-flex justify-content-center fw-bold my-2 text-danger'>ค่าสมัครแข่ง **โปรดกรอกทุกช่อง</span>
                             <div className={`${styles.hand_level} d-flex flex-row`}>
                                 {selectedOptions.map((id, index) => (
-                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '150px' }}>
+                                    <div className='d-flex flex-row align-items-center justify-content-end' key={index} style={{ width: '220px' }}>
                                         <label htmlFor={`max_team_${id}`} className='mb-1'>
                                             {returnNameHandLevel(id)} =
                                         </label>
@@ -601,13 +601,13 @@ function Holiday() {
                                             type="number"
                                             style={{ width: '80px', padding: '2px', margin: '5px' }}
                                             id={`max_team_${id}`}
-                                            value={maxTeamValues[id].price || ''}
+                                            value={maxTeamValues[id]?.price || ''}
                                             onChange={(e) => {
                                                 const newValue = parseInt(e.target.value);
                                                 setMaxTeamValues(prevState => ({
                                                     ...prevState,
                                                     [id]: {
-                                                        value: maxTeamValues[id].value,
+                                                        value: maxTeamValues[id]?.value,
                                                         price: newValue
                                                     }
                                                 }));

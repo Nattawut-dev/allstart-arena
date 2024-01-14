@@ -26,10 +26,11 @@ interface Buffet {
     paymethod_shuttlecock: string;
     regisDate: string;
     pay_date: string;
-    isStudent: number;
 }
-
-function BuffetReserved() {
+interface props {
+    date: string;
+}
+function BuffetReserved({ date }: props) {
     const [buffetData, setBuffetData] = useState<Buffet[]>([]);
     const [editBuffet, setEditBuffet] = useState<Buffet | null>(null);
 
@@ -40,7 +41,7 @@ function BuffetReserved() {
     }, []);
 
     const loadData = () => {
-        fetch('/api/admin/buffet/get/getall')
+        fetch(`/api/admin/buffet/get/getNotpay_buffet?usedate=${date}`)
             .then((response) => response.json())
             .then((data) => {
                 setBuffetData(data);
@@ -257,16 +258,14 @@ function BuffetReserved() {
 
         }
     }
-
     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
-
     return (
         <>
             <Head>
                 <title>Buffet Reserved</title>
             </Head>
             <div style={{ margin: 'auto', maxWidth: '1000px', overflow: 'auto' }}>
-                <h3>รายชื่อผู้จองตีบุฟเฟ่ต์</h3>
+                <h3>รายชื่อผู้ที่ยังไม่ชำระเงิน วันที่ {date}</h3>
                 <form className={styles.searchForm}>
                     <input
                         className={styles.searchInput}
@@ -318,13 +317,12 @@ function BuffetReserved() {
                     ))}
                 </ul>
             </div>
-            <Modal show={editBuffet !== null} onHide={() => setEditBuffet(null)} centered keyboard={false}>
+            <Modal show={editBuffet !== null} onHide={() => setEditBuffet(null)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Buffet</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {editBuffet && (
-
                         <Form>
 
                             <Form.Group controlId="formNickname">
@@ -335,10 +333,6 @@ function BuffetReserved() {
                                 <Form.Label>เบอร์</Form.Label>
                                 <Form.Control type="string" maxLength={10} value={editBuffet.phone} onChange={(e) => setEditBuffet({ ...editBuffet, phone: e.target.value })} />
                             </Form.Group>
-                            <div className={`${styles.checkbox_wrapper} d-flex mt-3 mb-3 mx-2`}>
-                                <input type="checkbox" id="cbtest-19" value={editBuffet.isStudent } onChange={(e) => setEditBuffet({ ...editBuffet, isStudent: e.target.checked ? 1 : 0})} checked={editBuffet.isStudent == 1} />
-                                <label htmlFor="cbtest-19" className='mx-2'> นักเรียน / นักศึกษา</label>
-                            </div>
                             <Form.Group controlId="formShuttleCock">
                                 <Form.Label>จำนวนลูก</Form.Label>
                                 <Form.Control type="number" value={editBuffet.shuttle_cock} onChange={(e) => setEditBuffet({ ...editBuffet, shuttle_cock: parseInt(e.target.value) })} />
@@ -368,8 +362,6 @@ function BuffetReserved() {
                                     <option value={1}>โอนผ่านแอดมิน</option>
                                     <option value={2}>เงินสดผ่านแอดมิน</option>
                                     <option value={3}>โอนด้วยตนเอง</option>
-                                    <option value={4}>เล่นเสร็จยังไม่ชำระ</option>
-
                                 </Form.Control>
                             </Form.Group>
                             <Form.Group controlId="formUsedate" style={{ width: '100%' }}>
@@ -384,16 +376,17 @@ function BuffetReserved() {
                                 </div>
                             </Form.Group>
                             <Form.Group controlId="formUsedate" style={{ width: '100%' }}>
-                                <Form.Label>วันที่ชำระเงิน **วันที่นำยอดไปรวมในหน้าสรุปยอด</Form.Label>
+                                <Form.Label>วันที่ชำระเงิน **วันที่นำยอดไปรวมในหน้าสรุปยอด ปี1970 คือ ไม่ได้ชำระ</Form.Label>
                                 <div style={{ width: '100%' }}>
                                     <DatePicker
                                         className='w-100'
-                                        selected={editBuffet.usedate ? new Date(editBuffet.pay_date) : null}
+                                        selected={ editBuffet.usedate ? new Date(editBuffet.pay_date) : null}
                                         onChange={(date) => date && setEditBuffet({ ...editBuffet, pay_date: format(date, 'dd MMMM yyyy') })}
                                         dateFormat="dd MMMM yyyy"
                                     />
-                                    <Button className='mx-3' onClick={() => setEditBuffet({ ...editBuffet, pay_date: format(dateInBangkok, 'dd MMMM yyyy') })}> วันนี้</Button>
+                                    <Button className='mx-3' onClick={()=> setEditBuffet({ ...editBuffet, pay_date: format(dateInBangkok, 'dd MMMM yyyy') })}> วันนี้</Button>
                                 </div>
+
                             </Form.Group>
                         </Form>
                     )}

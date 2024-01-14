@@ -1,0 +1,48 @@
+.boxRight {
+    width: 100%;
+    border: 1px solid #5757FF;
+    background-color : #CCE5F3;
+    border-radius: 10px;
+    position : relative 
+}
+.container {
+    max-width: 700px;
+
+}
+.boxtable{
+    height: 700px;
+    overflow-y: auto;
+}
+.table{
+    max-height: 700px;
+}
+@media (max-width: 1120px) {
+    .boxRight {
+        z-index: 999;
+        max-width: 1120px;
+        /* width: 50%; */
+        height: fit-content;
+        position : relative 
+
+    }
+
+    .container {
+        position: fixed;
+        z-index: 999;
+        max-width: 100%;
+        width: 96%;
+        margin: auto;
+        top: calc(100% - 400px);
+    }
+    .boxtable{
+        height: 200px;
+    }
+    .table{
+        max-height:200px;
+    }
+    /* .boxRight div h6{
+        width:  92vw;
+        
+    } */
+
+}

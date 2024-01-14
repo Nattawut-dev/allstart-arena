@@ -17,7 +17,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             if(!search) {
                 throw new Error('No search query provided');
             }
-            const query = 'SELECT * FROM buffet WHERE name LIKE ? OR phone LIKE ? OR usedate LIKE ? ORDER BY id DESC LIMIT 1000';
+            const query = 'SELECT * FROM buffet WHERE nickname LIKE ? OR phone LIKE ? OR usedate LIKE ? ORDER BY id DESC LIMIT 1000';
             const [results] = await connection.query(query, [`%${search}%`, `%${search}%`, `%${search}%`]);
             res.json(results );
         } catch (error) {
