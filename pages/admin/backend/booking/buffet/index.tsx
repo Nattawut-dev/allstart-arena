@@ -5,12 +5,12 @@ import { Flex, position } from '@chakra-ui/react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/admin/buffet.module.css'
 import Head from 'next/head';
-import Draggable from 'react-draggable';
+
 interface ItemsType {
     [key: string]: string[];
 }
 const initialLeftItems: ItemsType = {}
-for (let i = 0; i <= 199; i++) {
+for (let i = 0; i <= 30; i++) {
     initialLeftItems[`T${i}`] = [];
 }
 const initialRightItems = {
@@ -235,7 +235,7 @@ function Buffets() {
         setSelectedOptions(Array(numberOfProperties).fill(''))
         setSelectedOptionsCourt(Array(numberOfProperties).fill(''))
         try {
-            const response = await fetch(`/api/admin/buffet/save-selected-options`);
+            const response = await fetch(`/api/buffet/save-selected-options`);
             if (response.ok) {
                 const data = await response.json();
                 setSelectedOptions(data[0].selected_options)
