@@ -3,7 +3,7 @@ import Link from 'next/link';
 import styles from './styles/Sidebar.module.css';
 import { useRouter } from 'next/router';
 import { FaChalkboard, FaChevronCircleRight, FaChevronCircleDown, FaCalendarPlus, FaCalendarDay, FaCalendarAlt, FaPencilAlt, FaHandPointRight, FaRegClock, FaTh, FaAngellist } from "react-icons/fa";
-import { IoMdAdd  } from "react-icons/io";
+import { IoMdAdd } from "react-icons/io";
 import { BiDetail } from "react-icons/bi";
 import { HiOutlineQueueList } from "react-icons/hi2";
 
@@ -34,26 +34,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         <ul className={styles['menu-list']}>
 
           <Link href="/" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['menu-item']} ${router.pathname === '/' ? styles.activeMenuItem : ''}`}>< FaChalkboard className='mx-1' /> <span> กฎการใช้สนาม</span> </li></Link>
-          <li 
-          
+          <li
+
             className={`${styles['menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/reservations/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeMenuItem : ''}`}
-            onClick={() => {setSelectedSubMenu1(!selectedSubMenu1) ;}}
+            onClick={() => { setSelectedSubMenu1(!selectedSubMenu1); }}
           >
             {selectedSubMenu1 === true ? (
               <a> <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>จองสนาม</span></a>
             ) : <a> <FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}>จองสนาม</span></a>}
-            { (
+            {(
               <ul className={`${styles['sub-menu']}  ${selectedSubMenu1 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>
                 <Link href="/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/[id]' || router.pathname === '/booking/Reserve/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span> จองสนามแบดมินตัน</span> </li></Link>
                 <Link href="/reservations/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/reservations/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarAlt className='mx-1' /> <span>ข้อมูลการจอง</span> </li></Link>
-                <Link href="/booking/buffet" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet' ? styles.activeSubMenu : ''}`} ><IoMdAdd  className='mx-1' /> <span>จองตีบุฟเฟ่ต์</span> </li></Link>
+                <Link href="/booking/buffet" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet' ? styles.activeSubMenu : ''}`} ><IoMdAdd className='mx-1' /> <span>จองตีบุฟเฟ่ต์</span> </li></Link>
                 <Link href="/booking/buffet/info" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/info' ? styles.activeSubMenu : ''}`} ><BiDetail className='mx-1' /> <span>ข้อมูลตีบุฟเฟ่ต์</span> </li></Link>
-                <Link href="/booking/buffet/queue" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/queue' ? styles.activeSubMenu : ''}`} ><HiOutlineQueueList  className='mx-1' /> <span>คิวตีบุฟเฟ่ต์</span> </li></Link>
+                <Link href="/booking/buffet/queue" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/queue' ? styles.activeSubMenu : ''}`} ><HiOutlineQueueList className='mx-1' /> <span>คิวตีบุฟเฟ่ต์</span> </li></Link>
 
               </ul>
             )}
           </li>
-
+          <li
+            className={`${styles['menu-item']} ${router.pathname === '/Tournament' || router.pathname === '/Tournament/detail' ? styles.activeMenuItem : ''}`}
+            onClick={() => setSelectedSubMenu2(!selectedSubMenu2)}
+          >
+            {selectedSubMenu2 === true ? (
+              <a> <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>บุฟเฟ่ต์สำหรับมือใหม่</span></a>
+            ) : <a> <FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}>บุฟเฟ่ต์สำหรับมือใหม่</span></a>}
+            {(
+              <ul className={`${styles['sub-menu']}  ${selectedSubMenu2 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>
+                <Link href="/booking/buffet/newbie" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/newbie' ? styles.activeSubMenu : ''}`} ><IoMdAdd className='mx-1' /> <span>จองตีบุฟเฟ่ต์</span> </li></Link>
+                <Link href="/booking/buffet/newbie/info" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/newbie/info' ? styles.activeSubMenu : ''}`} ><BiDetail className='mx-1' /> <span>ข้อมูลตีบุฟเฟ่ต์</span> </li></Link>
+                <Link href="/booking/buffet/newbie/queue" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/booking/buffet/newbie/queue' ? styles.activeSubMenu : ''}`} ><HiOutlineQueueList className='mx-1' /> <span>คิวตีบุฟเฟ่ต์</span> </li></Link>
+              </ul>
+            )}
+          </li>
           <li
             className={`${styles['menu-item']} ${router.pathname === '/Tournament' || router.pathname === '/Tournament/detail' ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu2(!selectedSubMenu2)}
@@ -61,8 +75,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             {selectedSubMenu2 === true ? (
               <a> <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>การสมัครแข่งขัน</span></a>
             ) : <a> <FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}>การสมัครแข่งขัน</span></a>}
-            { (
-               <ul className={`${styles['sub-menu']}  ${selectedSubMenu2 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>
+            {(
+              <ul className={`${styles['sub-menu']}  ${selectedSubMenu2 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>
                 <Link href="/Tournament" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/Tournament' ? styles.activeSubMenu : ''}`}><FaHandPointRight className='mx-1' /> <span>สมัครแข่งขัน</span></li></Link>
                 <Link href="/Tournament/detail" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/Tournament/detail' ? styles.activeSubMenu : ''}`}><FaAngellist className='mx-1' /> <span>ตรวจสอบผู้สมัคร</span></li></Link>
               </ul>

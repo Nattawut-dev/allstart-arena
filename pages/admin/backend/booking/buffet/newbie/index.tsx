@@ -235,7 +235,7 @@ function Buffets() {
         setSelectedOptions(Array(numberOfProperties).fill(''))
         setSelectedOptionsCourt(Array(numberOfProperties).fill(''))
         try {
-            const response = await fetch(`/api/buffet/save-selected-options`);
+            const response = await fetch(`/api/buffet/newbie/save-selected-options`);
             if (response.ok) {
                 const data = await response.json();
                 setSelectedOptions(data[0].selected_options)
@@ -266,7 +266,7 @@ function Buffets() {
             setRightItems(initialRightItems)
             getSelectedOptions();
             getHistory();
-            const response = await fetch(`/api/admin/buffet/getRegis`)
+            const response = await fetch(`/api/admin/buffet/newbie/getRegis`)
             if (response.ok) {
                 const data = await response.json();
                 setData(data);
@@ -319,7 +319,7 @@ function Buffets() {
     const [historys, setHistorys] = useState<History[]>([]);
     const getHistory = async () => {
         try {
-            const response = await fetch(`/api/buffet/get_history`, {
+            const response = await fetch(`/api/buffet/newbie/get_history`, {
                 method: 'GET',
             });
             const data = await response.json()
@@ -355,7 +355,7 @@ function Buffets() {
 
     const updateCurrent_cock = async (options: any, id: number) => {
         try {
-            const response = await fetch(`/api/admin/buffet/save-selected-options?id=${id}`, {
+            const response = await fetch(`/api/admin/buffet/newbie/save-selected-options?id=${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -453,7 +453,7 @@ function Buffets() {
         setRightItems(newState);
 
         try {
-            const response = await fetch(`/api/admin/buffet/insert_history?shuttle_cock=${selectedOptions[index]}&court=${selectedOptionsCourt[index]}`, {
+            const response = await fetch(`/api/admin/buffet/newbie/insert_history?shuttle_cock=${selectedOptions[index]}&court=${selectedOptionsCourt[index]}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -472,10 +472,10 @@ function Buffets() {
             let data;
 
             if (i === 0) {
-                url = `/api/admin/buffet/updateQ_clear`
+                url = `/api/admin/buffet/newbie/updateQ_clear`
                 data = updatedLeftItems;
             } else if (i === 1) {
-                url = `/api/admin/buffet/updateQ?q_id=${null}&shuttle_cock=${selectedOptions[index]}&finish=true`
+                url = `/api/admin/buffet/newbie/updateQ?q_id=${null}&shuttle_cock=${selectedOptions[index]}&finish=true`
                 data = right
 
                 setSelectedOptions(updatedOptions);
@@ -539,7 +539,7 @@ function Buffets() {
                         }
                         setLeftItems(newState);
                         try {
-                            const response = await fetch(`/api/admin/buffet/updateQ?q_id=${i}`, {
+                            const response = await fetch(`/api/admin/buffet/newbie/updateQ?q_id=${i}`, {
                                 method: 'PUT',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -579,7 +579,7 @@ function Buffets() {
                 };
                 setRightItems(newState);
                 try {
-                    const response = await fetch(`/api/admin/buffet/updateQ?q_id=${null}`, {
+                    const response = await fetch(`/api/admin/buffet/newbie/updateQ?q_id=${null}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -635,7 +635,7 @@ function Buffets() {
                     destinationItems[i].q_list = i + 1
                 }
                 try {
-                    const response = await fetch(`/api/admin/buffet/updateQ?q_id=${droppableId}`, {
+                    const response = await fetch(`/api/admin/buffet/newbie/updateQ?q_id=${droppableId}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -663,7 +663,7 @@ function Buffets() {
     };
     const add_reduce = async (id: number, shuttle_cock: number) => {
         try {
-            const response = await fetch('/api/admin/buffet/add_reduce', {
+            const response = await fetch('/api/admin/buffet/newbie/add_reduce', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -693,7 +693,7 @@ function Buffets() {
             if (result.isConfirmed) {
                 try {
                     method = method === 'โอนเงิน' ? '1' : '2'
-                    const response = await fetch('/api/admin/buffet/pay_shuttle_cock', {
+                    const response = await fetch('/api/admin/buffet/newbie/pay_shuttle_cock', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -734,7 +734,7 @@ function Buffets() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch('/api/admin/buffet/finishPlay', {
+                    const response = await fetch('/api/admin/buffet/newbie/finishPlay', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -783,7 +783,7 @@ function Buffets() {
                 <div className='container-fluid text-center' style={{ overflow: 'hidden' }}>
                     <div className="d-flex justify-content-between mb-1">
                         <div></div>
-                        <h4>จัดคิวตีบุฟเฟ่ต์</h4>
+                        <h4>จัดคิวตีบุฟเฟ่ต์ (มือใหม่)</h4>
                         <Button className='btn btn-sm' onClick={fetchRegis}>refresh</Button>
                     </div>
 
