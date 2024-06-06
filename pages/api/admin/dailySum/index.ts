@@ -1,9 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { format, utcToZonedTime } from 'date-fns-tz';
+import { getToken } from 'next-auth/jwt';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     const connection = await pool.getConnection();
+    const token = await getToken({ req })
+    if (!token) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
+    }
     try {
         const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
         let today = format(dateInBangkok, 'dd MMMM yyyy');

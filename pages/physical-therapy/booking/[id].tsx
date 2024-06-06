@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import styles from '../../styles/ReserveBadmintonCourt.module.css';
+import styles from '@/styles/ReserveBadmintonCourt.module.css';
 import { format, addDays, isAfter, differenceInHours } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import { GetServerSideProps } from 'next';
-import NotFoundPage from '../404'
+import NotFoundPage from '../../404'
 import Head from 'next/head';
 import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2';
-import Avaliable from './Reserve/feedback/Avaliable/[id]'
+import Loading from '@/components/loading/index'
+
 interface TimeSlot {
     id: number;
     start_time: string;
@@ -48,9 +49,9 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
     try {
         const timeZone = 'Asia/Bangkok';
-        const courts = await fetch(`${process.env.HOSTNAME}/api/reserve/courts`);
+        const courts = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/courts`);
         const courts_data = await courts.json();
-        const timeslots = await fetch(`${process.env.HOSTNAME}/api/reserve/time-slots`);
+        const timeslots = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/time-slots`);
         const timeslots_data = await timeslots.json();
 
         return {
@@ -98,9 +99,12 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
 
     const getReservations = async (usedate: string) => {
-        const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
+        setIsLoading(true);
+        setReservations([]);
+        const response = await fetch(`/api/physical-therapy/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
         const data = await response.json();
         setReservations(data);
+        setIsLoading(false)
     };
 
 
@@ -112,15 +116,15 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         selectDate(parsedId);
     }, [parsedId]);
 
-
     const selectDate = (id: number) => {
         setSelectedDate(addDays(dateInBangkok, id))
     }
 
-    const getHoliday = async (selectedDate: Date) => {
+    const getHoliday = async (selectedDate : Date) => {
+       
         try {
             const selectDate = format(selectedDate, 'MM-dd-yyyy')
-            const response = await fetch(`/api/reserve/holidays?date=${selectDate}`);
+            const response = await fetch(`/api/physical-therapy/reserve/holidays?date=${selectDate}`);
             const data = await response.json();
             if (data.results.length >= 1) {
                 setFoundHoliday(data.results);
@@ -139,7 +143,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
     const setbtn = (addDay: number) => {
         setSelectedDate(addDays(dateInBangkok, addDay))
-        router.push(`/booking/${encodeURIComponent(addDay)}`)
+        router.push(`/physical-therapy/booking/${encodeURIComponent(addDay)}`)
     }
 
     const handleCourtReservation = async (
@@ -150,7 +154,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         price: number,
         usedate: string
     ) => {
-        const response = await fetch(`/api/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
+        const response = await fetch(`/api/physical-therapy/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
         const data: Reservation = await response.json();
         const reservation = data.find(
             (reservation: Reservation) =>
@@ -305,7 +309,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                 }
             })
             try {
-                const response = await fetch('/api/reserve/reservations', {
+                const response = await fetch('/api/physical-therapy/reserve/reservations', {
                     method: 'POST',
                     body: JSON.stringify({
                         name,
@@ -348,7 +352,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            router.push(`/reservations/${parsedId}`)
+                            router.push(`/physical-therapy/details/${parsedId}`)
                         }
                     })
 
@@ -385,11 +389,11 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         return (
             <NotFoundPage />
         );
-    } else {
+    }  else {
         return (
             <div className={`${styles.container} `}>
                 <Head>
-                    <title>Reservation Courts</title>
+                    <title>Reservation Physical Therapy </title>
                 </Head>
                 <div>
                     <div className={styles.tableWrapper}>
@@ -397,7 +401,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                             <thead>
                                 <tr >
                                     <td colSpan={courts.length + 1} className={styles.reserveDate}>
-                                        <span className='bg-white'> <span className='text-dark'>Reservation for </span> {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
+                                        <span className='bg-white'> <span className='text-dark'> Physical Therapy Reservation for </span> {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
                                     </td>
                                 </tr>
                                 <tr>
@@ -452,7 +456,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                                                                 className={`${styles.cell} ${isAvailable ? styles.available : styles.reserved} ${isExpired ? styles.expired : ''
                                                                     }`}
                                                                 onClick={() => {
-                                                                    if (isAvailable && !isExpired) {
+                                                                    if ((isAvailable && !isExpired ) && !isLoading) {
                                                                         handleCourtReservation(
                                                                             court.id,
                                                                             timeSlot.id,

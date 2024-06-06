@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <Link href="/admin/backend/dailySummary" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/dailySummary' ? styles.activeMenuItem : ''}`}> <div><FaRegMoneyBillAlt /> <span> สรุปยอดรายวัน</span></div> </li></Link>
 
           <li
-            className={`${styles['menu-item']} ${router.pathname.startsWith('/admin/backend/booking/') ? styles.activeMenuItem : ''}`}
+            className={`${styles['menu-item']} ${(router.pathname.startsWith('/admin/backend/booking/') && !router.pathname.startsWith('/admin/backend/booking/buffet/')) ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu1(!selectedSubMenu1)}
           >
             {selectedSubMenu1 === true ? (
@@ -55,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           </li>
 
           <li
-            className={`${styles['menu-item']} ${router.pathname.startsWith('/admin/backend/tournament/') ? styles.activeMenuItem : ''}`}
+            className={`${styles['menu-item']} ${router.pathname.startsWith('/admin/backend/booking/buffet/') ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu2(!selectedSubMenu2)}
           >
             {selectedSubMenu2 === true ? (
@@ -81,6 +81,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                 <Link href="/admin/backend/tournament/setting" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/setting' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>เพิ่ม/ลบ งานแข่ง</span></div> </li></Link>
                 <Link href="/admin/backend/tournament/hand_level_setting" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/hand_level_setting' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>ตั้งค่าระดับมือ</span></div> </li></Link>
                 <Link href="/admin/backend/tournament/protest" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/tournament/protest' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>การประท้วง</span></div></li></Link>
+              </ul>
+            )}
+          </li>
+          <li
+            className={`${styles['menu-item']} ${router.pathname.startsWith('/admin/backend/physical-therapy/') ? styles.activeMenuItem : ''}`}
+            onClick={() => setSelectedSubMenu2(!selectedSubMenu2)}
+          >
+            {selectedSubMenu2 === true ? (
+              <a>  <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>นัดทำกายภาพ</span> </a>
+            ) : <a><FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}></span>นัดทำกายภาพ</a>}
+            {(
+              <ul className={`${styles['sub-menu']}  ${selectedSubMenu2 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>                
+                <Link href="/admin/backend/physical-therapy/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/booking/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>จองกายภาพ</span></div></li></Link>
+                <Link href="/admin/backend/physical-therapy/holidays" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/holidays' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>วันหยุด</span></div> </li></Link>
+                <Link href="/admin/backend/physical-therapy/new_reserved?state=1" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/new_reserved' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>การจองใหม่</span></div> </li></Link>
+                <Link href="/admin/backend/physical-therapy/bookinghistory" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/bookinghistory' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>ค้นหาการจอง</span></div></li></Link>
+                <Link href="/admin/backend/physical-therapy/title-name" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/title-name' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>หัวข้อ</span></div></li></Link>
+                <Link href="/admin/backend/physical-therapy/time-slot" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/time-slot' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>เวลา</span></div></li></Link>
+
               </ul>
             )}
           </li>

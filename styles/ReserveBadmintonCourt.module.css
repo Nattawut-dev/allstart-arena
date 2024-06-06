@@ -101,6 +101,13 @@
   font-weight: 500;
 }
 
+.reserveDate span {
+  background-color: white;
+  padding: 5px;
+  border-radius: 8px;
+  color: #f80000;
+}
+
 .btn{
   padding:8px 12px;
   margin-right: 20px;
