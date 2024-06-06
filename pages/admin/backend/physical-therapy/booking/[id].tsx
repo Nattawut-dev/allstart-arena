@@ -9,7 +9,6 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
 import Head from 'next/head';
-import dynamic from 'next/dynamic';
 
 interface TimeSlot {
   id: number;
@@ -50,9 +49,9 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 
   try {
     const timeZone = 'Asia/Bangkok';
-    const courts = await fetch(`${process.env.HOSTNAME}/api/reserve/courts`);
+    const courts = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/courts`);
     const courts_data = await courts.json();
-    const timeslots = await fetch(`${process.env.HOSTNAME}/api/reserve/time-slots`);
+    const timeslots = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/time-slots`);
     const timeslots_data = await timeslots.json();
 
 
@@ -101,7 +100,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   }
 
   const getReservations = async (usedate: string) => {
-    const response = await fetch(`/api/admin/reserved/get?usedate=${usedate}`);
+    const response = await fetch(`/api/admin/physical-therapy/reserved/get?usedate=${usedate}`);
     const data = await response.json();
     setReservations(data);
   };
@@ -139,13 +138,13 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     const usedate = format(selectedDate, 'dd MMMM yyyy');
     getReservations(usedate);
     selectDate(parsedId);
-  }, [parsedId]);
+  }, [parsedId ]);
 
 
 
   const setbtn = (addDay: number) => {
     setSelectedDate(addDays(dateInBangkok, addDay))
-    router.push(`/admin/backend/booking/${encodeURIComponent(addDay)}`)
+    router.push(`/admin/backend/physical-therapy/booking/${encodeURIComponent(addDay)}`)
   }
 
   const handleCourtReservation = async (
@@ -156,7 +155,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     price: number,
     usedate: string
   ) => {
-    const response = await fetch(`/api/admin/reserved/get?usedate=${usedate}&parsedId=${parsedId}`);
+    const response = await fetch(`/api/admin/physical-therapy/reserved/get?usedate=${usedate}&parsedId=${parsedId}`);
     const data: Reservation = await response.json();
     const reservation = data.find(
       (reservation: Reservation) =>
@@ -288,10 +287,10 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
       }
     })
     try {
-      const response = await fetch('/api/admin/reserved/reservations', {
+      const response = await fetch('/api/admin/physical-therapy/reserved/reservations', {
         method: 'POST',
         body: JSON.stringify({
-          name: name ? name : 'admin',
+          name : name? name : 'admin',
           phone,
           court_id: courtID,
           time_slot_id: time_slot_id,
@@ -340,7 +339,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   return (
     <>
       <Head>
-        <title>Booking</title>
+        <title>Physical Therapy Booking </title>
       </Head>
 
       <div className={`${styles.container} `}>
@@ -358,7 +357,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
               <thead>
                 <tr >
                   <td colSpan={courts.length + 1} className={styles.reserveDate}>
-                    <span className='bg-white'> <span className='text-dark'>Reservation for </span> {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
+                   <span> <span className='text-dark'> Physical Therapy Reservation for </span> {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
                   </td>
                 </tr>
 

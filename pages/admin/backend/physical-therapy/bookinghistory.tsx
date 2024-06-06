@@ -75,7 +75,7 @@ function Holiday() {
 
         if (event) {
             try {
-                const response = await fetch('/api/admin/reserved/new/updateStatus', {
+                const response = await fetch('/api/admin/physical-therapy/reserved/new/updateStatus', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ function Holiday() {
 
     const getReserve = async (searchTerm: string) => {
 
-        let url = `/api/admin/reserved/history?`
+        let url = `/api/admin/physical-therapy/reserved/history?`
         if (searchTerm != '') {
             url += `search=${searchTerm}`
         }
@@ -171,7 +171,7 @@ function Holiday() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/admin/reserved/delete?id=${item.id}`, {
+                    const response = await fetch(`/api/admin/physical-therapy/reserved/delete?id=${item.id}`, {
                         method: 'DELETE',
                     });
 
@@ -202,7 +202,7 @@ function Holiday() {
 
     async function updateReserve() {
         try {
-            const response = await fetch(`/api/admin/reserved/new/update`, {
+            const response = await fetch(`/api/admin/physical-therapy/reserved/new/update`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -405,11 +405,11 @@ function Holiday() {
 
                 <div className={styles.box}>
                     <div>
-                        <h5 className={`fw-bold `}>ค้นหาการจองด้วย
+                        <h5 className={`fw-bold `}>ค้นหาการจอง·นัดทำกายภาพ·ด้วย
                             <Button className={`btn btn-sm  ms-2 border ${searchby ? '' : 'btn-light'}`} onClick={() => { setSearchby(true); getReserve('') }}>ชื่อ/เบอร์</Button>
                             <Button className={`btn btn-sm mx-2 border ${!searchby ? '' : 'btn-light'}`} onClick={() => {
                                 setSearchby(false); getReserve(format(selectedDate, 'dd MMMM yyyy'));
-                            }}>วันใช้คอร์ท</Button>
+                            }}>วันที่จอง</Button>
                         </h5>
                         <div className='d-flex justify-content-center text-center'>
                             {searchby &&
@@ -419,7 +419,7 @@ function Holiday() {
                                         <input
                                             className={styles.searchInput}
                                             type="text"
-                                            placeholder="ชื่อ/เบอร์/วันที่ใช้คอร์ท"
+                                            placeholder="ชื่อ/เบอร์/วันที่จอง"
                                             value={searchTerm}
                                             onChange={handleSearch}
                                         />
