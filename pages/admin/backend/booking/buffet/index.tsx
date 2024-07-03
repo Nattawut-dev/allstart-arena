@@ -5,6 +5,8 @@ import { Flex, position } from '@chakra-ui/react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/admin/buffet.module.css'
 import Head from 'next/head';
+import { StudentPriceEnum, IsStudentEnum } from '@/enum/StudentPriceEnum';
+
 
 interface ItemsType {
     [key: string]: string[];
@@ -92,7 +94,7 @@ function Buffets() {
                                                 p={"0"}
                                                 width={'120px'}
                                                 maxWidth={"100%"}
-                                                bg={task.isStudent === 1 ? "#BEF7C7" : draggableSnapshot.isDragging ? "lightblue" : "white"}
+                                                bg={task.isStudent === IsStudentEnum.Student ? "#BEF7C7" : task.isStudent === IsStudentEnum.University ? "#FFD7B5" : draggableSnapshot.isDragging ? "lightblue" : "white"}
                                                 rounded="3px"
                                                 height={'32px'}
                                                 textAlign="center"
@@ -180,7 +182,7 @@ function Buffets() {
                                         <Flex
                                             m={"0.2rem"}
                                             p={"0"}
-                                            bg={task.isStudent === 1 ? "#BEF7C7" : draggableSnapshot.isDragging ? "lightblue" : "white"}
+                                            bg={task.isStudent === IsStudentEnum.Student ? "#BEF7C7" : task.isStudent === IsStudentEnum.University ? "#FFD7B5" : draggableSnapshot.isDragging ? "lightblue" : "white"}
                                             rounded="3px"
                                             textAlign="center"
                                             _active={{ bg: "white" }}
@@ -764,15 +766,17 @@ function Buffets() {
         });
     }
     const sumPrice = (item: Buffet) => {
-        if (item.isStudent === 1) {
-            setTotal_shuttle_cock_price(((item?.shuttle_cock_price / 4) * item?.shuttle_cock))
+        if (item.isStudent === IsStudentEnum.Student) {
+            setTotal_shuttle_cock_price(StudentPriceEnum.Student + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock))
+
+        } else if (item.isStudent === IsStudentEnum.University) {
+            setTotal_shuttle_cock_price(StudentPriceEnum.University + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock))
 
         } else {
             setTotal_shuttle_cock_price(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock))
 
         }
     }
-
 
     return (
         <>
@@ -878,7 +882,7 @@ function Buffets() {
                         rounded="8px"
                         textAlign="center"
                         outline="0px solid transparent"
-                        bg={item.isStudent === 1 ? '#BEF7C7' : '#FFFFFF'}
+                        bg={item.isStudent === IsStudentEnum.Student ? "#BEF7C7" : item.isStudent === IsStudentEnum.University ? "#FFD7B5" : '#FFFFFF'}
                         align="center"
                         flexDirection={"column"}
                         zIndex={1}
@@ -897,7 +901,7 @@ function Buffets() {
 
             <Modal show={show} onHide={() => setShow(false)} centered >
                 <Modal.Header closeButton>
-                    <Modal.Title>ชำระค่าลูกแบด {selectDataPayment?.isStudent === 1 ? "(นักเรียน/นักศึกษา)" : ""}</Modal.Title>
+                    <Modal.Title>ชำระค่าลูกแบด {selectDataPayment?.isStudent === IsStudentEnum.Student ? "| นักเรียน" : selectDataPayment?.isStudent === IsStudentEnum.University ? "| นักศึกษา" : ""}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className='w-75 m-auto'>
                     <div className='detail'>
@@ -911,7 +915,7 @@ function Buffets() {
                         </div>
                         <div className='d-flex justify-content-between'>
                             <p>ค่าสนาม </p>
-                            <p>{selectDataPayment?.isStudent === 1 ? "0" : selectDataPayment?.court_price} บาท / คน</p>
+                            <p>{selectDataPayment?.isStudent === IsStudentEnum.Student ? StudentPriceEnum.Student : selectDataPayment?.isStudent === IsStudentEnum.University ? StudentPriceEnum.University : selectDataPayment?.court_price} บาท / คน</p>
                         </div>
                         <div className='d-flex justify-content-between'>
                             <p>ค่าลูก</p>
@@ -924,16 +928,16 @@ function Buffets() {
 
                         <div className='d-flex justify-content-between'>
                             <p>จำนวนที่ต้องชำระ</p>
-                            <p> {`${selectDataPayment?.isStudent === 1 ? "0" : selectDataPayment?.court_price} + (${selectDataPayment?.shuttle_cock} * ${shuttle_cock_price / 4}) = `} <span className='fw-bold fs-5 text-danger'>{total_shuttle_cock_price}</span> บาท</p>
+                            <p> {`${selectDataPayment?.isStudent === IsStudentEnum.Student ? StudentPriceEnum.Student : selectDataPayment?.isStudent === IsStudentEnum.University ? StudentPriceEnum.University : selectDataPayment?.court_price} + (${selectDataPayment?.shuttle_cock} * ${shuttle_cock_price / 4}) = `} <span className='fw-bold fs-5 text-danger'>{total_shuttle_cock_price}</span> บาท</p>
                         </div>
                     </div>
 
                 </Modal.Body>
                 <Modal.Footer className='d-flex justify-content-between'>
                     <div>
-                        <Button onClick={()=>finishPlay(selectDataPayment?.id)} className='btn btn-sm btn-danger'>เล่นเสร็จแล้ว</Button>
-                    </div>                  
-                      <div>
+                        <Button onClick={() => finishPlay(selectDataPayment?.id)} className='btn btn-sm btn-danger'>เล่นเสร็จแล้ว</Button>
+                    </div>
+                    <div>
                         จ่ายผ่าน
                         <Button className='mx-2  btn btn-success' onClick={() => payMethod(selectDataPayment?.id, "เงินสด")} >ผ่านเงินสด</Button>
                         <Button onClick={() => payMethod(selectDataPayment?.id, "โอนเงิน")} >ผ่านการโอน</Button>

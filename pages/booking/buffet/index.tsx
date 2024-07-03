@@ -7,6 +7,7 @@ import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 import { Button } from 'react-bootstrap';
 import Swal from 'sweetalert2';
+import { StudentPriceEnum , IsStudentEnum } from '@/enum/StudentPriceEnum';
 
 
 interface Buffet_setting {
@@ -152,10 +153,14 @@ export default function Page({ buffet_setting }: Props) {
     }
 
   }
-  const [isStudent, setIsStudent] = useState(0)
+  const [isStudent, setIsStudent] = useState(0);
+  const [price, setPrice] = useState(buffet_setting.court_price);
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsStudent(event.target.checked ? 1 : 0)
+    const value = parseInt(event.target.value, 10);
+    setIsStudent(value === isStudent ? 0 : value);
+    setPrice(value === IsStudentEnum.Student ? StudentPriceEnum.Student : value === IsStudentEnum.University ? StudentPriceEnum.University : buffet_setting.court_price);
   };
+
   return (
     <div className={styles['reserve-form-container']}>
       <Head>
@@ -191,16 +196,33 @@ export default function Page({ buffet_setting }: Props) {
           />
         </label>
         <div className={`${styles.checkbox_wrapper} d-flex mt-3`}>
-          <input type="checkbox" id="cbtest-19" value={isStudent} onChange={handleCheckboxChange} checked={isStudent == 1} />
-          <label htmlFor="cbtest-19" className={styles.check_box}></label>
-          <p className='mx-2' style={{ padding: '0' }}>นักเรียน / นักศึกษา</p>
+          <input
+            type="checkbox"
+            id="cbtest-19-1"
+            value={IsStudentEnum.Student}
+            onChange={handleCheckboxChange}
+            checked={isStudent === IsStudentEnum.Student}
+          />
+          <label htmlFor="cbtest-19-1" className={styles.check_box}></label>
+          <p className="mx-2" style={{ padding: '0' }}>นักเรียน  | 10 บาท</p>
+        </div>
+        <div className={`${styles.checkbox_wrapper} d-flex`}>
+          <input
+            type="checkbox"
+            id="cbtest-19-2"
+            value={IsStudentEnum.University}
+            onChange={handleCheckboxChange}
+            checked={isStudent === IsStudentEnum.University}
+          />
+          <label htmlFor="cbtest-19-2" className={styles.check_box}></label>
+          <p className="mx-2" style={{ padding: '0' }}>นักศึกษา | 20 บาท</p>
         </div>
 
 
         <div>
           <p style={{ color: "red", fontWeight: 'Bold' }}>{error}</p>
         </div>
-        <h6 >ค่าตีก๊วน <span style={{ color: "red" }} > {isStudent===1 ? "0" :  buffet_setting.court_price}</span>  บาทต่อคน  ค่าลูกต่อ 1 ลูก
+        <h6 >ค่าตีก๊วน <span style={{ color: "red" }} > {isStudent === IsStudentEnum.None ? buffet_setting.court_price : price}</span>  บาทต่อคน  ค่าลูกต่อ 1 ลูก
           <span style={{ color: "red" }} > {buffet_setting.shuttle_cock_price} </span> บาท  </h6>
         <h6>(คนละ <span style={{ color: "red" }} > {buffet_setting.shuttle_cock_price / 4} </span> บาท/ลูก)</h6>
 

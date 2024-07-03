@@ -32,7 +32,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         const connection = await pool.getConnection()
         try {
 
-            const query = `DELETE FROM buffet WHERE id = ?`;
+            const query = `DELETE FROM buffet_newbie WHERE id = ?`;
             const { id } = req.query;
             const [results] = await connection.query(query, [id]);
             res.json({ results });

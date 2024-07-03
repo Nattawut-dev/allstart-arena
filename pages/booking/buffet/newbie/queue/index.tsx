@@ -4,6 +4,7 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Flex } from '@chakra-ui/react';
 import Swal from 'sweetalert2';
 import Head from 'next/head';
+import {  IsStudentEnum } from '@/enum/StudentPriceEnum';
 
 
 interface ItemsType {
@@ -116,7 +117,7 @@ function Buffets() {
                                                 width={'120px'}
 
                                                 maxWidth={"100%"}
-                                                bg={task.isStudent === 1 ? "#BEF7C7" : draggableSnapshot.isDragging ? "lightblue" : "white"}
+                                                bg={task.isStudent === IsStudentEnum.Student ||  task.isStudent === IsStudentEnum.Student_University ? "#BEF7C7" : task.isStudent === IsStudentEnum.University ? "#FFD7B5" : draggableSnapshot.isDragging ? "lightblue" : "white"}
                                                 rounded="3px"
                                                 height={'32px'}
                                                 textAlign="center"
@@ -204,7 +205,7 @@ function Buffets() {
                                         <Flex
                                             m={"0.2rem"}
                                             p={"0"}
-                                            bg={task.isStudent === 1 ? "#BEF7C7" : draggableSnapshot.isDragging ? "lightblue" : "white"}
+                                            bg={task.isStudent === IsStudentEnum.Student || task.isStudent === IsStudentEnum.Student_University ? "#BEF7C7" : task.isStudent === IsStudentEnum.University ? "#FFD7B5" : draggableSnapshot.isDragging ? "lightblue" : "white"}
                                             rounded="3px"
                                             textAlign="center"
                                             _active={{ bg: "white" }}

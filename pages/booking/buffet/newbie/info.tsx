@@ -7,6 +7,8 @@ import Head from 'next/head';
 import styles from '@/styles/infoBuffet.module.css'
 import { utcToZonedTime } from 'date-fns-tz';
 import { GetServerSideProps } from 'next';
+import { StudentPriceEnum, IsStudentEnum } from '@/enum/StudentPriceEnum';
+
 interface buffet {
     id: number;
     nickname: string;
@@ -181,13 +183,31 @@ function Infobuffet({ buffet_setting }: Props) {
                 setBuffetSelcted(buffet);
                 if (buffet) {
 
-                    if (buffet.isStudent === 1) {
+                    if (buffet.isStudent === IsStudentEnum.Student) {
                         const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
-                        const calculatedPrice = (buffet?.shuttle_cock * calculatePricePerOne);
+                        const calculatedPrice = StudentPriceEnum.Student + (buffet?.shuttle_cock * calculatePricePerOne);
                         setPrice(calculatedPrice);
                         setSummaryContent(
                             <div>
-                                {`0 +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
+                                {`${StudentPriceEnum.Student} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
+                            </div>
+                        );
+                    } else if (buffet.isStudent === IsStudentEnum.University) {
+                        const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
+                        const calculatedPrice = StudentPriceEnum.University + (buffet?.shuttle_cock * calculatePricePerOne);
+                        setPrice(calculatedPrice);
+                        setSummaryContent(
+                            <div>
+                                {`${StudentPriceEnum.University} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
+                            </div>
+                        );
+                    }else if (buffet.isStudent === IsStudentEnum.Student_University) {
+                        const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
+                        const calculatedPrice = StudentPriceEnum.Student_University + (buffet?.shuttle_cock * calculatePricePerOne);
+                        setPrice(calculatedPrice);
+                        setSummaryContent(
+                            <div>
+                                {`${StudentPriceEnum.Student_University} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
                             </div>
                         );
                     } else {
@@ -278,7 +298,7 @@ function Infobuffet({ buffet_setting }: Props) {
             // scrollable={true}
             >
                 <Modal.Header closeButton >
-                    <Modal.Title>ข้อมูลการจองตีก๊วน / ชำระเงิน  {buffetSelcted?.isStudent === 1 ? <h6>นักเรียน / นักศึกษา</h6> : ''}</Modal.Title>
+                <Modal.Title>ข้อมูลการจองตีก๊วน / ชำระเงิน  {buffetSelcted?.isStudent === IsStudentEnum.Student ? <h6>นักเรียน</h6> : buffetSelcted?.isStudent === IsStudentEnum.University ? <h6>นักศึกษา</h6> : buffetSelcted?.isStudent === IsStudentEnum.Student_University ? <h6>นักเรียน/นักศึกษา</h6> : ''}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body >
                     <div>
@@ -320,7 +340,7 @@ function Infobuffet({ buffet_setting }: Props) {
                                 <div className={styles.wrapper}>
                                     <p>ค่าสนาม</p>
                                     {/* <p>{buffet_setting?.court_price} บาท / คน</p> */}
-                                    <p>{buffetSelcted?.isStudent === 1 ? "0" : buffet_setting?.court_price} บาท / คน</p>
+                                    <p>{buffetSelcted?.isStudent === IsStudentEnum.Student ? StudentPriceEnum.Student : buffetSelcted?.isStudent === IsStudentEnum.University ? StudentPriceEnum.University : buffetSelcted?.isStudent === IsStudentEnum.Student_University ? StudentPriceEnum.Student_University : buffet_setting?.court_price} บาท / คน</p>
 
                                 </div>
                                 <div className={styles.wrapper}>

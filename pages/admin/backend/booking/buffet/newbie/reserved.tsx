@@ -9,7 +9,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import { utcToZonedTime } from 'date-fns-tz';
-
+import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 
 interface Buffet {
     id: number;
@@ -336,7 +336,7 @@ function BuffetReserved() {
                                 <Form.Control type="string" maxLength={10} value={editBuffet.phone} onChange={(e) => setEditBuffet({ ...editBuffet, phone: e.target.value })} />
                             </Form.Group>
                             <div className={`${styles.checkbox_wrapper} d-flex mt-3 mb-3 mx-2`}>
-                                <input type="checkbox" id="cbtest-19" value={editBuffet.isStudent } onChange={(e) => setEditBuffet({ ...editBuffet, isStudent: e.target.checked ? 1 : 0})} checked={editBuffet.isStudent == 1} />
+                                <input type="checkbox" id="cbtest-19" value={editBuffet.isStudent } onChange={(e) => setEditBuffet({ ...editBuffet, isStudent: e.target.checked ? IsStudentEnum.Student_University : IsStudentEnum.None })} checked={editBuffet.isStudent == IsStudentEnum.Student_University} />
                                 <label htmlFor="cbtest-19" className='mx-2'> นักเรียน / นักศึกษา</label>
                             </div>
                             <Form.Group controlId="formShuttleCock">

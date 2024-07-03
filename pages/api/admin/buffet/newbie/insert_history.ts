@@ -55,15 +55,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 h.time
 
             FROM 
-                history_buffet h
+                history_buffet_newbie h
             LEFT JOIN 
-                buffet b1 ON h.player1_id = b1.id
+                buffet_newbie b1 ON h.player1_id = b1.id
             LEFT JOIN 
-                buffet b2 ON h.player2_id = b2.id
+                buffet_newbie b2 ON h.player2_id = b2.id
             LEFT JOIN 
-                buffet b3 ON h.player3_id = b3.id
+                buffet_newbie b3 ON h.player3_id = b3.id
             LEFT JOIN 
-                buffet b4 ON h.player4_id = b4.id
+                buffet_newbie b4 ON h.player4_id = b4.id
             WHERE 
                 h.usedate = ?
             ORDER BY 
