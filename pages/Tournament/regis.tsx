@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../../styles/Tournament.module.css';
 import Head from 'next/head';
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import { useMediaQuery } from 'react-responsive';
 import Image from 'next/image'
 
@@ -61,6 +61,7 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
   const [image_2, setImage_2] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [singlePlayer, setSinglePlayer] = useState(false);
 
   const handleImageChange_1 = async (e: any) => {
     const file = e.target.files[0];
@@ -78,6 +79,7 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
   };
   const Swal = require('sweetalert2')
 
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -89,49 +91,38 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
     const gender2Value = otherGender2 === 'อื่นๆ' ? gender_2 : otherGender2 || '';
 
     if (tel_1.length < 10) {
-
       Swal.fire({
         icon: 'error',
         text: 'เบอร์ผู้สมัคร 1 ไม่ครบ 10 ตัว',
-      })
+      });
       return;
-
-
-    }
-    else if (tel_2.length < 10) {
+    } else if (!singlePlayer && tel_2.length < 10) {
       Swal.fire({
         icon: 'error',
         text: 'เบอร์ผู้สมัคร 2 ไม่ครบ 10 ตัว',
-      })
+      });
       return;
-
-    }
-    else if (image_1 == null) {
+    } else if (image_1 == null) {
       Swal.fire({
         icon: 'error',
         text: 'โปรดอัพโหลดภาพผู้สมัคร1',
-      })
+      });
       return;
-
-    }
-    else if (image_2 == null) {
+    } else if (!singlePlayer && image_2 == null) {
       Swal.fire({
         icon: 'error',
         text: 'โปรดอัพโหลดภาพผู้สมัคร2',
-      })
+      });
       return;
-
-    }
-    else if (gender1Value === '' || gender2Value === '') {
+    } else if (gender1Value === '' || (!singlePlayer && gender2Value === '')) {
       Swal.fire({
         icon: 'error',
         text: 'กรุณาเลือกเพศ',
-      })
+      });
       return;
-
     }
 
-    else if (
+    if (
       selectedTournament &&
       Name_1 &&
       Nickname_1 &&
@@ -140,33 +131,41 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
       affiliation_1 &&
       tel_1.length == 10 &&
       image_1 &&
-      Name_2 &&
-      Nickname_2 &&
-      age_2 &&
-      gender2Value &&
-      affiliation_2 &&
-      tel_2.length == 10 &&
-      image_2 &&
+      (singlePlayer ||
+        (Name_2 &&
+          Nickname_2 &&
+          age_2 &&
+          gender2Value &&
+          affiliation_2 &&
+          tel_2.length == 10 &&
+          image_2)) &&
       selectHandlevel
     ) {
       Swal.fire({
         title: 'กำลังบันทึก...',
         text: 'โปรดอย่าปิดหน้านี้',
         timerProgressBar: true,
-        allowOutsideClick : false,
-        allowEscapeKey : false,
-        allowEnterKey : false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
         didOpen: () => {
-          Swal.showLoading()
+          Swal.showLoading();
         },
       });
+
       const uploadResults = [];
 
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= (singlePlayer ? 1 : 2); i++) {
         try {
           const formData = new FormData();
-          const file = i == 1 ? image_1 : image_2;
-          formData.append('file', file);
+
+          if (singlePlayer) {
+            formData.append('file', image_1);
+          } else if (!singlePlayer && image_2) {
+            const file = i == 1 ? image_1 : image_2;
+            formData.append('file', file);
+          }
+
           formData.append('upload_preset', 'upload'); // แทนที่ด้วย upload preset ของคุณ
           formData.append('cloud_name', 'dxwab1sqe'); // แทนที่ด้วยชื่อ cloud ของคุณ
 
@@ -188,7 +187,7 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
         }
       }
 
-      if (uploadResults.length == 2) {
+      if (uploadResults.length == (singlePlayer ? 1 : 2)) {
         try {
           const formData = new FormData();
           formData.append('listT_id', selectedTournament.id.toString());
@@ -198,17 +197,18 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
           formData.append('gender_1', gender1Value);
           formData.append('affiliation_1', affiliation_1);
           formData.append('tel_1', tel_1);
-          formData.append('Name_2', Name_2);
-          formData.append('Nickname_2', Nickname_2);
-          formData.append('age_2', age_2);
-          formData.append('gender_2', gender2Value);
-          formData.append('affiliation_2', affiliation_2);
-          formData.append('tel_2', tel_2);
+          if (!singlePlayer) {
+            formData.append('Name_2', Name_2);
+            formData.append('Nickname_2', Nickname_2);
+            formData.append('age_2', age_2);
+            formData.append('gender_2', gender2Value);
+            formData.append('affiliation_2', affiliation_2);
+            formData.append('tel_2', tel_2);
+          }
           formData.append('level', selectHandlevel?.name);
           formData.append('hand_level_id', selectHandlevel?.id.toString());
           formData.append('imageUrl1', uploadResults[0]);
-          formData.append('imageUrl2', uploadResults[1]);
-
+          if (!singlePlayer) formData.append('imageUrl2', uploadResults[1]);
 
           const response = await fetch('/api/tournament/regis', {
             method: 'POST',
@@ -231,7 +231,7 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
             setTel_2('');
             setImage_2(null);
             setError('');
-            setIsLoading(false)
+            setIsLoading(false);
 
             Swal.fire({
               icon: 'success',
@@ -239,37 +239,42 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
               text: 'เรากำลังพาไปหน้ารายละเอียด',
               showConfirmButton: false,
               timer: 1000,
-
-            })
-            router.replace(`/Tournament/detail?tournament=${selectedTournament.id}&hand_level=${encodeURIComponent(selectHandlevel?.id)}`)
+            });
+            router.replace(
+              `/Tournament/detail?tournament=${selectedTournament.id}&hand_level=${encodeURIComponent(selectHandlevel?.id)}`
+            );
             setMessage('Post added successfully!');
           } else {
             setIsLoading(false);
             Swal.fire({
               icon: 'error',
               text: 'เกิดข้อผิดพลาด',
-            })
-            throw new Error('Something went wrong');
+            });
+            throw new Error('An error occurred while adding a post');
           }
-        } catch (error: any) {
-          setError(error.message);
+        } catch (error) {
+          setIsLoading(false);
+          Swal.fire({
+            icon: 'error',
+            text: 'เกิดข้อผิดพลาด',
+          });
+          setError('An error occurred while adding a post');
         }
-      }else{
+      } else {
         Swal.fire({
           icon: 'error',
-          text: 'มีปัญหาด้านการอัพโหลดภาพ',
-        })
+          text: 'เกิดข้อผิดพลาด',
+        });
       }
-
     } else {
-      // setError('All fields are required!');
+      setIsLoading(false);
       Swal.fire({
         icon: 'error',
-        text: 'กรุณากรอกข้อมูลให้ครบ',
-      })
+        text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+      });
+      setError('กรุณากรอกข้อมูลให้ครบถ้วน');
     }
   };
-
   const [isLoading, setIsLoading] = useState(false);
   const [teamname, setTeamname] = useState<TeamData[]>([]);
   const [team_name_1, setIsTeam_name_1] = useState(false);
@@ -422,6 +427,16 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
                     className={styles.file_input}
 
                   />
+                  <Form className='d-flex justify-content-center '>
+                    <Form.Check
+                      className='fs-4 '
+                      type="switch"
+                      id="custom-switch"
+                      checked={singlePlayer}
+                      onChange={(e) => setSinglePlayer(e.target.checked)}
+                    />
+                    <span className='text-center align-center d-flex mt-1'>ผู้เล่นหนึ่งคน</span>
+                  </Form>
                 </div>
               </div>
 
@@ -434,124 +449,127 @@ function Tournament({ selectedTournament, selectHandlevel, backToggle }: Props) 
               />
 
             </div>
-            <div className={styles.line}></div>
-            <h6 className={styles.h6}>ผู้เข้าแข่งขัน 2 {starRed}</h6>
-            <div className={styles.wrapper}>
-              <div className={styles['form-group']}>
-                <div className={styles['form-row']}>
-                  <label htmlFor="Name_2">ชื่อ-สกุล {starRed} </label>
-                  <input
-                    name="Name_2"
-                    type="text"
-                    placeholder="ชื่อ-สกุล"
-                    onChange={(e) => setName_2(e.target.value)}
-                    value={Name_2}
-                    required
-                  />
-                </div>
+            {!singlePlayer &&
+              <div>
+                <div className={styles.line}></div>
 
-                <div className={styles['form-row']}>
-                  <label htmlFor="Nickname_">ชื่อเล่น {starRed}</label>
-                  <input
-                    name="Nickname_"
-                    type="text"
-                    placeholder="ชื่อเล่น"
-                    onChange={(e) => setNickname_2(e.target.value)}
-                    value={Nickname_2}
-                    required
-                  />
-                </div>
+                <h6 className={styles.h6}>ผู้เข้าแข่งขัน 2 {starRed}</h6>
+                <div className={styles.wrapper}>
+                  <div className={styles['form-group']}>
+                    <div className={styles['form-row']}>
+                      <label htmlFor="Name_2">ชื่อ-สกุล {starRed} </label>
+                      <input
+                        name="Name_2"
+                        type="text"
+                        placeholder="ชื่อ-สกุล"
+                        onChange={(e) => setName_2(e.target.value)}
+                        value={Name_2}
+                        required
+                      />
+                    </div>
 
-                <div className={styles['form-row']}>
-                  <label htmlFor="age_2">อายุ {starRed}</label>
-                  <input
-                    name="age_2"
-                    type="number"
-                    placeholder="อายุ"
-                    onChange={(e) => setAge_2(e.target.value)}
-                    value={age_2}
-                    required
-                  />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="gender_2">เพศ {starRed}</label>
-                  <select
-                    name="gender_2"
-                    onChange={(e) => setOtherGender2(e.target.value)}
-                    value={otherGender2}
-                    required
-                  >
-                    <option value="">เลือกเพศ</option>
-                    <option value="ชาย">ชาย</option>
-                    <option value="หญิง">หญิง</option>
-                    <option value="อื่นๆ">อื่นๆ</option>
-                  </select>
-                </div>
+                    <div className={styles['form-row']}>
+                      <label htmlFor="Nickname_">ชื่อเล่น {starRed}</label>
+                      <input
+                        name="Nickname_"
+                        type="text"
+                        placeholder="ชื่อเล่น"
+                        onChange={(e) => setNickname_2(e.target.value)}
+                        value={Nickname_2}
+                        required
+                      />
+                    </div>
 
-                {otherGender2 === 'อื่นๆ' && (
-                  <div className={styles['form-row']}>
-                    <label htmlFor="other_gender2">เพศอื่นๆ {starRed}</label>
-                    <input
-                      name="other_gender2"
-                      type="text"
-                      placeholder="เพศอื่นๆ"
-                      onChange={(e) => setGender_2(e.target.value)}
-                      value={gender_2}
-                      required
-                    />
+                    <div className={styles['form-row']}>
+                      <label htmlFor="age_2">อายุ {starRed}</label>
+                      <input
+                        name="age_2"
+                        type="number"
+                        placeholder="อายุ"
+                        onChange={(e) => setAge_2(e.target.value)}
+                        value={age_2}
+                        required
+                      />
+                    </div>
+                    <div className={styles['form-row']}>
+                      <label htmlFor="gender_2">เพศ {starRed}</label>
+                      <select
+                        name="gender_2"
+                        onChange={(e) => setOtherGender2(e.target.value)}
+                        value={otherGender2}
+                        required
+                      >
+                        <option value="">เลือกเพศ</option>
+                        <option value="ชาย">ชาย</option>
+                        <option value="หญิง">หญิง</option>
+                        <option value="อื่นๆ">อื่นๆ</option>
+                      </select>
+                    </div>
+
+                    {otherGender2 === 'อื่นๆ' && (
+                      <div className={styles['form-row']}>
+                        <label htmlFor="other_gender2">เพศอื่นๆ {starRed}</label>
+                        <input
+                          name="other_gender2"
+                          type="text"
+                          placeholder="เพศอื่นๆ"
+                          onChange={(e) => setGender_2(e.target.value)}
+                          value={gender_2}
+                          required
+                        />
+                      </div>
+                    )}
+                    <div className={styles['form-row']}>
+                      <label htmlFor="affiliation_2">สังกัด {starRed}</label>
+                      <input
+                        name="affiliation_2"
+                        type="text"
+                        placeholder="สังกัด"
+                        onChange={(e) => setAffiliation_2(e.target.value)}
+                        value={affiliation_2}
+                        required
+                      />
+                    </div>
+                    <div className={styles['form-row']}>
+                      <label htmlFor="tel_2">เบอร์โทร {starRed}</label>
+                      <input
+                        name="tel_2"
+                        type="tel"
+                        maxLength={10}
+                        pattern="0[0-9]{9}"
+                        placeholder="เบอร์ติดต่อ"
+                        onChange={(e) => setTel_2(e.target.value)}
+                        value={tel_2}
+                        required
+                      />
+                    </div>
+                    <div className={styles['form-row']}>
+                      <label htmlFor="file-input-2">ภาพนักกีฬา 2 {starRed}</label>
+                      <label htmlFor="file-input-2" className={styles.file_input}>
+                        อัพโหลดภาพนักกีฬา 2
+                      </label>
+                      <input
+                        style={{ display: 'none' }}
+                        name="image_2"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange_2}
+                        id="file-input-2"
+                        className={styles.file_input}
+
+                      />
+                    </div>
+
                   </div>
-                )}
-                <div className={styles['form-row']}>
-                  <label htmlFor="affiliation_2">สังกัด {starRed}</label>
-                  <input
-                    name="affiliation_2"
-                    type="text"
-                    placeholder="สังกัด"
-                    onChange={(e) => setAffiliation_2(e.target.value)}
-                    value={affiliation_2}
-                    required
+                  <Image
+                    src={`${image_2 ? URL.createObjectURL(image_2) : '/user.png'}`}
+                    alt="Participant 2"
+                    className={styles.imagePreview}
+                    width={200}
+                    height={250}
                   />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="tel_2">เบอร์โทร {starRed}</label>
-                  <input
-                    name="tel_2"
-                    type="tel"
-                    maxLength={10}
-                    pattern="0[0-9]{9}"
-                    placeholder="เบอร์ติดต่อ"
-                    onChange={(e) => setTel_2(e.target.value)}
-                    value={tel_2}
-                    required
-                  />
-                </div>
-                <div className={styles['form-row']}>
-                  <label htmlFor="file-input-2">ภาพนักกีฬา 2 {starRed}</label>
-                  <label htmlFor="file-input-2" className={styles.file_input}>
-                    อัพโหลดภาพนักกีฬา 2
-                  </label>
-                  <input
-                    style={{ display: 'none' }}
-                    name="image_2"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange_2}
-                    id="file-input-2"
-                    className={styles.file_input}
 
-                  />
-                </div>
-
-              </div>
-              <Image
-                src={`${image_2 ? URL.createObjectURL(image_2) : '/user.png'}`}
-                alt="Participant 2"
-                className={styles.imagePreview}
-                width={200}
-                height={250}
-              />
-
-            </div>
+                </div></div>}
             <div className='d-flex align-items-center'>
               <Button className={`btn btn-danger mx-2 ${styles.submit_btn}`} style={{ width: '20%', backgroundColor: '#dc3545' }} onClick={backToggle}>
                 {isMobile ? '<' : 'ย้อนกลับ'}

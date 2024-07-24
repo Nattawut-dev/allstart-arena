@@ -2,7 +2,6 @@ import Head from 'next/head';
 import React, { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 
-// กำหนดชนิดข้อมูลสำหรับข้อมูล BuffetSetting
 type BuffetSetting = {
     id: number;
     court_price: number;
@@ -11,16 +10,15 @@ type BuffetSetting = {
 
 function BuffetSetting() {
     const [buffetSettings, setBuffetSettings] = useState<BuffetSetting | null>(null);
+    const [buffetSettingsNewbie, setBuffetSettingsNewbie] = useState<BuffetSetting | null>(null);
     const [editBuffetSetting, setEditBuffetSetting] = useState<BuffetSetting | null>(null);
-    const [message, setMessage] = useState<string>('');
-    const [editing, setEditing] = useState(false); // ระบุสถานะการแก้ไข
+    const [editBuffetSettingNewbie, setEditBuffetSettingNewbie] = useState<BuffetSetting | null>(null);
+    const [editing, setEditing] = useState(false);
+    const [editingNewbie, setEditingNewbie] = useState(false);
 
     const getBuffetSettings = async () => {
         try {
-            const response = await fetch('/api/admin/buffet_setting', {
-                method: 'GET',
-            });
-
+            const response = await fetch('/api/admin/buffet_setting', { method: 'GET' });
             if (response.ok) {
                 const data = await response.json();
                 setBuffetSettings(data[0]);
@@ -32,20 +30,27 @@ function BuffetSetting() {
         }
     };
 
+    const getBuffetSettingsNewbie = async () => {
+        try {
+            const response = await fetch('/api/admin/buffet_setting_newbie', { method: 'GET' });
+            if (response.ok) {
+                const data = await response.json();
+                setBuffetSettingsNewbie(data[0]);
+            } else {
+                console.error('เกิดข้อผิดพลาดในการดึงข้อมูล buffet_setting_newbie');
+            }
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการเรียก API', error);
+        }
+    };
+
     const updateBuffetSetting = async (id: number, updatedData: BuffetSetting) => {
         try {
             const response = await fetch(`/api/admin/buffet_setting`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    id: id,
-                    court_price: updatedData.court_price,
-                    shuttle_cock_price: updatedData.shuttle_cock_price
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData),
             });
-            console.log(response.status)
             if (response.status === 200) {
                 getBuffetSettings();
                 setEditBuffetSetting(null);
@@ -58,8 +63,28 @@ function BuffetSetting() {
         }
     };
 
+    const updateBuffetSettingNewbie = async (id: number, updatedData: BuffetSetting) => {
+        try {
+            const response = await fetch(`/api/admin/buffet_setting_newbie`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData),
+            });
+            if (response.status === 200) {
+                getBuffetSettingsNewbie();
+                setEditBuffetSettingNewbie(null);
+                setEditingNewbie(false);
+            } else {
+                console.error('เกิดข้อผิดพลาดในการอัปเดตข้อมูล buffet_setting_newbie');
+            }
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการเรียก API', error);
+        }
+    };
+
     useEffect(() => {
         getBuffetSettings();
+        getBuffetSettingsNewbie();
     }, []);
 
     return (
@@ -104,7 +129,6 @@ function BuffetSetting() {
                                         <input
                                             type="number"
                                             className='text-center '
-
                                             value={editBuffetSetting.shuttle_cock_price}
                                             onChange={(e) =>
                                                 setEditBuffetSetting({
@@ -137,14 +161,12 @@ function BuffetSetting() {
                                                 ยกเลิก
                                             </Button>
                                         </div>
-
-
                                     ) : (
                                         <Button
                                             className='btn btn-warning btn-sm'
                                             onClick={() => {
                                                 setEditBuffetSetting(buffetSettings);
-                                                setEditing(true); // เปิดโหมดแก้ไขเมื่อคลิกแก้ไข
+                                                setEditing(true);
                                             }}>
                                             แก้ไข
                                         </Button>
@@ -152,7 +174,90 @@ function BuffetSetting() {
                                 </td>
                             </tr>
                         )}
+                    </tbody>
+                </table>
 
+                <div className='d-flex justify-content-center mt-5'>
+                    <h4 className='fw-bold'>ตั้งค่าตีบุฟเฟ่ต์ (มือใหม่)</h4>
+                </div>
+                <table className='table table-bordered table-striped  table-sm text-center' >
+                    <thead className='table-primary'>
+                        <tr>
+                            <th>ค่าสนาม</th>
+                            <th>ค่าลูก (ต่อลูก)</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody >
+                        {buffetSettingsNewbie && (
+                            <tr >
+                                <td>
+                                    {editBuffetSettingNewbie && editingNewbie ? (
+                                        <input
+                                            type="number"
+                                            className='text-center'
+                                            value={editBuffetSettingNewbie.court_price}
+                                            onChange={(e) =>
+                                                setEditBuffetSettingNewbie({
+                                                    ...editBuffetSettingNewbie,
+                                                    court_price: +e.target.value,
+                                                })
+                                            }
+                                        />
+                                    ) : (
+                                        buffetSettingsNewbie.court_price
+                                    )}
+                                </td>
+                                <td>
+                                    {editBuffetSettingNewbie && editingNewbie ? (
+                                        <input
+                                            type="number"
+                                            className='text-center '
+                                            value={editBuffetSettingNewbie.shuttle_cock_price}
+                                            onChange={(e) =>
+                                                setEditBuffetSettingNewbie({
+                                                    ...editBuffetSettingNewbie,
+                                                    shuttle_cock_price: +e.target.value,
+                                                })
+                                            }
+                                        />
+                                    ) : (
+                                        buffetSettingsNewbie.shuttle_cock_price
+                                    )}
+                                </td>
+                                <td>
+                                    {editBuffetSettingNewbie && editingNewbie ? (
+                                        <div>
+                                            <Button
+                                                className='btn btn-success mx-2 btn-sm'
+                                                onClick={() => {
+                                                    updateBuffetSettingNewbie(buffetSettingsNewbie.id, editBuffetSettingNewbie);
+                                                }}
+                                            >
+                                                บันทึก
+                                            </Button>
+                                            <Button
+                                                className='btn btn-danger btn-sm'
+                                                onClick={() => {
+                                                    setEditingNewbie(false);
+                                                }}
+                                            >
+                                                ยกเลิก
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            className='btn btn-warning btn-sm'
+                                            onClick={() => {
+                                                setEditBuffetSettingNewbie(buffetSettingsNewbie);
+                                                setEditingNewbie(true);
+                                            }}>
+                                            แก้ไข
+                                        </Button>
+                                    )}
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

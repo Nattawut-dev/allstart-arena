@@ -27,7 +27,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         (b.shuttle_cock * (bs.shuttle_cock_price / 4))
     ) AS total_shuttle_cock
 FROM 
-    buffet_setting bs
+    buffet_setting_newbie bs
 JOIN 
     buffet_newbie b ON b.id = ?
 WHERE 

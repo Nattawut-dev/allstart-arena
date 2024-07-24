@@ -381,7 +381,7 @@ function Infobuffet({ buffet_setting }: Props) {
                             />
                             <button
                                 onClick={confirm}
-                                disabled={!selectedFile || buffetSelcted?.paymentStatus != 0}
+                                disabled={!selectedFile || buffetSelcted?.paymentStatus != 0 && buffetSelcted?.paymentStatus != 3}
                                 className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
 
                             >

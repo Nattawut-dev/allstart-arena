@@ -15,13 +15,13 @@ interface Detail {
     age_1: number;
     gender_1: string;
     affiliation_1: string;
-    image_1: string;
-    Name_2: string;
-    Nickname_2: string;
-    age_2: number;
-    gender_2: string;
-    affiliation_2: string;
-    image_2: string;
+    image_1?: string;
+    Name_2?: string;
+    Nickname_2?: string;
+    age_2?: number;
+    gender_2?: string;
+    affiliation_2?: string;
+    image_2?: string;
     level: string;
     status: number;
     team_type: string;
@@ -163,7 +163,7 @@ const DetailPage = ({ allListtournament }: Props) => {
         }
     }
 
-    const showImg = (target : number) => {
+    const showImg = (target: number) => {
         const url = target === 1 ? detail_data?.image_1 : detail_data?.image_2
         Swal.fire({
             imageUrl: url,
@@ -367,8 +367,8 @@ const DetailPage = ({ allListtournament }: Props) => {
                                         <td>{item.Name_1} ({item.Nickname_1})</td>
                                         <td>{item.affiliation_1}</td>
 
-                                        <td>{item.Name_2}  ({item.Nickname_2})</td>
-                                        <td>{item.affiliation_2}</td>
+                                        <td>{item.Name_2 ?? '-'} {item.Nickname_2 ? `(${item.Nickname_2})` : ''}</td>
+                                        <td>{item.affiliation_2 ?? '-'}</td>
 
                                         {item.status === 0 && (
                                             <td className="table-warning">ระหว่างพิจารณา</td>
@@ -440,17 +440,20 @@ const DetailPage = ({ allListtournament }: Props) => {
                         <Modal.Body>
                             <div className={styles.wrapper}>
                                 <div className={styles.detail}>
-                                    <Image src={`${detail_data?.image_1}`} alt="photo" width="200" height="250" onClick={() => showImg(1)} style={{cursor : "pointer"}}/>
+                                    <Image src={`${detail_data?.image_1 ?? '/No_image_available.png'}`} alt="photo" width="200" height="250" onClick={() => showImg(1)} style={{ cursor: "pointer" }} />
                                     <div> <span>ชื่อ {detail_data?.Name_1} ({detail_data?.Nickname_1})</span></div>
                                     <div><span> เพศ {detail_data?.gender_1}</span></div>
                                     <div> <span>สังกัด {detail_data?.affiliation_1}</span></div>
                                 </div>
-                                <div className={styles.detail}>
-                                    <Image src={`${detail_data?.image_2}`} alt="photo" width="200" height="250" onClick={() => showImg(2)} style={{cursor : "pointer"}}/>
-                                    <div><span>ชื่อ {detail_data?.Name_2} ({detail_data?.Nickname_2})</span></div>
-                                    <div><span> เพศ {detail_data?.gender_2}</span></div>
-                                    <div><span>สังกัด {detail_data?.affiliation_2}</span></div>
-                                </div>
+                                {detail_data?.Name_2 &&
+                                    <div className={styles.detail}>
+                                        <Image src={`${detail_data?.image_2 ?? '/No_image_available.png'}`} alt="photo" width="200" height="250" onClick={() => showImg(2)} style={{ cursor: "pointer" }} />
+                                        <div><span>ชื่อ {detail_data?.Name_2 ?? '-'} ({detail_data?.Nickname_2 ?? '-'})</span></div>
+                                        <div><span> เพศ {detail_data?.gender_2}</span></div>
+                                        <div><span>สังกัด {detail_data?.affiliation_2}</span></div>
+                                    </div>
+                                }
+
                             </div>
 
                         </Modal.Body>

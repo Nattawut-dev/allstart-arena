@@ -357,7 +357,7 @@ function Infobuffet({ buffet_setting }: Props) {
                 </Modal.Body>
                 <Modal.Footer  >
                     <div className={styles.footer1}>
-                        <div className={styles.btn1}><Button className='btn-info '><a href="/QR_Court.jpg" download="QR_Court.jpg">โหลดสลิป</a></Button></div>
+                        <div className={styles.btn1}><Button className='btn-info '><a href="/QR_Buffet.jpg" download="QR_Buffet.jpg">โหลดสลิป</a></Button></div>
                         <div className={styles.slipbtn}>
                             <label htmlFor="file-input" className={`${styles.file_input} ${buffetSelcted?.paymentStatus === 1 ? styles.disabled : ''}`} >
                                 เลือกภาพสลิป
@@ -373,7 +373,7 @@ function Infobuffet({ buffet_setting }: Props) {
                             />
                             <button
                                 onClick={confirm}
-                                disabled={!selectedFile || buffetSelcted?.paymentStatus != 0}
+                                disabled={!selectedFile || buffetSelcted?.paymentStatus != 0 && buffetSelcted?.paymentStatus != 3}
                                 className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
 
                             >

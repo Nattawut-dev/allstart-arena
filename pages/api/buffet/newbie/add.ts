@@ -74,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                     ELSE (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4)))
                                 END AS total_shuttle_cock
                             FROM 
-                                buffet_setting bs
+                                buffet_setting_newbie bs
                             JOIN 
                                 buffet_newbie b ON b.id = ?
                             WHERE 

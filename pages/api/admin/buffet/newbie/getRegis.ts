@@ -21,11 +21,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 WHEN current_buffet_q.id IS NULL THEN NULL
                 ELSE current_buffet_q.T_value
             END AS T_value,
-            buffet_setting.shuttle_cock_price,
-            buffet_setting.court_price
+            buffet_setting_newbie.shuttle_cock_price,
+            buffet_setting_newbie.court_price
         FROM buffet_newbie
         LEFT JOIN current_buffet_q ON buffet_newbie.q_id = current_buffet_q.id 
-        LEFT JOIN buffet_setting ON buffet_setting.id = 1
+        LEFT JOIN buffet_setting_newbie ON buffet_setting_newbie.id = 1
         WHERE buffet_newbie.usedate = ?  AND buffet_newbie.paymethod_shuttlecock = '0' AND paymentStatus = 0 `;
 
 

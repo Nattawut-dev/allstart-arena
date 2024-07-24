@@ -17,14 +17,14 @@ interface Detail {
     gender_1: string;
     affiliation_1: string;
     tel_1: string;
-    image_1: string;
-    Name_2: string;
-    Nickname_2: string;
-    age_2: number;
-    gender_2: string;
-    affiliation_2: string;
-    tel_2: string;
-    image_2: string;
+    image_1?: string;
+    Name_2?: string;
+    Nickname_2?: string;
+    age_2?: number;
+    gender_2?: string;
+    affiliation_2?: string;
+    tel_2?: string;
+    image_2?: string;
     level: string;
     hand_level_id: number;
     status: number;
@@ -195,6 +195,7 @@ function Detail() {
                 setTeam_detail(tournament_data[0]);
                 setTeam_detail_check(tournament_data[0]);
                 setCheckDisabled(true);
+                setSelectedStatus(tournament_data[0].status)
                 setShow(true);
             }
 
@@ -329,7 +330,7 @@ function Detail() {
     }
     const deleteTeam = (item: Detail) => {
         Swal.fire({
-            title: `ต้องการลบทีม? "${item.team_name}" `,
+            title: `ต้องการลบทีมของ "${item.Name_1}" ?`,
             text: `หากลบแล้วไม่สามารถย้อนกลับได้`,
             icon: 'warning',
             showCancelButton: true,
@@ -349,7 +350,7 @@ function Detail() {
                         setShow(false);
                         Swal.fire(
                             'Deleted!',
-                            `ลบทีม "${item.team_name}" เรียบร้อย`,
+                            `ลบทีม "${item.Name_1}" เรียบร้อย`,
                             'success'
                         )
                     }
@@ -575,19 +576,19 @@ function Detail() {
         formData.append('file', file);
         formData.append('id', team_id.toString());
         formData.append('target', target.toString());
-        
+
         try {
             Swal.fire({
                 title: 'กำลังบันทึก...',
                 text: 'โปรดอย่าปิดหน้านี้',
                 timerProgressBar: true,
-                allowOutsideClick : false,
-                allowEscapeKey : false,
-                allowEnterKey : false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
                 didOpen: () => {
-                  Swal.showLoading()
+                    Swal.showLoading()
                 },
-              });
+            });
             const response = await fetch(`/api/admin/tournament/updateImg`, {
                 method: 'POST',
                 body: formData
@@ -720,8 +721,8 @@ function Detail() {
                                     <td className={styles.onMobile}>{item.Name_1} ({item.Nickname_1})</td>
                                     <td className={styles.onMobile}>{item.affiliation_1}</td>
 
-                                    <td className={styles.onMobile}>{item.Name_2}  ({item.Nickname_2})</td>
-                                    <td className={styles.onMobile}>{item.affiliation_2}</td>
+                                    <td className={styles.onMobile}>{item.Name_2 ?? '-'} {item.Nickname_2 ? `(${item.Nickname_2})` : ''}</td>
+                                    <td className={styles.onMobile}>{item.affiliation_2 ?? '-'}</td>
 
                                     {item.status === 0 && (
                                         <td className="table-warning">พิจารณา</td>
@@ -817,33 +818,34 @@ function Detail() {
                         {changeIng ?
                             <div className={styles.wrapper}>
                                 <div className={styles.detail}>
-                                    <Image src={`${team_detail?.image_1}`} alt="photo" width="200" height="250" />
-                                    <div> <span>
-                                        ชื่อ
-                                        <input
-                                            className='w-50'
-                                            type="text"
-                                            value={team_detail?.Name_1}
-                                            onChange={(e) => {
-                                                setTeam_detail({
-                                                    ...team_detail!,
-                                                    Name_1: e.target.value
-                                                });
-                                            }}
-                                        />
-                                        (
-                                        <input
-                                            className='w-25'
-                                            type="text"
-                                            value={team_detail?.Nickname_1}
-                                            onChange={(e) => {
-                                                setTeam_detail({
-                                                    ...team_detail!,
-                                                    Nickname_1: e.target.value
-                                                });
-                                            }}
-                                        />)
-                                    </span></div>
+                                    <Image src={`${team_detail?.image_1 ?? '/No_image_available.png'}`} alt="photo" width="200" height="250" />
+                                    <div>
+                                        <span>
+                                            ชื่อ
+                                            <input
+                                                className='w-50'
+                                                type="text"
+                                                value={team_detail?.Name_1}
+                                                onChange={(e) => {
+                                                    setTeam_detail({
+                                                        ...team_detail!,
+                                                        Name_1: e.target.value
+                                                    });
+                                                }}
+                                            />
+                                            (
+                                            <input
+                                                className='w-25'
+                                                type="text"
+                                                value={team_detail?.Nickname_1}
+                                                onChange={(e) => {
+                                                    setTeam_detail({
+                                                        ...team_detail!,
+                                                        Nickname_1: e.target.value
+                                                    });
+                                                }}
+                                            />)
+                                        </span></div>
                                     <div><span>
                                         อายุ
                                         <input
@@ -919,129 +921,134 @@ function Detail() {
                                     </span></div>
 
                                 </div>
-                                <div className={styles.detail}>
-                                    <Image src={`${team_detail?.image_2}`} alt="photo" width="200" height="250" />
-                                    <div> <span>
-                                        ชื่อ
-                                        <input
-                                            className='w-50'
-                                            type="text"
-                                            value={team_detail?.Name_2}
-                                            onChange={(e) => {
-                                                setTeam_detail({
+                                {
+                                    team_detail?.Name_2 &&
+                                    <div className={styles.detail}>
+                                        <Image src={`${team_detail.image_2 ?? '/No_image_available.png'}`} alt="photo" width="200" height="250" />
+                                        <div> <span>
+                                            ชื่อ
+                                            <input
+                                                className='w-50'
+                                                type="text"
+                                                value={team_detail?.Name_2}
+                                                onChange={(e) => {
+                                                    setTeam_detail({
+                                                        ...team_detail!,
+                                                        Name_2: e.target.value
+                                                    });
+                                                }}
+                                            />
+                                            (
+                                            <input
+                                                className='w-25'
+                                                type="text"
+                                                value={team_detail?.Nickname_2}
+                                                onChange={(e) => {
+                                                    setTeam_detail({
+                                                        ...team_detail!,
+                                                        Nickname_2: e.target.value
+                                                    });
+                                                }}
+                                            />)
+                                        </span></div>
+                                        <div><span>
+                                            อายุ
+                                            <input
+                                                className='w-25'
+                                                type="text"
+                                                value={team_detail?.age_2}
+                                                onChange={(e) => {
+                                                    setTeam_detail({
+                                                        ...team_detail!,
+                                                        age_2: parseInt(e.target.value) || 0
+                                                    });
+                                                }}
+                                            /> ปี
+                                            : เพศ
+                                            <select
+                                                name="gender_2"
+                                                onChange={(e) => setTeam_detail({
                                                     ...team_detail!,
-                                                    Name_2: e.target.value
-                                                });
-                                            }}
-                                        />
-                                        (
-                                        <input
-                                            className='w-25'
-                                            type="text"
-                                            value={team_detail?.Nickname_2}
-                                            onChange={(e) => {
-                                                setTeam_detail({
-                                                    ...team_detail!,
-                                                    Nickname_2: e.target.value
-                                                });
-                                            }}
-                                        />)
-                                    </span></div>
-                                    <div><span>
-                                        อายุ
-                                        <input
-                                            className='w-25'
-                                            type="text"
-                                            value={team_detail?.age_2}
-                                            onChange={(e) => {
-                                                setTeam_detail({
-                                                    ...team_detail!,
-                                                    age_2: parseInt(e.target.value) || 0
-                                                });
-                                            }}
-                                        /> ปี
-                                        : เพศ
-                                        <select
-                                            name="gender_2"
-                                            onChange={(e) => setTeam_detail({
-                                                ...team_detail!,
-                                                gender_2: e.target.value
-                                            })}
-                                            value={team_detail?.gender_2}
-                                            required
-                                        >
-                                            <option value="">เลือกเพศ</option>
-                                            <option value="ชาย">ชาย</option>
-                                            <option value="หญิง">หญิง</option>
-                                            <option value="อื่นๆ">อื่นๆ</option>
-                                        </select>
-                                        {team_detail?.gender_2 === 'อื่นๆ' && (
-                                            <div >
-                                                <label htmlFor="other_gender1">เพศอื่นๆ</label>
-                                                <input
-                                                    name="other_gender1"
-                                                    type="text"
-                                                    placeholder="เพศอื่นๆ"
-                                                    onChange={(e) =>
-                                                        setGender_2(e.target.value)
-                                                    }
-                                                    value={gender_2}
-                                                    required
-                                                />
-                                            </div>
-                                        )}
-                                    </span></div>
-                                    <div> <span>
-                                        สังกัด
-                                        <input
-                                            className='w-50'
-                                            type="text"
-                                            value={team_detail?.affiliation_2}
-                                            onChange={(e) => {
-                                                setTeam_detail({
-                                                    ...team_detail!,
-                                                    affiliation_2: e.target.value
-                                                });
-                                            }}
-                                        />
-                                    </span></div>
-                                    <div> <span>
-                                        เบอร์:
-                                        <input
-                                            className='w-50'
-                                            type="text"
-                                            maxLength={10}
+                                                    gender_2: e.target.value
+                                                })}
+                                                value={team_detail?.gender_2}
+                                                required
+                                            >
+                                                <option value="">เลือกเพศ</option>
+                                                <option value="ชาย">ชาย</option>
+                                                <option value="หญิง">หญิง</option>
+                                                <option value="อื่นๆ">อื่นๆ</option>
+                                            </select>
+                                            {team_detail?.gender_2 === 'อื่นๆ' && (
+                                                <div >
+                                                    <label htmlFor="other_gender1">เพศอื่นๆ</label>
+                                                    <input
+                                                        name="other_gender1"
+                                                        type="text"
+                                                        placeholder="เพศอื่นๆ"
+                                                        onChange={(e) =>
+                                                            setGender_2(e.target.value)
+                                                        }
+                                                        value={gender_2}
+                                                        required
+                                                    />
+                                                </div>
+                                            )}
+                                        </span></div>
+                                        <div> <span>
+                                            สังกัด
+                                            <input
+                                                className='w-50'
+                                                type="text"
+                                                value={team_detail?.affiliation_2}
+                                                onChange={(e) => {
+                                                    setTeam_detail({
+                                                        ...team_detail!,
+                                                        affiliation_2: e.target.value
+                                                    });
+                                                }}
+                                            />
+                                        </span></div>
+                                        <div> <span>
+                                            เบอร์:
+                                            <input
+                                                className='w-50'
+                                                type="text"
+                                                maxLength={10}
 
-                                            value={team_detail?.tel_2}
-                                            onChange={(e) => {
-                                                setTeam_detail({
-                                                    ...team_detail!,
-                                                    tel_2: e.target.value
-                                                });
-                                            }}
-                                        />
-                                    </span></div>
+                                                value={team_detail?.tel_2}
+                                                onChange={(e) => {
+                                                    setTeam_detail({
+                                                        ...team_detail!,
+                                                        tel_2: e.target.value
+                                                    });
+                                                }}
+                                            />
+                                        </span></div>
 
-                                </div>
+                                    </div>
+                                }
                             </div>
                             :
                             <div className={styles.wrapper}>
                                 <div className={styles.detail}>
-                                    <Image src={`${team_detail?.image_1}`} alt="photo" width="200" height="250" onClick={() => showImg(1)} style={{ cursor: "pointer" }} />
+                                    <Image src={`${team_detail?.image_1 ?? '/No_image_available.png'}`} alt="photo" width="200" height="250" onClick={() => showImg(1)} style={{ cursor: "pointer" }} />
                                     <div> <span>ชื่อ {team_detail?.Name_1} ({team_detail?.Nickname_1})</span></div>
                                     <div><span>อายุ {team_detail?.age_1} ปี  : เพศ {team_detail?.gender_1}</span></div>
                                     <div> <span>สังกัด {team_detail?.affiliation_1}</span></div>
                                     <div> <span>เบอร์: {team_detail?.tel_1}</span></div>
 
                                 </div>
-                                <div className={styles.detail}>
-                                    <Image src={`${team_detail?.image_2}`} alt="photo" width="200" height="250" onClick={() => showImg(2)} style={{ cursor: "pointer" }} />
-                                    <div><span>ชื่อ {team_detail?.Name_2} ({team_detail?.Nickname_2})</span></div>
-                                    <div><span>อายุ {team_detail?.age_2} ปี  : เพศ {team_detail?.gender_2}</span></div>
-                                    <div><span>สังกัด {team_detail?.affiliation_2}</span></div>
-                                    <div> <span>เบอร์: {team_detail?.tel_2}</span></div>
+                                {team_detail?.Name_2 &&
+                                    <div className={styles.detail}>
+                                        <Image src={`${team_detail?.image_2 ?? '/No_image_available.png'}`} alt="photo" width="200" height="250" onClick={() => showImg(2)} style={{ cursor: "pointer" }} />
+                                        <div><span>ชื่อ {team_detail?.Name_2} ({team_detail?.Nickname_2})</span></div>
+                                        <div><span>อายุ {team_detail?.age_2} ปี  : เพศ {team_detail?.gender_2}</span></div>
+                                        <div><span>สังกัด {team_detail?.affiliation_2}</span></div>
+                                        <div> <span>เบอร์: {team_detail?.tel_2}</span></div>
 
-                                </div>
+                                    </div>}
+
                             </div>
                         }
                     </Modal.Body>
