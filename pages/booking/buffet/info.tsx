@@ -400,7 +400,7 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
                     <div className={styles.footer1}>
                         <div className={styles.btn1}><Button className='btn-info '><a href="/QR_Buffet.jpg" download="QR_Buffet.jpg">โหลดสลิป</a></Button></div>
                         <div className={styles.slipbtn}>
-                            <label htmlFor="file-input" className={`${styles.file_input} ${buffetSelcted?.paymentStatus === buffetPaymentStatusEnum.CHECKING ? styles.disabled : ''}`} >
+                            <label htmlFor="file-input" className={`${styles.file_input} ${buffetSelcted?.paymentStatus === buffetPaymentStatusEnum.CHECKING || buffetSelcted?.paymentStatus == buffetPaymentStatusEnum.PAID ? styles.disabled : ''}`} >
                                 เลือกภาพสลิป
                             </label>
                             <input
