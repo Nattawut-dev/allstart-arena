@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, Spinner } from 'react-bootstrap';
 import { ISales } from '@/interface/sales';
 import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
-import { renderPaymentType } from '@/pages/utils/renderPaymentType';
+import { renderPaymentType } from '@/lib/renderPaymentType';
 
 interface SaleDetailModalProps {
     show: boolean;

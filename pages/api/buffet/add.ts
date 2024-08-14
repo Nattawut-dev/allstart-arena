@@ -5,7 +5,7 @@ import pool from '@/db/db';
 import { format, utcToZonedTime } from 'date-fns-tz';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
-import { generateUniqueBarcode } from '@/pages/helper/genBarcode';
+import { generateUniqueBarcode } from '@/lib/genBarcode';
 import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
 import { FIRST_BARCODE } from '@/constant/firstBarcode';
 import { IsStudentEnum } from '@/enum/StudentPriceEnum';
