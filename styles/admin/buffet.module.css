@@ -16,6 +16,13 @@
 .table{
     max-height: 700px;
 }
+
+.a{
+    text-decoration: underline;
+    color: blue;
+    cursor: pointer;
+}
+
 @media (max-width: 1120px) {
     .boxRight {
         z-index: 999;

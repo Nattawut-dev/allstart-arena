@@ -7,16 +7,14 @@ import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 import { Button } from 'react-bootstrap';
 import Swal from 'sweetalert2';
-import { StudentPriceEnum , IsStudentEnum } from '@/enum/StudentPriceEnum';
+import {  IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { IBuffet_setting } from '@/interface/buffetSetting';
 
 
-interface Buffet_setting {
-  id: number;
-  court_price: number;
-  shuttle_cock_price: number;
-}
 interface Props {
-  buffet_setting: Buffet_setting;
+  buffetSetting: IBuffet_setting;
+  buffetStudentSetting: IBuffet_setting;
+  buffetUniversitySetting: IBuffet_setting;
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
@@ -25,8 +23,9 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
     const buffetSetting = await response.json();
     return {
       props: {
-        buffet_setting: buffetSetting[0],
-
+        buffetSetting: buffetSetting[0],
+        buffetStudentSetting: buffetSetting[1],
+        buffetUniversitySetting: buffetSetting[2],
       },
 
     };
@@ -34,12 +33,15 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
     console.error('Failed to fetch data:', error);
     return {
       props: {
-        buffet_setting: [],
+        buffetSetting: [],
+        buffetStudentSetting: [],
+        buffetUniversitySetting: [],
       },
     };
   }
 }
-export default function Page({ buffet_setting }: Props) {
+
+export default function Page({ buffetSetting, buffetStudentSetting, buffetUniversitySetting }: Props) {
   const router = useRouter();
   const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
 
@@ -96,9 +98,10 @@ export default function Page({ buffet_setting }: Props) {
         });
 
         if (response.ok) {
+          const data = await response.json();
 
           Swal.fire({
-            title: "บันทึกสำเร็จ",
+            title: `บันทึกสำเร็จ รหัสของท่านคือ ${data.barcode.barcode}`,
             icon: 'success',
             text: "ต้องการไปหน้ารายละเอียดไหม ? ",
             showCancelButton: true,
@@ -111,7 +114,7 @@ export default function Page({ buffet_setting }: Props) {
           });
           setPhone('');
           setNickname('');
-          setIsStudent(0)
+          setIsStudent(IsStudentEnum.None)
         } else {
           // ถ้ามีข้อผิดพลาดในการอัปโหลด แสดง SweetAlert2 ข้อความข้อผิดพลาด
           Swal.fire({
@@ -154,13 +157,17 @@ export default function Page({ buffet_setting }: Props) {
 
   }
 
-  const [isStudent, setIsStudent] = useState(0);
-  const [price, setPrice] = useState(buffet_setting.court_price);
+  const [isStudent, setIsStudent] = useState(IsStudentEnum.None);
+  const [price, setPrice] = useState(buffetSetting.court_price);
+  const [shuttleCockPrice, setShuttleCockPrice] = useState(buffetSetting.shuttle_cock_price);
+
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(event.target.value, 10);
-    setIsStudent(event.target.checked ? 3 : 0);
-    setPrice(value === IsStudentEnum.Student ? StudentPriceEnum.Student : value === IsStudentEnum.University ? StudentPriceEnum.University :  value === IsStudentEnum.Student_University ? StudentPriceEnum.Student_University : buffet_setting.court_price);
+    const value = (event.target.value) as IsStudentEnum;
+    setIsStudent(value === isStudent ? IsStudentEnum.None : value);
+    setPrice(value === IsStudentEnum.Student ? buffetStudentSetting.court_price : value === IsStudentEnum.University ? buffetUniversitySetting.court_price : buffetSetting.court_price);
+    setShuttleCockPrice(value === IsStudentEnum.Student ? buffetStudentSetting.shuttle_cock_price : value === IsStudentEnum.University ? buffetUniversitySetting.shuttle_cock_price : buffetSetting.shuttle_cock_price);
   };
+
 
   return (
     <div className={styles['reserve-form-container']}>
@@ -200,22 +207,32 @@ export default function Page({ buffet_setting }: Props) {
           <input
             type="checkbox"
             id="cbtest-19-1"
-            value={IsStudentEnum.Student_University}
+            value={IsStudentEnum.Student}
             onChange={handleCheckboxChange}
-            checked={isStudent === IsStudentEnum.Student_University}
+            checked={isStudent === IsStudentEnum.Student}
           />
           <label htmlFor="cbtest-19-1" className={styles.check_box}></label>
-          <p className="mx-2" style={{ padding: '0' }}>นักเรียน/นักศึกษา</p>
+          <p className="mx-2" style={{ padding: '0' }}>นักเรียน  | {buffetStudentSetting.court_price} บาท</p>
         </div>
-
+        <div className={`${styles.checkbox_wrapper} d-flex`}>
+          <input
+            type="checkbox"
+            id="cbtest-19-2"
+            value={IsStudentEnum.University}
+            onChange={handleCheckboxChange}
+            checked={isStudent === IsStudentEnum.University}
+          />
+          <label htmlFor="cbtest-19-2" className={styles.check_box}></label>
+          <p className="mx-2" style={{ padding: '0' }}>นักศึกษา | {buffetUniversitySetting.court_price} บาท</p>
+        </div>
 
 
         <div>
           <p style={{ color: "red", fontWeight: 'Bold' }}>{error}</p>
         </div>
-        <h6 >ค่าตีก๊วน <span style={{ color: "red" }} > {isStudent === IsStudentEnum.None ? buffet_setting.court_price : price}</span>  บาทต่อคน  ค่าลูกต่อ 1 ลูก
-          <span style={{ color: "red" }} > {buffet_setting.shuttle_cock_price} </span> บาท  </h6>
-        <h6>(คนละ <span style={{ color: "red" }} > {buffet_setting.shuttle_cock_price / 4} </span> บาท/ลูก)</h6>
+        <h6 >ค่าตีก๊วน <span style={{ color: "red" }} > {isStudent === IsStudentEnum.None ? buffetSetting.court_price : price}</span>  บาทต่อคน  ค่าลูกต่อ 1 ลูก
+          <span style={{ color: "red" }} > {isStudent === IsStudentEnum.None ? buffetSetting.shuttle_cock_price : shuttleCockPrice} </span> บาท  </h6>
+        <h6>(คนละ <span style={{ color: "red" }} > {(isStudent === IsStudentEnum.None ? buffetSetting.shuttle_cock_price : shuttleCockPrice) / 4} </span> บาท/ลูก)</h6>
 
         <div className='row' >
           <Button className='col mx-2' type="submit">ยืนยันการจอง</Button>

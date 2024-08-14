@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
+import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
 
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
@@ -12,7 +13,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const connection = await pool.getConnection()
         try {
-            const query = 'UPDATE buffet_newbie SET paymethod_shuttlecock = 4 WHERE id = ?;';
+            const query = `UPDATE buffet_newbie SET paymethod_shuttlecock = ${PaymethodShuttlecockEnum.FINISH_PLAY} WHERE id = ?;`;
             const { id } = req.body
             const [results] = await connection.query(query, [ id]);
             res.json({ results });

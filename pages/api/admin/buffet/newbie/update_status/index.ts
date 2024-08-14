@@ -1,6 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
+import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
 
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
@@ -12,9 +15,45 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const connection = await pool.getConnection()
         try {
+            const { id, status, customerPaymentStatus } = req.body
+
+            const saleDataQuery = `
+            SELECT COUNT(*) as count 
+            FROM pos_sales 
+            WHERE CustomerID = (
+                SELECT pc.customerID 
+                FROM pos_customers pc 
+                WHERE pc.playerId = ? AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}'
+            )
+        `;
+            const [salesData] = await connection.query<RowDataPacket[]>(saleDataQuery, [id]);
+
+            if (salesData && salesData[0].count !== 0) {
+                const query = `
+                UPDATE pos_sales 
+                SET PaymentStatus = ? 
+                WHERE CustomerID = (
+                    SELECT pc.customerID 
+                    FROM pos_customers pc 
+                    WHERE pc.playerId = ? AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}'
+                )
+            `;
+
+                await connection.execute<ResultSetHeader>(query, [
+                    paymentStatusEnum.Paid,
+                    id
+                ]);
+            }
+            
             const query = 'UPDATE buffet_newbie SET paymentStatus = ? WHERE id = ?;';
-            const { id, status } = req.body
             const [results] = await connection.query(query, [status, id]);
+
+            await connection.query(`
+                UPDATE pos_customers
+                SET paymentStatus = ?
+                WHERE CustomerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = ? AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}')
+            `, [customerPaymentStatus, id]);
+
             res.json({ results });
         } catch (error) {
             console.error('Error fetching holidays:', error);

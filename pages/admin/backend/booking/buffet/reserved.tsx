@@ -10,6 +10,9 @@ import { format } from 'date-fns';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import { utcToZonedTime } from 'date-fns-tz';
 import { IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
+import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
+import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
 
 
 interface Buffet {
@@ -27,7 +30,10 @@ interface Buffet {
     paymethod_shuttlecock: string;
     regisDate: string;
     pay_date: string;
-    isStudent: number;
+    isStudent: IsStudentEnum;
+    total_shuttle_cock?: number;
+    shoppingMoney?: string;
+    totalPrice?: string;
 }
 
 function BuffetReserved() {
@@ -91,7 +97,7 @@ function BuffetReserved() {
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ id, status: 2 })
+                        body: JSON.stringify({ id, status: buffetPaymentStatusEnum.PAID, customerPaymentStatus: customerPaymentStatusEnum.PAID })
                     });
 
                     if (!response.ok) {
@@ -123,7 +129,7 @@ function BuffetReserved() {
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ id, status: 3 })
+                        body: JSON.stringify({ id, status: buffetPaymentStatusEnum.REJECT, customerPaymentStatus: customerPaymentStatusEnum.REJECT })
                     });
 
                     if (!response.ok) {
@@ -261,8 +267,19 @@ function BuffetReserved() {
 
     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
 
+    const [isStudent, setIsStudent] = useState(IsStudentEnum.None);
 
-
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value as IsStudentEnum;
+        const newIsStudent = value === isStudent ? IsStudentEnum.None : value;
+        setIsStudent(newIsStudent);
+        if (editBuffet) {
+            setEditBuffet({
+                ...editBuffet,
+                isStudent: newIsStudent
+            } as Buffet);
+        }
+    };
     return (
         <>
             <Head>
@@ -303,7 +320,7 @@ function BuffetReserved() {
                                 {status(buffet.paymentStatus)}
                                 {/* {shuttle_cock_status(buffet.paymethod_shuttlecock)} */}
                                 <td className='d-flex justify-content-around'>
-                                    <Button className='btn btn-sm' onClick={() => slipCheck(buffet.id, buffet.paymentSlip, buffet.price)} disabled={!buffet.paymentSlip}>Slip Check </Button>
+                                    <Button className='btn btn-sm' onClick={() => slipCheck(buffet.id, buffet.paymentSlip, Number(buffet.totalPrice))} disabled={!buffet.paymentSlip}>Slip Check </Button>
                                     <Button className='btn btn-warning btn-sm' onClick={() => setEditBuffet(buffet)}>Edit</Button>
                                     <Button className='btn btn-danger btn-sm' onClick={() => Delete(buffet.id, buffet.name, buffet.nickname)}>Delete </Button>
                                 </td>
@@ -338,13 +355,27 @@ function BuffetReserved() {
                                 <Form.Label>เบอร์</Form.Label>
                                 <Form.Control type="string" maxLength={10} value={editBuffet.phone} onChange={(e) => setEditBuffet({ ...editBuffet, phone: e.target.value })} />
                             </Form.Group>
-                            <div className={`${styles.checkbox_wrapper} d-flex mt-3 mb-3 mx-2`}>
-                                <input type="checkbox" id="cbtest-19" value={IsStudentEnum.Student} onChange={(e) => setEditBuffet({ ...editBuffet, isStudent: parseInt(e.target.value)  })} checked={editBuffet.isStudent == IsStudentEnum.Student} />
-                                <label htmlFor="cbtest-19" className='mx-2'> นักเรียน</label>
+                            <div className={`${styles.checkbox_wrapper} d-flex mt-3`}>
+                                <input
+                                    type="checkbox"
+                                    id="cbtest-19-1"
+                                    value={IsStudentEnum.Student}
+                                    onChange={handleCheckboxChange}
+                                    checked={editBuffet.isStudent == IsStudentEnum.Student}
+                                />
+                                <label htmlFor="cbtest-19-1" className={styles.check_box}></label>
+                                <p className="mx-2" style={{ padding: '0' }}>นักเรียน </p>
                             </div>
-                            <div className={`${styles.checkbox_wrapper} d-flex mt-3 mb-3 mx-2`}>
-                                <input type="checkbox" id="cbtest-19" value={IsStudentEnum.University} onChange={(e) => setEditBuffet({ ...editBuffet, isStudent: parseInt(e.target.value)  })} checked={editBuffet.isStudent == IsStudentEnum.University} />
-                                <label htmlFor="cbtest-19" className='mx-2'> นักศึกษา</label>
+                            <div className={`${styles.checkbox_wrapper} d-flex`}>
+                                <input
+                                    type="checkbox"
+                                    id="cbtest-19-2"
+                                    value={IsStudentEnum.University}
+                                    onChange={handleCheckboxChange}
+                                    checked={editBuffet.isStudent === IsStudentEnum.University}
+                                />
+                                <label htmlFor="cbtest-19-2" className={styles.check_box}></label>
+                                <p className="mx-2" style={{ padding: '0' }}>นักศึกษา</p>
                             </div>
                             <Form.Group controlId="formShuttleCock">
                                 <Form.Label>จำนวนลูก</Form.Label>
@@ -353,12 +384,17 @@ function BuffetReserved() {
                             <Form.Group controlId="formPrice">
                                 <Form.Label>ยอดรวม สนาม + ลูก </Form.Label>
                                 <div className='d-flex'>
-                                    <Form.Control className='w-100' type="number" value={editBuffet.price} onChange={(e) => setEditBuffet({ ...editBuffet, price: parseInt(e.target.value) })} />
+                                    <Form.Control className='w-100' type="number" value={editBuffet.price ?? editBuffet.total_shuttle_cock} onChange={(e) => setEditBuffet({ ...editBuffet, price: parseInt(e.target.value) })} />
                                     <div className="input-group-append">
                                         <button className="btn btn-outline-secondary" type="button" onClick={() => calculate_price(editBuffet.id)}>คำนวณ</button>
                                     </div>
                                 </div>
-
+                            </Form.Group>
+                            <Form.Group controlId="formPrice">
+                                <Form.Label>ยอดซื้อของ </Form.Label>
+                                <div className='d-flex'>
+                                    <Form.Control className='w-100' type="number" value={editBuffet.shoppingMoney} />
+                                </div>
                             </Form.Group>
                             <Form.Group controlId="formPrice">
                                 <Form.Label>
@@ -376,6 +412,7 @@ function BuffetReserved() {
                                     <option value={2}>เงินสดผ่านแอดมิน</option>
                                     <option value={3}>โอนด้วยตนเอง</option>
                                     <option value={4}>เล่นเสร็จยังไม่ชำระ</option>
+                                    <option value={5}>ชำระแล้วผ่าน POS</option>
 
                                 </Form.Control>
                             </Form.Group>

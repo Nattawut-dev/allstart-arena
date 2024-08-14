@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
-import { StudentPriceEnum, IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 
 
 
@@ -16,23 +16,22 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         try {
             const { id } = req.query
             const query = `SELECT 
-    (
-        CASE
-            WHEN b.isStudent = ${IsStudentEnum.Student} THEN ${StudentPriceEnum.Student}
-            WHEN b.isStudent = ${IsStudentEnum.University} THEN ${StudentPriceEnum.University}
-            WHEN b.isStudent = ${IsStudentEnum.Student_University} THEN ${StudentPriceEnum.Student_University}
-            ELSE bs.court_price
-        END
+    ROUND(
+       bs.court_price
         +
-        (b.shuttle_cock * (bs.shuttle_cock_price / 4))
+        (b.shuttle_cock * (bs.shuttle_cock_price / 4)),
+        2
     ) AS total_shuttle_cock
 FROM 
     buffet_setting bs
 JOIN 
     buffet b ON b.id = ?
 WHERE 
-    bs.id = 1
-
+    bs.isStudent = CASE
+                WHEN b.isStudent = ${IsStudentEnum.Student} THEN '${IsStudentEnum.Student}'
+                WHEN b.isStudent = ${IsStudentEnum.University} THEN '${IsStudentEnum.University}'
+                ELSE 1
+            END;
 `;
 
             // Execute the SQL query to fetch time slots

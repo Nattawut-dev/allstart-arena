@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import { DragDropContext, Draggable as Drag, Droppable } from "react-beautiful-dnd";
 import { Flex, position } from '@chakra-ui/react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/admin/buffet.module.css'
 import Head from 'next/head';
-import { StudentPriceEnum, IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
+import SaleDetailModal from '@/components/modal/saleDetailModal';
+import { ISales } from '@/interface/sales';
+import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 
 
 interface ItemsType {
@@ -34,9 +38,10 @@ interface Buffet {
     shuttle_cock_price: number;
     couterPlay: number;
     court_price: number;
-    isStudent: number;
-
+    isStudent: IsStudentEnum;
+    pendingMoney?: number;
 }
+
 interface History {
     id: number;
     player1_nickname: string;
@@ -51,7 +56,10 @@ interface History {
 
 function Buffets() {
     const [isMobile, setIsMobile] = useState<boolean>(false);
-
+    const [salesData, setSalesData] = useState<ISales[]>([]);
+    const [isSalesDataLoading, setIsSalesDataLoading] = useState(true);
+    const [showSaleDetailModal, setShowSaleDetailModal] = useState(false);
+    
     useEffect(() => {
         setIsMobile(window.innerWidth > 768);
         const boxRight: Element | null = document.querySelector(`#boxxx`);
@@ -221,6 +229,7 @@ function Buffets() {
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
     const [show, setShow] = useState(false);
     const [showList, setshowList] = useState(true);
+    const [searchQuery, setSearchQuery] = useState<string>('');
     // const isMobile = useMediaQuery({ maxWidth: 767 }); // กำหนดจุด breakpoint ของมือถือ
 
     const [shuttle_cock_price, setShuttle_cock_price] = useState(0);
@@ -682,7 +691,7 @@ function Buffets() {
         }
     }
 
-    const payMethod = async (id: any, method: string) => {
+    const payMethod = async (id: any, method: string , paymethodShuttlecock : PaymethodShuttlecockEnum) => {
         Swal.fire({
             title: `รับชำระด้วย ${method}?`,
             text: `ลูกค้าชำระค่าลูกแบดด้วย ${method} ทั้งหมด ${total_shuttle_cock_price} บาท`,
@@ -694,13 +703,12 @@ function Buffets() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    method = method === 'โอนเงิน' ? '1' : '2'
                     const response = await fetch('/api/admin/buffet/pay_shuttle_cock', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ id, method, total_shuttle_cock_price })
+                        body: JSON.stringify({ id, paymethodShuttlecock, total_shuttle_cock_price })
                     });
 
                     if (!response.ok) {
@@ -708,6 +716,7 @@ function Buffets() {
                     }
                     fetchRegis();
                     setShow(false);
+                    setSearchQuery('');
                     Swal.fire({
                         title: "บันทึกสำเร็จ!",
                         icon: "success"
@@ -749,6 +758,7 @@ function Buffets() {
                     }
                     fetchRegis();
                     setShow(false);
+                    setSearchQuery('');
                     Swal.fire({
                         title: "บันทึกสำเร็จ!",
                         icon: "success"
@@ -766,18 +776,55 @@ function Buffets() {
         });
     }
     const sumPrice = (item: Buffet) => {
-        if (item.isStudent === IsStudentEnum.Student) {
-            setTotal_shuttle_cock_price(StudentPriceEnum.Student + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock))
 
-        } else if (item.isStudent === IsStudentEnum.University) {
-            setTotal_shuttle_cock_price(StudentPriceEnum.University + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock))
+        const shoppingMoney = Number(item.pendingMoney ?? 0);
+        setTotal_shuttle_cock_price(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock) + shoppingMoney)
 
-        } else {
-            setTotal_shuttle_cock_price(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock))
-
-        }
     }
 
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
+    };
+
+    const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+    };
+
+    const filteredData = data.filter(item =>
+        item.nickname.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const getSalesData = async (buffet_id: number) => {
+        try {
+            setSalesData([]);
+            setIsSalesDataLoading(true);
+            const response = await fetch(`/api/get-by-customer?buffetId=${buffet_id}&buffetStatus=${buffetStatusEnum.BUFFET}`);
+            const data = await response.json();
+            if (response.status === 404) {
+                return;
+            }
+            if (!response.ok) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่พบข้อมูล'
+                })
+            }
+            setSalesData(data.sales);
+            setShow(false);
+            setShowSaleDetailModal(true);
+        } catch (error) {
+            console.error('Error fetching salesDetail:', error);
+        } finally {
+            setIsSalesDataLoading(false);
+
+        }
+    };
+
+  const handleCloseDetailModal = () => {
+        setShowSaleDetailModal(false);
+        setShow(true);
+    }
+    
     return (
         <>
             <Head>
@@ -869,12 +916,26 @@ function Buffets() {
                     </div>
                 </div >
             </DragDropContext >
-            <div className='d-flex justify-content-end'> <Button className='btn btn-sm' onClick={fetchRegis}>refresh</Button></div>
+
+            <div className='d-flex justify-content-between mt-3 mb-2'>
+                <Form className='me-5 d-flex flex-row' onSubmit={handleSearchSubmit}>
+                    <Form.Control
+                        type="text"
+                        placeholder="ค้นหา"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                    />
+                    <Button type='submit' className='me-5 ms-2'>ค้นหา</Button>
+                </Form>
+                <div className='d-flex justify-content-end me-3 ms-5'>
+                    <Button className='btn btn-sm' onClick={fetchRegis}>refresh</Button>
+                </div>
+            </div>
 
 
-            <div className='mt-2 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#7A7AF9", borderRadius: '10px', height: 'auto', display: 'flex', gap: "0.1rem", flexDirection: 'row', flexWrap: 'wrap' }}>
+            <div className='mt-3 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#7A7AF9", borderRadius: '10px', height: 'auto', display: 'flex', gap: "0.1rem", flexDirection: 'row', flexWrap: 'wrap' }}>
 
-                {data.map((item, index) => (
+                {filteredData.map((item, index) => (
                     <Flex
                         key={index}
                         m={"0.1rem"}
@@ -895,7 +956,6 @@ function Buffets() {
                         </span>
                     </Flex>
                 ))
-
                 }
             </div>
 
@@ -903,7 +963,7 @@ function Buffets() {
                 <Modal.Header closeButton>
                     <Modal.Title>ชำระค่าลูกแบด {selectDataPayment?.isStudent === IsStudentEnum.Student ? "| นักเรียน" : selectDataPayment?.isStudent === IsStudentEnum.University ? "| นักศึกษา" : ""}</Modal.Title>
                 </Modal.Header>
-                <Modal.Body className='w-75 m-auto'>
+                <Modal.Body className='w-100 m-auto'>
                     <div className='detail'>
                         <div className='d-flex justify-content-between'>
                             <p>ชื่อลูกค้า</p>
@@ -915,7 +975,7 @@ function Buffets() {
                         </div>
                         <div className='d-flex justify-content-between'>
                             <p>ค่าสนาม </p>
-                            <p>{selectDataPayment?.isStudent === IsStudentEnum.Student ? StudentPriceEnum.Student : selectDataPayment?.isStudent === IsStudentEnum.University ? StudentPriceEnum.University : selectDataPayment?.court_price} บาท / คน</p>
+                            <p>{selectDataPayment?.court_price} บาท / คน</p>
                         </div>
                         <div className='d-flex justify-content-between'>
                             <p>ค่าลูก</p>
@@ -923,12 +983,20 @@ function Buffets() {
                         </div>
                         <div className='d-flex justify-content-between'>
                             <p>ราคาหาร 4</p>
-                            <p>{`${shuttle_cock_price / 4} บาท/คน/ลูก`}</p>
+                            <p>{`${selectDataPayment?.shuttle_cock_price! / 4} บาท/คน/ลูก`}</p>
                         </div>
+                        {selectDataPayment?.pendingMoney &&
+                            <div className='d-flex justify-content-between'>
+                                <p>สินค้าที่ซื้อ</p>
+                                {/* <p>{`${buffet_setting?.shuttle_cock_price} / 4  = ${buffet_setting?.shuttle_cock_price / 4}`} บาท /คน/ลูก</p> */}
+                                <a className={styles.a} onClick={() => getSalesData(selectDataPayment.id)}>{selectDataPayment?.pendingMoney} บาท</a>
 
+                            </div>}
                         <div className='d-flex justify-content-between'>
                             <p>จำนวนที่ต้องชำระ</p>
-                            <p> {`${selectDataPayment?.isStudent === IsStudentEnum.Student ? StudentPriceEnum.Student : selectDataPayment?.isStudent === IsStudentEnum.University ? StudentPriceEnum.University : selectDataPayment?.court_price} + (${selectDataPayment?.shuttle_cock} * ${shuttle_cock_price / 4}) = `} <span className='fw-bold fs-5 text-danger'>{total_shuttle_cock_price}</span> บาท</p>
+                            <p>
+                                {` ${selectDataPayment?.court_price}  + (${selectDataPayment?.shuttle_cock} * ${selectDataPayment?.shuttle_cock_price! / 4})  ${selectDataPayment?.pendingMoney ? `+ ${selectDataPayment?.pendingMoney} ` : ''} = `}
+                                <span className='fw-bold fs-5 text-danger'>{total_shuttle_cock_price}</span> บาท</p>
                         </div>
                     </div>
 
@@ -939,12 +1007,18 @@ function Buffets() {
                     </div>
                     <div>
                         จ่ายผ่าน
-                        <Button className='mx-2  btn btn-success' onClick={() => payMethod(selectDataPayment?.id, "เงินสด")} >ผ่านเงินสด</Button>
-                        <Button onClick={() => payMethod(selectDataPayment?.id, "โอนเงิน")} >ผ่านการโอน</Button>
+                        <Button className='mx-2  btn btn-success' onClick={() => payMethod(selectDataPayment?.id, "เงินสด" , PaymethodShuttlecockEnum.CASH_ADMIN)} >ผ่านเงินสด</Button>
+                        <Button onClick={() => payMethod(selectDataPayment?.id, "โอนเงิน", PaymethodShuttlecockEnum.TRANSFER_ADMIN)} >ผ่านการโอน</Button>
                     </div>
                 </Modal.Footer>
             </Modal>
-
+            
+            <SaleDetailModal
+                show={showSaleDetailModal}
+                onHide={handleCloseDetailModal}
+                isSalesDataLoading={isSalesDataLoading}
+                salesData={salesData}
+            />
         </>
 
     )

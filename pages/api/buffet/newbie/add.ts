@@ -3,6 +3,14 @@ import cloudinary from 'cloudinary';
 import multiparty from 'multiparty';
 import pool from '@/db/db';
 import { format, utcToZonedTime } from 'date-fns-tz';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { generateUniqueBarcode } from '@/pages/helper/genBarcode';
+import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
+import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
+import { FIRST_BARCODE } from '@/constant/firstBarcode';
+import { IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
+import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -38,11 +46,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                 const query = `INSERT INTO buffet_newbie (nickname, usedate, phone ,isStudent ) VALUES (?, ?, ? , ?)`;
                 // Execute the SQL query to insert data
-                const [results] = await connection.query(query, [nickname, usedate, phone , isStudent]);
+                const [results] = await connection.query<ResultSetHeader>(query, [nickname, usedate, phone, isStudent]);
 
                 // Check if the results contain any data to determine success
                 if ((results as any).affectedRows > 0) {
-                    res.status(200).json({ success: true, message: 'Data inserted successfully' });
+
+                    const barcode = FIRST_BARCODE;
+                    const insertCustomerQuery = `INSERT INTO pos_customers ( PlayerId,phone , CustomerName, buffetStatus, barcode) 
+                    SELECT 
+                    ?, 
+                    ?, 
+                    ?, 
+                    ?, 
+                     COALESCE(
+                    (SELECT barcode FROM pos_customers 
+                     WHERE DATE(register_date) = CURDATE() 
+                     ORDER BY barcode DESC 
+                     LIMIT 1) + 1,
+                    ${barcode}
+                )
+                    `;
+                    const [insertCustomerResults] = await connection.query<ResultSetHeader>(insertCustomerQuery, [results.insertId, phone, nickname, buffetStatusEnum.BUFFET_NEWBIE]);
+                    if (insertCustomerResults.affectedRows > 0) {
+
+                        const query = `SELECT barcode from pos_customers WHERE customerID = ?`
+                        const [barcode] = await connection.query<RowDataPacket[]>(query, [insertCustomerResults.insertId]);
+
+                        res.status(200).json({ barcode: barcode[0], success: true, message: 'Data inserted successfully' });
+
+                    } else {
+                        res.status(500).json({ success: false, message: 'Error inserting data' });
+                    }
                 } else {
                     res.status(500).json({ success: false, message: 'Error inserting data' });
                 }
@@ -64,33 +98,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     try {
 
                         await connection.query(`
-                        UPDATE buffet_newbie AS b
-                        JOIN (
-                            SELECT 
-                                bs.shuttle_cock_price, 
-                                bs.court_price, 
-                                CASE
-                                    WHEN b.isStudent = 1 THEN ((b.shuttle_cock * (bs.shuttle_cock_price / 4)))
-                                    ELSE (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4)))
-                                END AS total_shuttle_cock
-                            FROM 
-                                buffet_setting_newbie bs
-                            JOIN 
-                                buffet_newbie b ON b.id = ?
-                            WHERE 
-                                bs.id = 1
-                            GROUP BY 
-                                bs.shuttle_cock_price, 
-                                bs.court_price
-                        ) AS subquery ON b.id = ?
-                        SET 
-                            b.paymentSlip = ?, 
-                            b.price = subquery.total_shuttle_cock,
-                            b.paymentStatus = 1,
-                            b.pay_date = ?,
-                            b.paymethod_shuttlecock = 3;
-                        `,
+                    UPDATE buffet_newbie AS b
+JOIN (
+    SELECT 
+        bs.shuttle_cock_price, 
+        bs.court_price, 
+        ROUND(
+            (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4))),
+            2
+        ) AS total_shuttle_cock
+    FROM 
+        buffet_setting_newbie bs
+    JOIN 
+        buffet_newbie b ON b.id = ?
+    WHERE 
+        bs.isStudent = b.isStudent
+    GROUP BY 
+        bs.shuttle_cock_price, 
+        bs.court_price
+) AS subquery ON b.id = ?
+SET 
+    b.paymentSlip = ?, 
+    b.price = subquery.total_shuttle_cock,
+    b.paymentStatus = '${buffetPaymentStatusEnum.CHECKING}',
+    b.pay_date = ?,
+    b.paymethod_shuttlecock = 3;`,
+
                             [id, id, result.secure_url, today]);
+
+                        await connection.query(`
+                                UPDATE pos_customers
+                                SET paymentStatus = '${customerPaymentStatusEnum.CHECKING}', 
+                                paymentSlip = ?
+                                WHERE CustomerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = ? AND buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}')
+                            `, [result.secure_url, id]);
+
                         return res.status(200).json({ imageUrl: result.secure_url });
 
 

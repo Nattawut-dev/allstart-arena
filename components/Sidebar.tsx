@@ -6,6 +6,7 @@ import { FaChalkboard, FaChevronCircleRight, FaChevronCircleDown, FaCalendarPlus
 import { IoMdAdd } from "react-icons/io";
 import { BiDetail } from "react-icons/bi";
 import { HiOutlineQueueList } from "react-icons/hi2";
+import { GrDocumentText } from "react-icons/gr";
 
 import { useMediaQuery } from 'react-responsive';
 interface SidebarProps {
@@ -20,6 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const [selectedSubMenu2, setSelectedSubMenu2] = useState(true);
   const [selectedSubMenu3, setSelectedSubMenu3] = useState(true);
   const [selectedSubMenu4, setSelectedSubMenu4] = useState(true);
+  const [selectedSubMenu5, setSelectedSubMenu5] = useState(true);
 
   const isMobile = useMediaQuery({ maxWidth: 767 }); // กำหนดจุด breakpoint ของมือถือ
 
@@ -97,6 +99,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               <ul className={`${styles['sub-menu']}  ${selectedSubMenu4 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>
                 <Link href="/physical-therapy/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/physical-therapy/booking/[id]'  ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>นัดทำกายภาพ</span> </li></Link>
                 <Link href="/physical-therapy/details/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/physical-therapy/details/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarAlt className='mx-1' /> <span>ข้อมูลการจอง</span> </li></Link>
+              </ul>
+            )}
+          </li>
+          <li
+            className={`${styles['menu-item']} ${router.pathname === '/guest-register' || router.pathname ===  '/guest-register/guest-register-info' ? styles.activeMenuItem : ''}`}
+            onClick={() => setSelectedSubMenu5(!selectedSubMenu5)}
+          >
+            {selectedSubMenu5 === true ? (
+              <a> <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>ลงชื่อซื้อของ</span></a>
+            ) : <a> <FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}>ลงชื่อซื้อของ</span></a>}
+            {(
+              <ul className={`${styles['sub-menu']}  ${selectedSubMenu5 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>
+                <Link href="/guest-register" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/guest-register' ? styles.activeSubMenu : ''}`} ><IoMdAdd className='mx-1' /> <span>ลงทะเบียน</span> </li></Link>
+                <Link href="/guest-register/guest-register-info" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']}  ${router.pathname === '/guest-register/guest-register-info' ? styles.activeSubMenu : ''}`} ><BiDetail className='mx-1 ' /> <span>รายชื่อ/การชำระเงิน</span> </li></Link>
+
               </ul>
             )}
           </li>

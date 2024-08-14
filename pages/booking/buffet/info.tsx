@@ -1,35 +1,26 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { format, addDays } from 'date-fns';
 import Image from 'next/image';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Modal, Spinner } from 'react-bootstrap';
 import Swal from 'sweetalert2'
 import Head from 'next/head';
 import styles from '@/styles/infoBuffet.module.css'
 import { utcToZonedTime } from 'date-fns-tz';
 import { GetServerSideProps } from 'next';
-import { StudentPriceEnum , IsStudentEnum } from '@/enum/StudentPriceEnum';
+import {IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { ISales } from '@/interface/sales';
+import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
+import { PaymentTypeEnum } from '@/enum/stateCashierEnum';
+import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
+import { IBuffet } from '@/interface/buffet';
+import { IBuffet_setting } from '@/interface/buffetSetting';
+import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
+import SaleDetailModal from '@/components/modal/saleDetailModal';
 
-
-interface buffet {
-    id: number;
-    nickname: string;
-    usedate: string;
-    phone: string;
-    price: string;
-    shuttle_cock: number;
-    paymentStatus: number;
-    paymentSlip: string;
-    regisDate: string;
-    isStudent: number;
-}
-
-interface Buffet_setting {
-    id: number;
-    court_price: number;
-    shuttle_cock_price: number;
-}
 interface Props {
-    buffet_setting: Buffet_setting;
+    buffetSetting: IBuffet_setting;
+    buffetStudentSetting: IBuffet_setting;
+    buffetUniversitySetting: IBuffet_setting;
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
@@ -38,8 +29,9 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
         const buffetSetting = await response.json();
         return {
             props: {
-                buffet_setting: buffetSetting[0],
-
+                buffetSetting: buffetSetting[0],
+                buffetStudentSetting: buffetSetting[1],
+                buffetUniversitySetting: buffetSetting[2],
             },
 
         };
@@ -47,20 +39,27 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
         console.error('Failed to fetch data:', error);
         return {
             props: {
-                buffet_setting: [],
+                buffetSetting: [],
+                buffetStudentSetting: [],
+                buffetUniversitySetting: [],
             },
         };
     }
 }
-function Infobuffet({ buffet_setting }: Props) {
-    const [buffets, setBuffets] = useState<buffet[]>([]);
+
+function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetting }: Props) {
+    const [buffets, setBuffets] = useState<IBuffet[]>([]);
     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
     const [show, setShow] = useState(false);
-    const [buffetSelcted, setBuffetSelcted] = useState<buffet>();
+    const [buffetSelcted, setBuffetSelcted] = useState<IBuffet>();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [imgUrl, setImgUrl] = useState('')
     const [price, setPrice] = useState(0)
+    const [salesData, setSalesData] = useState<ISales[]>([]);
+    const [isSalesDataLoading, setIsSalesDataLoading] = useState(true);
+    const [showSaleDetailModal, setShowSaleDetailModal] = useState(false);
+
     const fetchbuffet = async () => {
         try {
             const res = await fetch(`/api/buffet/get`)
@@ -180,35 +179,35 @@ function Infobuffet({ buffet_setting }: Props) {
             const res = await fetch(`/api/buffet/getone?id=${buffet_id}`)
             const data = await res.json()
             if (res.ok) {
-                const buffet: buffet = data[0]
+                const buffet: IBuffet = data[0]
                 setBuffetSelcted(buffet);
                 if (buffet) {
-
+                    const shoppingMoney = Number(buffet?.pendingMoney ?? 0);
                     if (buffet.isStudent === IsStudentEnum.Student) {
-                        const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
-                        const calculatedPrice = StudentPriceEnum.Student +  (buffet?.shuttle_cock * calculatePricePerOne);
+                        const calculatePricePerOne = buffetStudentSetting?.shuttle_cock_price / 4
+                        const calculatedPrice = buffetStudentSetting.court_price + (buffet?.shuttle_cock * calculatePricePerOne) + shoppingMoney;
                         setPrice(calculatedPrice);
                         setSummaryContent(
                             <div>
-                                {`${StudentPriceEnum.Student} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
+                                {`${buffetStudentSetting.court_price} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne}) ${buffet?.pendingMoney ? `+ ${buffet?.pendingMoney}` : ''}`} บาท
                             </div>
                         );
                     } else if (buffet.isStudent === IsStudentEnum.University) {
-                        const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
-                        const calculatedPrice = StudentPriceEnum.University +  (buffet?.shuttle_cock * calculatePricePerOne);
+                        const calculatePricePerOne = buffetUniversitySetting?.shuttle_cock_price / 4
+                        const calculatedPrice = buffetUniversitySetting.court_price + (buffet?.shuttle_cock * calculatePricePerOne) + shoppingMoney;
                         setPrice(calculatedPrice);
                         setSummaryContent(
                             <div>
-                                {`${StudentPriceEnum.University} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
+                                {`${buffetUniversitySetting.court_price} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})  ${buffet?.pendingMoney ? `+ ${buffet?.pendingMoney}` : ''}`} บาท
                             </div>
                         );
                     } else {
-                        const calculatePricePerOne = buffet_setting?.shuttle_cock_price / 4
-                        const calculatedPrice = buffet_setting.court_price + (buffet?.shuttle_cock * calculatePricePerOne);
+                        const calculatePricePerOne = buffetSetting?.shuttle_cock_price / 4
+                        const calculatedPrice = buffetSetting.court_price + (buffet?.shuttle_cock * calculatePricePerOne) + shoppingMoney;
                         setPrice(calculatedPrice);
                         setSummaryContent(
                             <div>
-                                {`${buffet_setting.court_price} + (${buffet?.shuttle_cock} * ${calculatePricePerOne})`} บาท
+                                {`${buffetSetting.court_price} + (${buffet?.shuttle_cock} * ${calculatePricePerOne}) ${buffet?.pendingMoney ? `+ ${buffet?.pendingMoney}` : ''}`} บาท
                             </div>
                         );
                     }
@@ -232,6 +231,37 @@ function Infobuffet({ buffet_setting }: Props) {
 
     };
 
+    const getSalesData = async (buffet_id: number) => {
+        try {
+            setSalesData([]);
+            setIsSalesDataLoading(true);
+            const response = await fetch(`/api/get-by-customer?buffetId=${buffet_id}&buffetStatus=${buffetStatusEnum.BUFFET}`);
+            const data = await response.json();
+            if (response.status === 404) {
+                return;
+            }
+            if (!response.ok) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่พบข้อมูล'
+                })
+            }
+            setSalesData(data.sales);
+            setShow(false);
+            setShowSaleDetailModal(true);
+        } catch (error) {
+            console.error('Error fetching salesDetail:', error);
+        } finally {
+            setIsSalesDataLoading(false);
+
+        }
+    };
+
+
+    const handleCloseDetailModal = () => {
+        setShowSaleDetailModal(false);
+        setShow(true);
+    }
     // -------------------------------------------------------------------------------------------------------------------
     return (
         <>
@@ -242,10 +272,12 @@ function Infobuffet({ buffet_setting }: Props) {
 
                 <h5 className={styles.title}>ข้อมูลการจองตีบุ๊ฟเฟต์ วันที่ <span style={{ color: 'red' }}>{format(dateInBangkok, 'dd MMMM yyyy')}</span></h5>
                 <div className={`${styles['table-container']}`}>
+                    <span>ทั้งหมด {buffets.length} รายการ</span>
                     <table className={`table  table-bordered table-striped table-striped`}>
                         <thead className={'table-primary'} style={{ backgroundColor: 'red' }}>
                             <tr>
                                 <th>#</th>
+                                <th>รหัสลูกค้า</th>
                                 <th>ชื่อเล่น</th>
                                 <th>จำนวนลูก</th>
                                 <th>สถานะ</th>
@@ -258,10 +290,11 @@ function Infobuffet({ buffet_setting }: Props) {
                                     return (
                                         <tr key={buffet.id}>
                                             <td>{index + 1}</td>
+                                            <td>{buffet.barcode}</td>
                                             <td>{buffet.nickname}</td>
                                             <td>{buffet.shuttle_cock}</td>
-                                            <td className='' style={{ backgroundColor: buffet.paymentStatus === 0 ? '#eccccf' : buffet.paymentStatus === 1 ? '#FDCE4E' : buffet.paymentStatus === 2 ? '#d1e7dd' : '#eccccf' }}>
-                                                {buffet.paymentStatus === 0 ? 'ยังไม่ชำระ' : buffet.paymentStatus === 1 ? 'รอตรวจสอบ' : buffet.paymentStatus === 2 ? 'ชำระแล้ว' : 'สลิปไม่ถูกต้อง'}
+                                            <td className='' style={{ backgroundColor: buffet.paymentStatus === buffetPaymentStatusEnum.PENDING ? '#eccccf' : buffet.paymentStatus === buffetPaymentStatusEnum.CHECKING ? '#FDCE4E' : buffet.paymentStatus === buffetPaymentStatusEnum.PAID ? '#d1e7dd' : '#eccccf' }}>
+                                                {buffet.paymentStatus === buffetPaymentStatusEnum.PENDING ? 'ยังไม่ชำระ' : buffet.paymentStatus === buffetPaymentStatusEnum.CHECKING ? 'รอตรวจสอบ' : buffet.paymentStatus === buffetPaymentStatusEnum.PAID ? 'ชำระแล้ว' : 'สลิปไม่ถูกต้อง'}
                                             </td>
                                             <td><Button className='btn btn-sm' onClick={() => { calculateSummary(buffet.id); }}>ชำระเงิน</Button></td>
                                         </tr>
@@ -297,17 +330,17 @@ function Infobuffet({ buffet_setting }: Props) {
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
                                 <Image src={previewImage ? previewImage : '/QR_Buffet.jpg'} alt="QR_Buffet" width="280" height="280" onClick={() => showSlipImg()} />
-                                {buffetSelcted?.paymentStatus !== 0 && (
+                                {buffetSelcted?.paymentStatus !== buffetPaymentStatusEnum.PENDING && (
                                     <div style={{ textAlign: "center" }}>
-                                        {buffetSelcted?.paymentStatus === 1 && (
+                                        {buffetSelcted?.paymentStatus === buffetPaymentStatusEnum.CHECKING && (
                                             <div><h5> สถานะ  <span style={{ color: 'orange' }}>กำลังตรวจสอบสลิป</span></h5></div>
 
                                         )}
-                                        {buffetSelcted?.paymentStatus === 2 && (
+                                        {buffetSelcted?.paymentStatus === buffetPaymentStatusEnum.PAID && (
 
                                             <div><h5> สถานะ   <span style={{ color: 'green' }}>ชำระเงินสำเร็จ</span></h5></div>
                                         )}
-                                        {buffetSelcted?.paymentStatus === 3 && (
+                                        {buffetSelcted?.paymentStatus === buffetPaymentStatusEnum.REJECT && (
 
                                             <div><h5> สถานะ   <span style={{ color: 'red' }}>ปฏิเสธสลิป</span></h5></div>
                                         )}
@@ -331,14 +364,22 @@ function Infobuffet({ buffet_setting }: Props) {
 
                                 <div className={styles.wrapper}>
                                     <p>ค่าสนาม</p>
-                                    {/* <p>{buffet_setting?.court_price} บาท / คน</p> */}
-                                    <p>{buffetSelcted?.isStudent === IsStudentEnum.Student ? StudentPriceEnum.Student : buffetSelcted?.isStudent === IsStudentEnum.University ? StudentPriceEnum.University : buffet_setting?.court_price} บาท / คน</p>
+                                    {/* <p>{buffetSetting?.court_price} บาท / คน</p> */}
+                                    <p>{buffetSelcted?.isStudent === IsStudentEnum.Student ? buffetStudentSetting.court_price : buffetSelcted?.isStudent === IsStudentEnum.University ? buffetUniversitySetting.court_price : buffetSetting?.court_price} บาท / คน</p>
 
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>ราคาลูก</p>
-                                    <p>{`${buffet_setting?.shuttle_cock_price} / 4  = ${buffet_setting?.shuttle_cock_price / 4}`} บาท /คน/ลูก</p>
+                                    {/* <p>{`${buffetSetting?.shuttle_cock_price} / 4  = ${buffetSetting?.shuttle_cock_price / 4}`} บาท /คน/ลูก</p> */}
+                                    <p>{buffetSelcted?.isStudent === IsStudentEnum.Student ? buffetStudentSetting.shuttle_cock_price : buffetSelcted?.isStudent === IsStudentEnum.University ? buffetUniversitySetting.shuttle_cock_price : buffetSetting?.shuttle_cock_price} บาท</p>
                                 </div>
+                                {buffetSelcted?.pendingMoney &&
+                                    <div className={styles.wrapper}>
+                                        <p>สินค้าที่ซื้อ</p>
+                                        {/* <p>{`${buffetSetting?.shuttle_cock_price} / 4  = ${buffetSetting?.shuttle_cock_price / 4}`} บาท /คน/ลูก</p> */}
+                                        <a className={styles.a} onClick={() => getSalesData(buffetSelcted.id)}>{buffetSelcted?.pendingMoney} บาท</a>
+                                    </div>}
+
 
                                 <div className={styles.wrapper}>
                                     <p>ราคารวม</p>
@@ -359,31 +400,39 @@ function Infobuffet({ buffet_setting }: Props) {
                     <div className={styles.footer1}>
                         <div className={styles.btn1}><Button className='btn-info '><a href="/QR_Buffet.jpg" download="QR_Buffet.jpg">โหลดสลิป</a></Button></div>
                         <div className={styles.slipbtn}>
-                            <label htmlFor="file-input" className={`${styles.file_input} ${buffetSelcted?.paymentStatus === 1 ? styles.disabled : ''}`} >
+                            <label htmlFor="file-input" className={`${styles.file_input} ${buffetSelcted?.paymentStatus === buffetPaymentStatusEnum.CHECKING ? styles.disabled : ''}`} >
                                 เลือกภาพสลิป
                             </label>
                             <input
                                 style={{ display: 'none' }}
-                                disabled={buffetSelcted?.paymentStatus == 1}
+                                disabled={buffetSelcted?.paymentStatus == buffetPaymentStatusEnum.CHECKING || buffetSelcted?.paymentStatus == buffetPaymentStatusEnum.PAID}
                                 id="file-input"
                                 type="file"
                                 accept="image/*"
                                 onChange={handleFileChange}
-                                className="file-input"
+                                className={`file-input ${buffetSelcted?.paymentStatus == buffetPaymentStatusEnum.CHECKING || buffetSelcted?.paymentStatus == buffetPaymentStatusEnum.PAID ? styles.disabled : ''}`}
                             />
                             <button
                                 onClick={confirm}
-                                disabled={!selectedFile || buffetSelcted?.paymentStatus != 0 && buffetSelcted?.paymentStatus != 3}
+                                disabled={!selectedFile || buffetSelcted?.paymentStatus != buffetPaymentStatusEnum.PENDING && buffetSelcted?.paymentStatus != buffetPaymentStatusEnum.REJECT}
                                 className={`${styles.slip} ${selectedFile ? '' : styles.disabled} `}
 
                             >
-                                {buffetSelcted?.paymentStatus == 1 ? 'ส่งสลิปแล้ว' : 'ส่งสลิป'}
+                                {buffetSelcted?.paymentStatus == buffetPaymentStatusEnum.CHECKING ? 'ส่งสลิปแล้ว' : 'ส่งสลิป'}
                             </button>
                         </div>
-
                     </div>
                 </Modal.Footer>
             </Modal>
+
+            <SaleDetailModal 
+            show={showSaleDetailModal} 
+            onHide={handleCloseDetailModal} 
+            isSalesDataLoading={isSalesDataLoading} 
+            salesData={salesData} 
+            />
+            
+      
         </>
 
     );

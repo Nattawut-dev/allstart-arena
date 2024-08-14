@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
+import { IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 
 
 
@@ -13,7 +15,36 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const connection = await pool.getConnection()
         try {
-            const query = 'SELECT * FROM buffet_newbie ORDER BY id DESC LIMIT 300';
+            const query = `
+            SELECT 
+            b.*, 
+            ROUND(
+                bs.court_price
+                +
+                (b.shuttle_cock * (bs.shuttle_cock_price / 4)),
+                2
+            ) AS total_shuttle_cock,
+            COALESCE(SUM(pos_sales.TotalAmount), 0) AS shoppingMoney,
+            ROUND(
+                ROUND(
+                    bs.court_price
+                    +
+                    (b.shuttle_cock * (bs.shuttle_cock_price / 4)),
+                    2
+                ) + COALESCE(SUM(pos_sales.TotalAmount), 0),
+                2
+            ) AS totalPrice
+        FROM 
+            buffet_newbie b
+        JOIN 
+            buffet_setting_newbie bs ON bs.isStudent = b.isStudent
+        LEFT JOIN 
+            pos_sales ON pos_sales.CustomerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = b.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}' LIMIT 1)
+        GROUP BY
+            b.id
+        ORDER BY 
+            b.id DESC
+        LIMIT 300;`
 
             // Execute the SQL query to fetch time slots
             const [results] = await connection.query(query);

@@ -15,12 +15,12 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         const connection = await pool.getConnection()
         try {
   
-            const query = `UPDATE buffet SET  nickname = ?, phone = ?, shuttle_cock = ?, price = ? , usedate = ? , paymethod_shuttlecock = ? , paymentStatus = ? , pay_date = ? , isStudent = ? WHERE id = ?`;
+            const query = `UPDATE buffet SET  nickname = ?, phone = ?, shuttle_cock = ?, price = ? , usedate = ? , paymethod_shuttlecock = ?  , pay_date = ? , isStudent = ? WHERE id = ?`;
             const { id, nickname, phone, shuttle_cock, price, usedate , paymethod_shuttlecock ,pay_date , isStudent} = req.body;
             const payment_status = paymethod_shuttlecock != '0' && paymethod_shuttlecock != '4'? 2 : 0
             const payment_date = paymethod_shuttlecock != '0' ? pay_date : null
 
-            const [results] = await connection.query(query, [nickname, phone, shuttle_cock, price, usedate, paymethod_shuttlecock  , payment_status,payment_date , isStudent,  id]);
+            const [results] = await connection.query(query, [nickname, phone, shuttle_cock, price, usedate, paymethod_shuttlecock  ,payment_date , isStudent,  id]);
             res.json({ results });
         } catch (error) {
             console.error('Error :', error);

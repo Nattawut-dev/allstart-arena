@@ -1,16 +1,42 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { format, utcToZonedTime } from 'date-fns-tz';
+import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     const connection = await pool.getConnection()
     try {
         const {id} = req.query
-        const query = 'SELECT id, nickname, usedate, price, shuttle_cock, paymentStatus, regisDate ,isStudent FROM buffet_newbie WHERE id = ? ';
+        const query = `SELECT 
+    b.id, 
+    b.nickname, 
+    b.usedate, 
+    b.price, 
+    b.shuttle_cock, 
+    b.paymentStatus, 
+    b.regisDate, 
+    b.isStudent, 
+    (SELECT pc.playerId FROM pos_customers pc WHERE pc.customerID = b.id) AS playerId,
+    (SELECT 
+        SUM(
+            CASE 
+                WHEN ps.flag_delete = false 
+                THEN ps.TotalAmount 
+                ELSE 0 
+            END
+        ) 
+     FROM pos_sales ps 
+     WHERE ps.CustomerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = b.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}')
+    ) AS pendingMoney
+FROM 
+    buffet_newbie b 
+WHERE 
+    b.id = ? ;`;
 
         // Execute the SQL query to fetch time slots
         const [results] = await connection.query(query, [id]);
+        
         res.json(results);
     } catch (error) {
         console.error('Error fetching :', error);
