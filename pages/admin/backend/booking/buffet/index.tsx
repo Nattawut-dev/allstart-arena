@@ -10,6 +10,7 @@ import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
 import SaleDetailModal from '@/components/modal/saleDetailModal';
 import { ISales } from '@/interface/sales';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
+import { PayByEnum } from '@/enum/payByEnum';
 
 
 interface ItemsType {
@@ -234,6 +235,7 @@ function Buffets() {
 
     const [shuttle_cock_price, setShuttle_cock_price] = useState(0);
     const [total_shuttle_cock_price, setTotal_shuttle_cock_price] = useState(0);
+    const [courtPrice, setCourtPrice] = useState(0);
 
     const elements = [];
     const numberOfProperties = Object.keys(leftItems).length;
@@ -416,7 +418,7 @@ function Buffets() {
                 </select>
 
                 <Button className='btn btn-warning ' style={{ fontSize: `${isMobile ? '' : '12px'}`, display: 'flex', justifyContent: 'end' }} onClick={() => clearArray(entries[i][1], i)} >{!isMobile ? 'F' : 'Finish'}</Button>
-                <select key={i + 100} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} style={{ width: '40px' }} value={selectedOptionsCourt[i]} onChange={(event) => handleSelectChangeCourt(i, event)}>
+                <select key={i + 100} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} style={{ width: '44px' }} value={selectedOptionsCourt[i]} onChange={(event) => handleSelectChangeCourt(i, event)}>
                     <option>-</option>
                     <option>1</option>
                     <option>2</option>
@@ -426,6 +428,9 @@ function Buffets() {
                     <option>6</option>
                     <option>7</option>
                     <option>8</option>
+                    <option>9</option>
+                    <option>10</option>
+                    <option>11</option>
                 </select>
             </div>
         );
@@ -691,7 +696,7 @@ function Buffets() {
         }
     }
 
-    const payMethod = async (id: any, method: string , paymethodShuttlecock : PaymethodShuttlecockEnum) => {
+    const payMethod = async (id: any, method: string , paymethodShuttlecock : PaymethodShuttlecockEnum , pay_by : PayByEnum) => {
         Swal.fire({
             title: `รับชำระด้วย ${method}?`,
             text: `ลูกค้าชำระค่าลูกแบดด้วย ${method} ทั้งหมด ${total_shuttle_cock_price} บาท`,
@@ -708,7 +713,7 @@ function Buffets() {
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ id, paymethodShuttlecock, total_shuttle_cock_price })
+                        body: JSON.stringify({ id, paymethodShuttlecock, courtPrice , pay_by})
                     });
 
                     if (!response.ok) {
@@ -778,7 +783,8 @@ function Buffets() {
     const sumPrice = (item: Buffet) => {
 
         const shoppingMoney = Number(item.pendingMoney ?? 0);
-        setTotal_shuttle_cock_price(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock) + shoppingMoney)
+        setTotal_shuttle_cock_price(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock) + shoppingMoney);
+        setCourtPrice(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock));
 
     }
 
@@ -1007,8 +1013,8 @@ function Buffets() {
                     </div>
                     <div>
                         จ่ายผ่าน
-                        <Button className='mx-2  btn btn-success' onClick={() => payMethod(selectDataPayment?.id, "เงินสด" , PaymethodShuttlecockEnum.CASH_ADMIN)} >ผ่านเงินสด</Button>
-                        <Button onClick={() => payMethod(selectDataPayment?.id, "โอนเงิน", PaymethodShuttlecockEnum.TRANSFER_ADMIN)} >ผ่านการโอน</Button>
+                        <Button className='btn btn-success' hidden onClick={() => payMethod(selectDataPayment?.id, "เงินสด" , PaymethodShuttlecockEnum.CASH_ADMIN , PayByEnum.CASH)} >ผ่านเงินสด</Button>
+                        <Button className='mx-2' onClick={() => payMethod(selectDataPayment?.id, "โอนเงิน", PaymethodShuttlecockEnum.TRANSFER_ADMIN , PayByEnum.TRANSFER)} >ผ่านการโอน</Button>
                     </div>
                 </Modal.Footer>
             </Modal>

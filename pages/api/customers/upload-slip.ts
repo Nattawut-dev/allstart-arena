@@ -60,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                         await connection.query(`
                                 UPDATE pos_customers
-                                SET paymentStatus = '${customerPaymentStatusEnum.CHECKING}', paymentSlip = ?
+                                SET paymentStatus = '${customerPaymentStatusEnum.CHECKING}', paymentSlip = ?, slip_date = NOW()
                                 WHERE CustomerID = ?
                             `, [result.secure_url ,id]);
 

@@ -20,8 +20,8 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
             const today = format(dateInBangkok, 'dd MMMM yyyy')
             const query = 'UPDATE buffet_newbie SET paymethod_shuttlecock = ?,price = ? , pay_date= ? ,paymentStatus = 2 WHERE id = ?;';
-            const { id, paymethodShuttlecock ,total_shuttle_cock_price} = req.body
-            const [results] = await connection.query(query, [paymethodShuttlecock, total_shuttle_cock_price , today, id]);
+            const { id, paymethodShuttlecock ,courtPrice , pay_by} = req.body
+            const [results] = await connection.query(query, [paymethodShuttlecock, courtPrice , today, id]);
             const saleDataQuery = `
             SELECT COUNT(*) as count 
             FROM pos_sales 
@@ -36,7 +36,9 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             if (salesData && salesData[0].count !== 0) {
                 const query = `
                 UPDATE pos_sales 
-                SET PaymentStatus = ? 
+                SET PaymentStatus = ?,
+                pay_date = NOW(),
+                pay_by = ?
                 WHERE CustomerID = (
                     SELECT pc.customerID 
                     FROM pos_customers pc 
@@ -46,15 +48,21 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
 
                 await connection.execute<ResultSetHeader>(query, [
                     paymentStatusEnum.Paid,
+                    pay_by,
                     id
                 ]);
             }
 
             await connection.query(`
                 UPDATE pos_customers
-                SET paymentStatus = ?
+                SET paymentStatus = ?,
+                courtPrice = ?,
+                pay_by = ?,
+                pay_date = NOW()
                 WHERE customerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = ? AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}')
-            `, [customerPaymentStatusEnum.PAID, id]);
+            `, [customerPaymentStatusEnum.PAID, courtPrice, pay_by, id]);
+
+
 
             
             res.json({ results });

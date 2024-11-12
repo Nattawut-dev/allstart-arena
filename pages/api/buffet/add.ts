@@ -5,12 +5,10 @@ import pool from '@/db/db';
 import { format, utcToZonedTime } from 'date-fns-tz';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
-import { generateUniqueBarcode } from '@/lib/genBarcode';
-import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
 import { FIRST_BARCODE } from '@/constant/firstBarcode';
-import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
 import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
+import { PayByEnum } from '@/enum/payByEnum';
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -97,42 +95,59 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
                     const today = format(dateInBangkok, 'dd MMMM yyyy')
                     try {
+                        const buffetUpdateQuery = `
+                        SELECT 
+                          bs.shuttle_cock_price, 
+                          bs.court_price, 
+                          ROUND(
+                              (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4))),
+                              2
+                          ) AS total_shuttle_cock
+                        FROM 
+                          buffet_setting bs
+                        JOIN 
+                          buffet b ON b.id = ?
+                        WHERE 
+                          bs.isStudent = b.isStudent
+                        GROUP BY 
+                          bs.shuttle_cock_price, 
+                          bs.court_price
+                      `;
+
+                        const [buffetUpdateResult] = await connection.query<RowDataPacket[]>(buffetUpdateQuery, [id]);
+
+                        if (buffetUpdateResult.length === 0) {
+                            return res.status(400).json({ error: "No buffet settings found for the given buffet." });
+                        }
+
+                        const totalShuttleCock = buffetUpdateResult[0].total_shuttle_cock;
+
+                        const buffetUpdate = `
+                        UPDATE buffet
+                        SET 
+                          paymentSlip = ?, 
+                          price = ?, 
+                          paymentStatus = '${buffetPaymentStatusEnum.CHECKING}',
+                          pay_date = ?,
+                          paymethod_shuttlecock = 3
+                        WHERE id = ?
+                      `;
+
+                        await connection.query(buffetUpdate, [result.secure_url, totalShuttleCock, today, id]);
 
                         await connection.query(`
-                    UPDATE buffet AS b
-JOIN (
-    SELECT 
-        bs.shuttle_cock_price, 
-        bs.court_price, 
-        ROUND(
-            (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4))),
-            2
-        ) AS total_shuttle_cock
-    FROM 
-        buffet_setting bs
-    JOIN 
-        buffet b ON b.id = ?
-    WHERE 
-        bs.isStudent = b.isStudent
-    GROUP BY 
-        bs.shuttle_cock_price, 
-        bs.court_price
-) AS subquery ON b.id = ?
-SET 
-    b.paymentSlip = ?, 
-    b.price = subquery.total_shuttle_cock,
-    b.paymentStatus = '${buffetPaymentStatusEnum.CHECKING}',
-    b.pay_date = ?,
-    b.paymethod_shuttlecock = 3;`,
-
-                            [id, id, result.secure_url, today]);
-
-                        await connection.query(`
-                                UPDATE pos_customers
-                                SET paymentStatus = '${customerPaymentStatusEnum.CHECKING}', 
-                                paymentSlip = ?
-                                WHERE CustomerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = ? AND buffetStatus = '${buffetStatusEnum.BUFFET}')
-                            `, [result.secure_url, id]);
+                            UPDATE pos_customers
+                            SET paymentStatus = '${customerPaymentStatusEnum.CHECKING}', 
+                            paymentSlip = ?, 
+                            courtPrice = ?,
+                            pay_by = ?
+                            WHERE CustomerID = (
+                              SELECT pc.customerID 
+                              FROM pos_customers pc 
+                              WHERE pc.playerId = ? 
+                              AND buffetStatus = '${buffetStatusEnum.BUFFET}'
+                            )
+                          `, [result.secure_url, totalShuttleCock, PayByEnum.TRANSFER, id]);
 
                         return res.status(200).json({ imageUrl: result.secure_url });
 

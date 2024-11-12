@@ -27,11 +27,7 @@ FROM
 JOIN 
     buffet b ON b.id = ?
 WHERE 
-    bs.isStudent = CASE
-                WHEN b.isStudent = ${IsStudentEnum.Student} THEN '${IsStudentEnum.Student}'
-                WHEN b.isStudent = ${IsStudentEnum.University} THEN '${IsStudentEnum.University}'
-                ELSE 1
-            END;
+    bs.isStudent = b.isStudent
 `;
 
             // Execute the SQL query to fetch time slots
