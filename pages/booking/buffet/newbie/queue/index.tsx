@@ -368,7 +368,7 @@ function Buffets() {
                 <select key={i + 200} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} disabled style={{ maxWidth: '40px' }} value={selectedOptions[i]} >
                     <option>{selectedOptions[i]}</option>
                 </select>
-                <select key={i + 100} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} disabled style={{ width: '40px' }} value={selectedOptions[i]} >
+                <select key={i + 100} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} disabled style={{ width: '44px' }} value={selectedOptions[i]} >
                     <option>{selectedOptionsCourt[i]}</option>
                 </select>
             </div>

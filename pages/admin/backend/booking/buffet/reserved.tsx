@@ -178,8 +178,6 @@ function BuffetReserved() {
                 setEditBuffet(null);
                 return response.json();
             })
-            .then((data) => {
-            })
             .catch((error) => {
                 console.error('There was a problem with the fetch operation:', error);
                 loadData();
@@ -384,7 +382,7 @@ function BuffetReserved() {
                             <Form.Group controlId="formPrice">
                                 <Form.Label>ยอดรวม สนาม + ลูก </Form.Label>
                                 <div className='d-flex'>
-                                    <Form.Control className='w-100' type="number" value={editBuffet.price ?? editBuffet.total_shuttle_cock} onChange={(e) => setEditBuffet({ ...editBuffet, price: parseInt(e.target.value) })} />
+                                    <Form.Control className='w-100' type="number" readOnly value={editBuffet.price ?? editBuffet.total_shuttle_cock} onChange={(e) => setEditBuffet({ ...editBuffet, price: parseInt(e.target.value) })} />
                                     <div className="input-group-append">
                                         <button className="btn btn-outline-secondary" type="button" onClick={() => calculate_price(editBuffet.id)}>คำนวณ</button>
                                     </div>
@@ -393,7 +391,7 @@ function BuffetReserved() {
                             <Form.Group controlId="formPrice">
                                 <Form.Label>ยอดซื้อของ </Form.Label>
                                 <div className='d-flex'>
-                                    <Form.Control className='w-100' type="number" value={editBuffet.shoppingMoney} />
+                                    <Form.Control className='w-100' readOnly type="number" value={editBuffet.shoppingMoney} />
                                 </div>
                             </Form.Group>
                             <Form.Group controlId="formPrice">
@@ -404,12 +402,13 @@ function BuffetReserved() {
                                 <Form.Control
                                     as="select"
                                     value={editBuffet.paymethod_shuttlecock}
+                                    
                                     onChange={(e) => setEditBuffet({ ...editBuffet, paymethod_shuttlecock: e.target.value })}
-                                    readOnly
+                                    disabled
                                 >
                                     <option value={0}>ยังไม่ชำระ</option>
                                     <option value={1}>โอนผ่านแอดมิน</option>
-                                    <option value={2}>เงินสดผ่านแอดมิน</option>
+                                    {/* <option value={2}>เงินสดผ่านแอดมิน</option> */}
                                     <option value={3}>โอนด้วยตนเอง</option>
                                     <option value={4}>เล่นเสร็จยังไม่ชำระ</option>
                                     <option value={5}>ชำระแล้วผ่าน POS</option>
@@ -432,7 +431,7 @@ function BuffetReserved() {
                                 <div style={{ width: '100%' }}>
                                     <DatePicker
                                         className='w-100'
-                                        selected={editBuffet.usedate ? new Date(editBuffet.pay_date) : null}
+                                        selected={editBuffet.pay_date ? new Date(editBuffet.pay_date) : null}
                                         onChange={(date) => date && setEditBuffet({ ...editBuffet, pay_date: format(date, 'dd MMMM yyyy') })}
                                         dateFormat="dd MMMM yyyy"
                                     />
