@@ -5,10 +5,12 @@ import { utcToZonedTime } from 'date-fns-tz';
 import { format, addDays, differenceInHours, } from 'date-fns';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { IBuffet_setting } from '@/interface/buffetSetting';
+import { skillLevelsOptions } from '@/constant/options/skillValueOptions';
+import { SkillLevelEnum } from '@/enum/skillLevelEnum';
 
 interface Props {
   buffetSetting: IBuffet_setting;
@@ -48,7 +50,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
   const [nickname, setNickname] = useState('');
   const [unique_nickname, setUnique_nickname] = useState(false)
   const [error, setError] = useState('');
-
+  const [skillLevel, setSkillLevel] = useState(SkillLevelEnum.BG1);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -87,6 +89,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
         formData.append('usedate', format(dateInBangkok, 'dd MMMM yyyy'));
         formData.append('phone', phone);
         formData.append('isStudent', isStudent.toString());
+        formData.append('skillLevel', skillLevel);
 
         const response = await fetch('/api/buffet/add', {
           method: 'POST',
@@ -171,14 +174,13 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
       <Head>
         <title>จองตีบุฟเฟ่ต์</title>
       </Head>
-      <h2>จองตีบุฟเฟ่ต์  </h2>
+      <h2>จองตีบุฟเฟ่ต์</h2>
       <h2 style={{ color: 'red' }}>วันใช้งาน {format(dateInBangkok, 'dd MMMM yyyy')}</h2>
       <br />
-
+  
       <form onSubmit={handleSubmit}>
-
         <label>
-          Nickname:
+          ชื่อเล่น:
           <input
             type="text"
             maxLength={10}
@@ -189,7 +191,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
           />
         </label>
         <label>
-          Phone:
+          เบอร์โทร:
           <input
             type="tel"
             maxLength={10}
@@ -200,6 +202,22 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
             required
           />
         </label>
+        <Form.Group controlId="skillLevelSelect">
+          <Form.Label>ระดับมือ</Form.Label>
+          <Form.Select
+            value={skillLevel}
+            onChange={(e) => setSkillLevel(e.target.value as SkillLevelEnum)}
+            aria-label={'Select an option'}
+            required
+          >
+            {skillLevelsOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label} ({option.value})
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+  
         <div className={`${styles.checkbox_wrapper} d-flex mt-3`}>
           <input
             type="checkbox"
@@ -209,8 +227,9 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
             checked={isStudent === IsStudentEnum.Student}
           />
           <label htmlFor="cbtest-19-1" className={styles.check_box}></label>
-          <p className="mx-2" style={{ padding: '0' }}>นักเรียน  | {buffetStudentSetting.court_price} บาท</p>
+          <p className="mx-2" style={{ padding: '0' }}>นักเรียน | {buffetStudentSetting.court_price} บาท</p>
         </div>
+  
         <div className={`${styles.checkbox_wrapper} d-flex`}>
           <input
             type="checkbox"
@@ -222,20 +241,21 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
           <label htmlFor="cbtest-19-2" className={styles.check_box}></label>
           <p className="mx-2" style={{ padding: '0' }}>นักศึกษา | {buffetUniversitySetting.court_price} บาท</p>
         </div>
-
-
-        <div>
-          <p style={{ color: "red", fontWeight: 'Bold' }}>{error}</p>
-        </div>
-        <h6 >ค่าตีก๊วน <span style={{ color: "red" }} > {isStudent === IsStudentEnum.None ? buffetSetting.court_price : price}</span>  บาทต่อคน  ค่าลูกต่อ 1 ลูก
-          <span style={{ color: "red" }} > {isStudent === IsStudentEnum.None ? buffetSetting.shuttle_cock_price : shuttleCockPrice} </span> บาท  </h6>
-        <h6>(คนละ <span style={{ color: "red" }} > {(isStudent === IsStudentEnum.None ? buffetSetting.shuttle_cock_price : shuttleCockPrice) / 4} </span> บาท/ลูก)</h6>
-
-        <div className='row' >
+  
+        {error && (
+          <div>
+            <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>
+          </div>
+        )}
+  
+        <h6>ค่าตีก๊วน <span style={{ color: 'red' }}>{isStudent === IsStudentEnum.None ? buffetSetting.court_price : price}</span> บาทต่อคน ค่าลูกต่อ 1 ลูก <span style={{ color: 'red' }}>{isStudent === IsStudentEnum.None ? buffetSetting.shuttle_cock_price : shuttleCockPrice}</span> บาท</h6>
+        <h6>(คนละ <span style={{ color: 'red' }}>{(isStudent === IsStudentEnum.None ? buffetSetting.shuttle_cock_price : shuttleCockPrice) / 4}</span> บาท/ลูก)</h6>
+  
+        <div className='row'>
           <Button className='col mx-2' type="submit">ยืนยันการจอง</Button>
         </div>
-
       </form>
     </div>
   );
+  
 }
