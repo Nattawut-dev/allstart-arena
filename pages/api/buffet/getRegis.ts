@@ -11,7 +11,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         try {
             const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
             const usedate = format(dateInBangkok, 'dd MMMM yyyy')
-            const query = `SELECT buffet.id , buffet.nickname, buffet.usedate, buffet.price, buffet.shuttle_cock, buffet.paymentStatus ,buffet.q_list ,buffet.q_id , buffet.couterPlay ,  buffet.isStudent ,
+            const query = `SELECT buffet.id , buffet.nickname, buffet.usedate, buffet.price, buffet.shuttle_cock, buffet.paymentStatus ,buffet.q_list ,buffet.q_id , buffet.couterPlay ,  buffet.isStudent, buffet.skillLevel ,
         CASE 
             WHEN current_buffet_q.id IS NULL THEN NULL
             ELSE current_buffet_q.T_value

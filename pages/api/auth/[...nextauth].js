@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 const connection = await pool.getConnection()
 
 export const authOptions = {
+
     session: {
         strategy: 'jwt',
         maxAge: 8 * 60 * 60 // 8 hours
@@ -47,6 +48,7 @@ export const authOptions = {
         },
 
     },
+    secret: process.env.NEXTAUTH_SECRET,
 }
 
 export default NextAuth(authOptions);

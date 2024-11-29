@@ -203,7 +203,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
           />
         </label>
         <Form.Group controlId="skillLevelSelect">
-          <Form.Label>ระดับมือ</Form.Label>
+          <Form.Label>ระดับมือ:</Form.Label>
           <Form.Select
             value={skillLevel}
             onChange={(e) => setSkillLevel(e.target.value as SkillLevelEnum)}

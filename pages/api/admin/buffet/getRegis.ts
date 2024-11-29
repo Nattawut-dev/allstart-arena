@@ -3,7 +3,6 @@ import pool from '@/db/db';
 import { format, utcToZonedTime } from 'date-fns-tz';
 import { getToken } from 'next-auth/jwt';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
-import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
 
 const getDateInBangkok = () => {

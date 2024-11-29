@@ -5,10 +5,12 @@ import { utcToZonedTime } from 'date-fns-tz';
 import { format, addDays, differenceInHours, } from 'date-fns';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import Swal from 'sweetalert2';
-import {  IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { IBuffet_setting } from '@/interface/buffetSetting';
+import { SkillLevelEnum } from '@/enum/skillLevelEnum';
+import { skillLevelsOptions } from '@/constant/options/skillValueOptions';
 
 
 interface Props {
@@ -49,6 +51,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
   const [nickname, setNickname] = useState('');
   const [unique_nickname, setUnique_nickname] = useState(false)
   const [error, setError] = useState('');
+  const [skillLevel, setSkillLevel] = useState(SkillLevelEnum.BG1);
 
 
   const handleSubmit = async (e: any) => {
@@ -88,6 +91,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
         formData.append('usedate', format(dateInBangkok, 'dd MMMM yyyy'));
         formData.append('phone', phone);
         formData.append('isStudent', isStudent.toString());
+        formData.append('skillLevel', skillLevel);
 
         const response = await fetch('/api/buffet/newbie/add', {
           method: 'POST',
@@ -181,7 +185,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
       <form onSubmit={handleSubmit}>
 
         <label>
-          Nickname:
+          ชื่อเล่น:
           <input
             type="text"
             maxLength={10}
@@ -192,7 +196,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
           />
         </label>
         <label>
-          Phone:
+          เบอร์โทร:
           <input
             type="tel"
             maxLength={10}
@@ -203,6 +207,21 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
             required
           />
         </label>
+        <Form.Group controlId="skillLevelSelect">
+          <Form.Label>ระดับมือ:</Form.Label>
+          <Form.Select
+            value={skillLevel}
+            onChange={(e) => setSkillLevel(e.target.value as SkillLevelEnum)}
+            aria-label={'Select an option'}
+            required
+          >
+            {skillLevelsOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label} ({option.value})
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
         <div className={`${styles.checkbox_wrapper} d-flex mt-3`}>
           <input
             type="checkbox"

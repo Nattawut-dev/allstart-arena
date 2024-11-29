@@ -44,10 +44,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const usedate = fields.usedate;
                 const phone = fields.phone;
                 const isStudent = fields.isStudent;
+                const skillLevel = fields.skillLevel;
 
-                const query = `INSERT INTO buffet_newbie (nickname, usedate, phone ,isStudent ) VALUES (?, ?, ? , ?)`;
+                const query = `INSERT INTO buffet_newbie (nickname, usedate, phone ,isStudent,skillLevel ) VALUES (?, ?, ? , ? , ?)`;
                 // Execute the SQL query to insert data
-                const [results] = await connection.query<ResultSetHeader>(query, [nickname, usedate, phone, isStudent]);
+                const [results] = await connection.query<ResultSetHeader>(query, [nickname, usedate, phone, isStudent, skillLevel]);
 
                 // Check if the results contain any data to determine success
                 if ((results as any).affectedRows > 0) {
@@ -152,7 +153,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                       `, [result.secure_url, totalShuttleCock, id]);
 
                         return res.status(200).json({ imageUrl: result.secure_url });
-                        
+
 
 
                     } catch {

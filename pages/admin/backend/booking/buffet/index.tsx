@@ -11,6 +11,9 @@ import SaleDetailModal from '@/components/modal/saleDetailModal';
 import { ISales } from '@/interface/sales';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 import { PayByEnum } from '@/enum/payByEnum';
+import EditSkillLevelModal from '@/components/modal/editSkillLevelModal';
+import { SkillLevelEnum } from '@/enum/skillLevelEnum';
+import { IQBuffet } from '@/interface/buffet';
 
 
 interface ItemsType {
@@ -22,25 +25,6 @@ for (let i = 0; i <= 29; i++) {
 }
 const initialRightItems = {
     tasks: [],
-}
-interface Buffet {
-    id: number;
-    nickname: string;
-    usedate: string;
-    phone: string;
-    price: number;
-    shuttle_cock: number;
-    q_id: number;
-    q_list: number;
-    paymentStatus: number;
-    paymentSlip: string;
-    regisDate: string;
-    T_value: string;
-    shuttle_cock_price: number;
-    couterPlay: number;
-    court_price: number;
-    isStudent: IsStudentEnum;
-    pendingMoney?: number;
 }
 
 interface History {
@@ -60,7 +44,9 @@ function Buffets() {
     const [salesData, setSalesData] = useState<ISales[]>([]);
     const [isSalesDataLoading, setIsSalesDataLoading] = useState(true);
     const [showSaleDetailModal, setShowSaleDetailModal] = useState(false);
-    
+    const [showEditSkillModal, setShowEditSkillModal] = useState(false);
+    const [editUserSkillData, setEditUserSkillData] = useState<IQBuffet | null>(null);
+
     useEffect(() => {
         setIsMobile(window.innerWidth > 768);
         const boxRight: Element | null = document.querySelector(`#boxxx`);
@@ -96,12 +82,14 @@ function Buffets() {
                                         key={task.id}
                                         draggableId={task.id.toString()}
                                         index={index}
+
                                     >
                                         {(draggableProvided, draggableSnapshot) => (
                                             <Flex
+                                                onDoubleClick={() => handleEditSkill(task.id)}
                                                 m={"0.2rem"}
                                                 p={"0"}
-                                                width={'120px'}
+                                                width={'150px'}
                                                 maxWidth={"100%"}
                                                 bg={task.isStudent === IsStudentEnum.Student ? "#BEF7C7" : task.isStudent === IsStudentEnum.University ? "#FFD7B5" : draggableSnapshot.isDragging ? "lightblue" : "white"}
                                                 rounded="3px"
@@ -124,7 +112,7 @@ function Buffets() {
                                                 {...draggableProvided.draggableProps}
                                                 ref={draggableProvided.innerRef}
                                             >
-                                                <span className="p-1 " style={{ fontSize: `${isMobile ? '' : '12px'}` }}>{isMobile ? task.content : task.nickname}</span>
+                                                <span className="p-1 " style={{ fontSize: `${isMobile ? '' : '12px'}` }}>{task.content}</span>
                                             </Flex>
                                         )}
                                     </Drag>
@@ -189,6 +177,7 @@ function Buffets() {
                                 >
                                     {(draggableProvided, draggableSnapshot) => (
                                         <Flex
+                                            onDoubleClick={() => handleEditSkill(task.id)}
                                             m={"0.2rem"}
                                             p={"0"}
                                             bg={task.isStudent === IsStudentEnum.Student ? "#BEF7C7" : task.isStudent === IsStudentEnum.University ? "#FFD7B5" : draggableSnapshot.isDragging ? "lightblue" : "white"}
@@ -224,8 +213,8 @@ function Buffets() {
             </div>
         );
     };
-    const [data, setData] = useState<Buffet[]>([]);
-    const [selectDataPayment, setSelectDataPayment] = useState<Buffet | null>();
+    const [data, setData] = useState<IQBuffet[]>([]);
+    const [selectDataPayment, setSelectDataPayment] = useState<IQBuffet | null>();
     const [leftItems, setLeftItems] = useState<ItemsType>(initialLeftItems);
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
     const [show, setShow] = useState(false);
@@ -272,6 +261,52 @@ function Buffets() {
         }
     })
 
+
+    const handleEditSkill = (userId: number) => {
+        const user = data.find(user => user.id === userId);
+        if (user) {
+            setEditUserSkillData(user);
+            setShowEditSkillModal(true);
+        }
+    }
+
+    const handleCloseEditSkill = () => {
+        setShowEditSkillModal(false);
+        setEditUserSkillData(null);
+    }
+
+    const handleSaveSkill = async () => {
+        if (!editUserSkillData) return;
+
+        try {
+            const url = '/api/admin/buffet/updateSkillLevel';
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: editUserSkillData.id,
+                    skillLevel: editUserSkillData.skillLevel,
+                }),
+            });
+
+            // Check if the response was successful
+            if (!response.ok) {
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Error updating skill level'
+                })
+            }
+
+            fetchRegis();
+            handleCloseEditSkill();
+        } catch (error) {
+            console.error("Failed to save data:", error);
+            // Optional: Handle error (e.g., show an error message to the user)
+        }
+    };
+
     const fetchRegis = async () => {
 
         try {
@@ -285,33 +320,35 @@ function Buffets() {
                 setData(data);
                 setShuttle_cock_price(data[0].shuttle_cock_price)
                 const newRightItems = { ...rightItems };
-                const notQdata = data.filter((item: Buffet) => item.q_id === null);
-                const newTasks = notQdata.map((item: Buffet, index: number) => ({
+                const notQdata = data.filter((item: IQBuffet) => item.q_id === null);
+                const newTasks = notQdata.map((item: IQBuffet, index: number) => ({
                     id: item.id,
                     isStudent: item.isStudent,
-                    content: `${item.nickname} (${item.couterPlay})`,
+                    content: `${item.nickname} - ${item.couterPlay} (${item.skillLevel})`,
                     couterPlay: item.couterPlay,
                     nickname: `${item.nickname}`,
                     q_list: item.q_list || index + 999,
+                    skillLevel: item.skillLevel,
                 }));
-                newTasks.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
+                newTasks.sort((a: IQBuffet, b: IQBuffet) => a.q_list - b.q_list);
                 newRightItems['tasks'] = newTasks;
                 setRightItems(newRightItems);
                 const newLeftItems = { ...leftItems };
                 for (let i = 0; i < numberOfProperties; i++) {
                     const colname = `T${i}`;
                     // กรองข้อมูลที่มี q_id เท่ากับ i
-                    const QData = data.filter((item: Buffet) => item.q_id !== null && item.q_id === i);
+                    const QData = data.filter((item: IQBuffet) => item.q_id !== null && item.q_id === i);
                     // แปลงข้อมูลที่ผ่านการกรองเป็นรูปแบบที่ต้องการ
-                    const newTasksLeft = QData.map((item: Buffet) => ({
+                    const newTasksLeft = QData.map((item: IQBuffet) => ({
                         id: item.id,
                         isStudent: item.isStudent,
-                        content: `${item.nickname} (${item.couterPlay})`,
+                        content: `${item.nickname} - ${item.couterPlay} (${item.skillLevel})`,
                         couterPlay: item.couterPlay,
                         nickname: `${item.nickname}`,
                         q_list: item.q_list || 0,
+                        skillLevel: item.skillLevel,
                     }));
-                    newTasksLeft.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
+                    newTasksLeft.sort((a: IQBuffet, b: IQBuffet) => a.q_list - b.q_list);
                     newLeftItems[colname] = newTasksLeft;
                 }
                 setLeftItems(newLeftItems);
@@ -454,14 +491,13 @@ function Buffets() {
         setLeftItems(updatedLeftItems);
 
         const right: any = value
-        console.log(value, selectedOptions[index], selectedOptionsCourt[index])
-
 
         for (let i = 0; i < right.length; i++) {
             right[i].q_list = i + 1
-            right[i].content = `${right[i].nickname} (${right[i].couterPlay + 1})`
+            right[i].content = `${right[i].nickname} - ${right[i].couterPlay + 1} (${right[i].skillLevel})`
             right[i].couterPlay = right[i].couterPlay + 1
         }
+
         const newState: any = {
             ...rightItems,
             tasks: [...rightItems.tasks, ...right],
@@ -696,7 +732,7 @@ function Buffets() {
         }
     }
 
-    const payMethod = async (id: any, method: string , paymethodShuttlecock : PaymethodShuttlecockEnum , pay_by : PayByEnum) => {
+    const payMethod = async (id: any, method: string, paymethodShuttlecock: PaymethodShuttlecockEnum, pay_by: PayByEnum) => {
         Swal.fire({
             title: `รับชำระด้วย ${method}?`,
             text: `ลูกค้าชำระค่าลูกแบดด้วย ${method} ทั้งหมด ${total_shuttle_cock_price} บาท`,
@@ -713,7 +749,7 @@ function Buffets() {
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ id, paymethodShuttlecock, courtPrice , pay_by})
+                        body: JSON.stringify({ id, paymethodShuttlecock, courtPrice, pay_by })
                     });
 
                     if (!response.ok) {
@@ -780,7 +816,7 @@ function Buffets() {
             }
         });
     }
-    const sumPrice = (item: Buffet) => {
+    const sumPrice = (item: IQBuffet) => {
 
         const shoppingMoney = Number(item.pendingMoney ?? 0);
         setTotal_shuttle_cock_price(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock) + shoppingMoney);
@@ -826,11 +862,11 @@ function Buffets() {
         }
     };
 
-  const handleCloseDetailModal = () => {
+    const handleCloseDetailModal = () => {
         setShowSaleDetailModal(false);
         setShow(true);
     }
-    
+
     return (
         <>
             <Head>
@@ -1013,18 +1049,36 @@ function Buffets() {
                     </div>
                     <div>
                         จ่ายผ่าน
-                        <Button className='btn btn-success' hidden onClick={() => payMethod(selectDataPayment?.id, "เงินสด" , PaymethodShuttlecockEnum.CASH_ADMIN , PayByEnum.CASH)} >ผ่านเงินสด</Button>
-                        <Button className='mx-2' onClick={() => payMethod(selectDataPayment?.id, "โอนเงิน", PaymethodShuttlecockEnum.TRANSFER_ADMIN , PayByEnum.TRANSFER)} >ผ่านการโอน</Button>
+                        <Button className='btn btn-success' hidden onClick={() => payMethod(selectDataPayment?.id, "เงินสด", PaymethodShuttlecockEnum.CASH_ADMIN, PayByEnum.CASH)} >ผ่านเงินสด</Button>
+                        <Button className='mx-2' onClick={() => payMethod(selectDataPayment?.id, "โอนเงิน", PaymethodShuttlecockEnum.TRANSFER_ADMIN, PayByEnum.TRANSFER)} >ผ่านการโอน</Button>
                     </div>
                 </Modal.Footer>
             </Modal>
-            
+
             <SaleDetailModal
                 show={showSaleDetailModal}
                 onHide={handleCloseDetailModal}
                 isSalesDataLoading={isSalesDataLoading}
                 salesData={salesData}
             />
+
+            <EditSkillLevelModal
+                label={editUserSkillData?.nickname ?? '-'}
+                show={showEditSkillModal}
+                handleClose={handleCloseEditSkill}
+                skillLevel={editUserSkillData?.skillLevel || ''}
+                setSkillLevel={(value) =>
+                    setEditUserSkillData((prevData) => {
+                        if (!prevData) return prevData;
+                        return {
+                            ...prevData,
+                            skillLevel: value as SkillLevelEnum,
+                        };
+                    })
+                }
+                handleConfirm={handleSaveSkill}
+            />
+
         </>
 
     )

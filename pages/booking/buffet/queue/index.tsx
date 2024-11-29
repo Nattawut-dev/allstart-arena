@@ -4,7 +4,8 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Flex } from '@chakra-ui/react';
 import Swal from 'sweetalert2';
 import Head from 'next/head';
-import {  IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { IQBuffet } from '@/interface/buffet';
 
 
 interface ItemsType {
@@ -61,27 +62,9 @@ interface History {
 const initialRightItems = {
     tasks: [],
 }
-interface Buffet {
-    id: number;
-    name: string;
-    nickname: string;
-    usedate: string;
-    phone: string;
-    price: number;
-    shuttle_cock: number;
-    q_id: number;
-    q_list: number;
-    paymentStatus: number;
-    paymentSlip: string;
-    regisDate: string;
-    T_value: string;
-    couterPlay: number;
-    isStudent : number;
-}
-
 
 function Buffets() {
-    const [data, setData] = useState<Buffet[]>([]);
+    const [data, setData] = useState<IQBuffet[]>([]);
     const [leftItems, setLeftItems] = useState<ItemsType>(initialLeftItems);
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
     const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -114,8 +97,7 @@ function Buffets() {
                                             <Flex
                                                 m={"0.2rem"}
                                                 p={"0"}
-                                                width={'120px'}
-
+                                                width={'150px'}
                                                 maxWidth={"100%"}
                                                 bg={task.isStudent === IsStudentEnum.Student ? "#BEF7C7" : task.isStudent === IsStudentEnum.University ? "#FFD7B5" : draggableSnapshot.isDragging ? "lightblue" : "white"}
                                                 rounded="3px"
@@ -139,7 +121,7 @@ function Buffets() {
                                                 {...draggableProvided.draggableProps}
                                                 ref={draggableProvided.innerRef}
                                             >
-                                                <span className="p-1 " style={{ fontSize: `${isMobile ? '' : '12px'}` }}>{isMobile ? task.content : task.nickname}</span>
+                                                <span className="p-1 text-center" style={{ fontSize: `${isMobile ? '' : '12px'}` }}>{task.content}</span>
                                             </Flex>
                                         )}
                                     </Draggable>
@@ -264,31 +246,31 @@ function Buffets() {
                 const data = await response.json();
                 setData(data);
                 const newRightItems = { ...rightItems };
-                const notQdata = data.filter((item: Buffet) => item.q_id === null);
-                const newTasks = notQdata.map((item: Buffet, index: number) => ({
+                const notQdata = data.filter((item: IQBuffet) => item.q_id === null);
+                const newTasks = notQdata.map((item: IQBuffet, index: number) => ({
                     id: item.id,
                     isStudent: item.isStudent,
-                    content: `${item.nickname} (${item.couterPlay})`,
+                    content: `${item.nickname} - ${item.couterPlay} (${item.skillLevel})`,
                     nickname: `${item.nickname}`,
                     q_list: item.q_list || index + 999,
                 }));
-                newTasks.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
+                newTasks.sort((a: IQBuffet, b: IQBuffet) => a.q_list - b.q_list);
                 newRightItems['tasks'] = newTasks;
                 setRightItems(newRightItems);
                 const newLeftItems = { ...leftItems };
                 for (let i = 0; i < numberOfProperties; i++) {
                     const colname = `T${i}`;
                     // กรองข้อมูลที่มี q_id เท่ากับ i
-                    const QData = data.filter((item: Buffet) => item.q_id !== null && item.q_id === i);
+                    const QData = data.filter((item: IQBuffet) => item.q_id !== null && item.q_id === i);
                     // แปลงข้อมูลที่ผ่านการกรองเป็นรูปแบบที่ต้องการ
-                    const newTasksLeft = QData.map((item: Buffet) => ({
+                    const newTasksLeft = QData.map((item: IQBuffet) => ({
                         id: item.id,
                         isStudent: item.isStudent,
-                        content: `${item.nickname} (${item.couterPlay})`,
+                        content: `${item.nickname} - ${item.couterPlay} (${item.skillLevel})`,
                         nickname: `${item.nickname}`,
                         q_list: item.q_list || 0,
                     }));
-                    newTasksLeft.sort((a: Buffet, b: Buffet) => a.q_list - b.q_list);
+                    newTasksLeft.sort((a: IQBuffet, b: IQBuffet) => a.q_list - b.q_list);
                     newLeftItems[colname] = newTasksLeft;
                 }
                 setLeftItems(newLeftItems);
@@ -349,7 +331,7 @@ function Buffets() {
     for (let i = 0; i < numberOfProperties; i++) {
         const entries = Object.entries(leftItems)
         elements.push(
-            <div key={i} className='d-flex flex-row mb-1 p-1 justify-content-end' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px', height: '45px', minWidth: '500px' }}>
+            <div key={i} className='d-flex flex-row mb-1 p-1 justify-content-end' style={{ backgroundColor: '#7A7AF9', borderRadius: '8px', height: '45px', minWidth: '700px' }}>
                 <Flex
                     m={"0.2rem"}
                     p={"0"}
@@ -395,11 +377,10 @@ function Buffets() {
                             <Button className='btn btn-sm' onClick={fetchRegis}>refresh</Button>
                         </div>
 
-                        <div className='row'>
-
-                            <div className='col me-3 p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px', overflowX: 'auto' }}>
-                                <h6 className='fw-bold bg-primary text-white rounded p-1' style={{ minWidth: '500px' }} >คิวการเล่น</h6>
-                                <div className='d-flex flex-row justify-content-between' style={{ minWidth: '500px' }}>
+                        <div className='row gap-1'>
+                            <div className='col p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px', overflowX: 'auto' }}>
+                                <h6 className='fw-bold bg-primary text-white rounded p-1' style={{ minWidth: '700px' }} >คิวการเล่น</h6>
+                                <div className='d-flex flex-row justify-content-between' style={{ minWidth: '700px' }}>
                                     <span className='mx-3'>คิว</span>
                                     <span>ชื่อผู้เล่น</span>
                                     <div className='d-flex flex-row justify-content-between mx-2' style={{ width: '75px' }}>
@@ -412,7 +393,7 @@ function Buffets() {
                                 </div>
                                 {elements}
                             </div>
-                            <div className='col p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px'  , height : 'fit-content'}}>
+                            <div className='col p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px', height: 'fit-content' , maxWidth : '700px'}}>
                                 <h6 className='fw-bold bg-primary text-white rounded p-1' >รอจัดคิว </h6>
                                 {rightItems.tasks.length === 0 && (
                                     <div style={{ color: 'red', fontWeight: 'bold' }}>ไม่พบข้อมูล</div>
@@ -438,7 +419,7 @@ function Buffets() {
                                         </thead>
                                         <tbody>
                                             {historys.map((history, index) => (
-                                                <tr key={index + 1}>
+                                                <tr key={index + 1} className='text-nowrap'>
                                                     <th>{index + 1}</th>
                                                     <td>{history.player1_nickname}</td>
                                                     <td>{history.player2_nickname}</td>
