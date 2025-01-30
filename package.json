@@ -1,6 +1,6 @@
 {
-  "name": "cordbad-fullstack",
-  "version": "1.0.0",
+  "name": "allstars-arena",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

@@ -51,7 +51,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
   const [nickname, setNickname] = useState('');
   const [unique_nickname, setUnique_nickname] = useState(false)
   const [error, setError] = useState('');
-  const [skillLevel, setSkillLevel] = useState(SkillLevelEnum.BG1);
+  const [skillLevel, setSkillLevel] = useState<SkillLevelEnum | null>(null);
 
 
   const handleSubmit = async (e: any) => {
@@ -69,6 +69,13 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
         icon: "error",
         title: "ชื่อนี้มีคนใช้แล้ว",
         text: "ชื่อซ้ำกรุณาเปลี่ยนชื่อ",
+      });
+      return;
+    }
+    else if (!skillLevel) {
+      Swal.fire({
+        icon: "error",
+        title: "กรุณาระบุระดับมือ",
       });
       return;
     }
@@ -111,7 +118,6 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
             showCancelButton: true,
             confirmButtonText: "ตกลง",
           }).then((result) => {
-            /* Read more about isConfirmed, isDenied below */
             if (result.isConfirmed) {
               router.replace("/booking/buffet/newbie/info")
             }
@@ -210,11 +216,14 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
         <Form.Group controlId="skillLevelSelect">
           <Form.Label>ระดับมือ:</Form.Label>
           <Form.Select
-            value={skillLevel}
+            value={skillLevel || ""}
             onChange={(e) => setSkillLevel(e.target.value as SkillLevelEnum)}
-            aria-label={'Select an option'}
+            aria-label="Select an option"
             required
           >
+            <option value="" disabled>
+              เลือกระดับมือ
+            </option>
             {skillLevelsOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label} ({option.value})
