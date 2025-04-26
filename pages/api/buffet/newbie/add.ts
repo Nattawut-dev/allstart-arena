@@ -4,11 +4,8 @@ import multiparty from 'multiparty';
 import pool from '@/db/db';
 import { format, utcToZonedTime } from 'date-fns-tz';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import { generateUniqueBarcode } from '@/lib/genBarcode';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
-import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
 import { FIRST_BARCODE } from '@/constant/firstBarcode';
-import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
 import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
 import { PayByEnum } from '@/enum/payByEnum';
@@ -50,8 +47,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 // Execute the SQL query to insert data
                 const [results] = await connection.query<ResultSetHeader>(query, [nickname, usedate, phone, isStudent, skillLevel]);
 
+
                 // Check if the results contain any data to determine success
-                if ((results as any).affectedRows > 0) {
+                if (results.affectedRows > 0) {
 
                     const barcode = FIRST_BARCODE;
                     const insertCustomerQuery = `INSERT INTO pos_customers ( PlayerId,phone , CustomerName, buffetStatus, barcode) 
@@ -98,7 +96,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
                     const today = format(dateInBangkok, 'dd MMMM yyyy')
                     try {
-
                         const buffetUpdateQuery = `
                         SELECT 
                           bs.shuttle_cock_price, 
@@ -121,7 +118,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         const [buffetUpdateResult] = await connection.query<RowDataPacket[]>(buffetUpdateQuery, [id]);
 
                         if (buffetUpdateResult.length === 0) {
-                            return res.status(400).json({ error: "No buffet settings found for the given buffet." });
+                            return res.status(400).json({ error: "No buffet_newbie settings found for the given buffet_newbie." });
                         }
 
                         const totalShuttleCock = buffetUpdateResult[0].total_shuttle_cock;
@@ -140,23 +137,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         await connection.query(buffetUpdate, [result.secure_url, totalShuttleCock, today, id]);
 
                         await connection.query(`
-                        UPDATE pos_customers
-                        SET paymentStatus = '${customerPaymentStatusEnum.CHECKING}', 
+                            UPDATE pos_customers
+                            SET paymentStatus = '${customerPaymentStatusEnum.CHECKING}', 
                             paymentSlip = ?, 
-                            courtPrice = ?
-                        WHERE CustomerID = (
-                          SELECT pc.customerID 
-                          FROM pos_customers pc 
-                          WHERE pc.playerId = ? 
-                          AND buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}'
-                        )
-                      `, [result.secure_url, totalShuttleCock, id]);
+                            courtPrice = ?,
+                            pay_by = ?
+                            WHERE CustomerID = (
+                              SELECT customerID 
+                              FROM (SELECT customerID FROM pos_customers WHERE playerId = ? AND buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}') AS temp
+                            )
+                          `, [result.secure_url, totalShuttleCock, PayByEnum.TRANSFER, id]);
 
                         return res.status(200).json({ imageUrl: result.secure_url });
 
+                    } catch (error) {
+                        console.error('Error flagging sale as deleted:', error);
 
-
-                    } catch {
                         return res.status(500).json({ error: 'Server error' });
                     }
                 } else {

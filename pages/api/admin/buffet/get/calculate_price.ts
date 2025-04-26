@@ -22,12 +22,12 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         (b.shuttle_cock * (bs.shuttle_cock_price / 4)),
         2
     ) AS total_shuttle_cock
-FROM 
-    buffet_setting bs
-JOIN 
-    buffet b ON b.id = ?
-WHERE 
-    bs.isStudent = b.isStudent
+    FROM 
+        buffet_setting bs
+    JOIN 
+        buffet b ON b.id = ?
+    WHERE 
+        bs.isStudent = b.isStudent
 `;
 
             // Execute the SQL query to fetch time slots

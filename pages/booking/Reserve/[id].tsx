@@ -229,7 +229,7 @@ export default function Page() {
         </label>
         <br />
         <div><p style={{ color: "red" }}>{error}</p></div>
-        <button type="submit">Submit</button>
+        <button type="submit">ยืนยันการจอง</button>
       </form>
     </div>
   );

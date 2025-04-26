@@ -1,19 +1,22 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Button, Form, Modal } from 'react-bootstrap';
 import { DragDropContext, Draggable as Drag, Droppable } from "react-beautiful-dnd";
-import { Flex } from '@chakra-ui/react';
+import { Flex, position } from '@chakra-ui/react';
 import Swal from 'sweetalert2';
-import styles from '@/styles/admin/buffet.module.css';
+import styles from '@/styles/admin/buffet.module.css'
 import Head from 'next/head';
 import { IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
 import SaleDetailModal from '@/components/modal/saleDetailModal';
 import { ISales } from '@/interface/sales';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
-import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
 import { PayByEnum } from '@/enum/payByEnum';
-import { IQBuffet } from '@/interface/buffet';
-import { SkillLevelEnum } from '@/enum/skillLevelEnum';
 import EditSkillLevelModal from '@/components/modal/editSkillLevelModal';
+import { SkillLevelEnum } from '@/enum/skillLevelEnum';
+import { IQBuffet } from '@/interface/buffet';
+import AbbreviatedSelect, { OptionType } from '@/components/admin/AbbreviatedSelect';
+import debounce from 'lodash/debounce';
+import ShuttleCockControlNewBie from './ShuttleCockControlNewBie';
 
 interface ItemsType {
     [key: string]: string[];
@@ -25,7 +28,8 @@ for (let i = 0; i <= 29; i++) {
 const initialRightItems = {
     tasks: [],
 }
-interface History {
+
+export interface IHistory {
     id: number;
     player1_nickname: string;
     player2_nickname: string;
@@ -35,11 +39,20 @@ interface History {
     court: string;
     usedate: string;
     time: string;
+    shuttlecock_code: string;
+}
+
+export interface ShuttleCockTypes {
+    id: number;
+    code: string;
+    name: string;
+    price: number;
+    created_at: string;
+    isActive: boolean;
 }
 
 function Buffets() {
     const [isMobile, setIsMobile] = useState<boolean>(false);
-    const [searchQuery, setSearchQuery] = useState<string>('');
     const [salesData, setSalesData] = useState<ISales[]>([]);
     const [isSalesDataLoading, setIsSalesDataLoading] = useState(true);
     const [showSaleDetailModal, setShowSaleDetailModal] = useState(false);
@@ -81,6 +94,7 @@ function Buffets() {
                                         key={task.id}
                                         draggableId={task.id.toString()}
                                         index={index}
+
                                     >
                                         {(draggableProvided, draggableSnapshot) => (
                                             <Flex
@@ -110,7 +124,7 @@ function Buffets() {
                                                 {...draggableProvided.draggableProps}
                                                 ref={draggableProvided.innerRef}
                                             >
-                                                <span className="p-1 " style={{ fontSize: `${isMobile ? '' : '12px'}` }}>{isMobile ? task.content : task.nickname}</span>
+                                                <span className="p-1 " style={{ fontSize: `${isMobile ? '' : '12px'}` }}>{task.content}</span>
                                             </Flex>
                                         )}
                                     </Drag>
@@ -212,33 +226,55 @@ function Buffets() {
         );
     };
     const [data, setData] = useState<IQBuffet[]>([]);
-    const [selectDataPayment, setSelectDataPayment] = useState<IQBuffet | null>();
+    const [selectDataPayment, setSelectDataPayment] = useState<IQBuffet | null>(null);
     const [leftItems, setLeftItems] = useState<ItemsType>(initialLeftItems);
     const [rightItems, setRightItems] = useState<any>(initialRightItems);
     const [show, setShow] = useState(false);
     const [showList, setshowList] = useState(true);
-    // const isMobile = useMediaQuery({ maxWidth: 767 }); // กำหนดจุด breakpoint ของมือถือ
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [shuttleCockTypes, setShuttleCockTypes] = useState<OptionType[]>([]);
 
-    const [shuttle_cock_price, setShuttle_cock_price] = useState(0);
-    const [total_shuttle_cock_price, setTotal_shuttle_cock_price] = useState(0);
-    const [courtPrice, setCourtPrice] = useState(0);
+    const getShuttleCockTypes = async () => {
+        try {
+            const response = await fetch(`/api/buffet/newbie/get_shuttlecock_types`);
+            if (response.ok) {
+                const data = await response.json();
+                const formattedData = data.map((item: ShuttleCockTypes) => ({
+                    id: item.id,
+                    label: `${item.name} - ${item.price}฿/ลูก (คนละ ${item.price / 4}฿)`,
+                    code: item.code,
+                    name: item.name,
+                    price: item.price,
+                }));
+                setShuttleCockTypes(formattedData);
+            } else {
+                console.error('Failed to fetch shuttlecock types.');
+            }
+        } catch (error) {
+            console.error('Error occurred while fetching shuttlecock types:', error);
+        }
+    }
+
 
     const elements = [];
     const numberOfProperties = Object.keys(leftItems).length;
     useEffect(() => {
         fetchRegis();
-        getSelectedOptions()
-
+        getSelectedOptions();
+        getShuttleCockTypes();
     }, [])
+
     const getSelectedOptions = async () => {
         setSelectedOptions(Array(numberOfProperties).fill(''))
         setSelectedOptionsCourt(Array(numberOfProperties).fill(''))
+        setSelectedOptionsShuttleCock(Array(numberOfProperties).fill(''))
         try {
             const response = await fetch(`/api/buffet/newbie/save-selected-options`);
             if (response.ok) {
                 const data = await response.json();
                 setSelectedOptions(data[0].selected_options)
                 setSelectedOptionsCourt(data[1].selected_options)
+                setSelectedOptionsShuttleCock(data[2].selected_options)
             } else {
                 console.error('Failed to fetch selected options.');
             }
@@ -257,6 +293,7 @@ function Buffets() {
             toast.addEventListener('mouseleave', Swal.resumeTimer)
         }
     })
+
 
     const handleEditSkill = (userId: number) => {
         const user = data.find(user => user.id === userId);
@@ -304,17 +341,15 @@ function Buffets() {
     };
 
     const fetchRegis = async () => {
-
         try {
-            setLeftItems(initialLeftItems)
-            setRightItems(initialRightItems)
+            // setLeftItems(initialLeftItems)
+            // setRightItems(initialRightItems)
             getSelectedOptions();
             getHistory();
             const response = await fetch(`/api/admin/buffet/newbie/getRegis`)
             if (response.ok) {
                 const data = await response.json();
                 setData(data);
-                setShuttle_cock_price(data[0].shuttle_cock_price)
                 const newRightItems = { ...rightItems };
                 const notQdata = data.filter((item: IQBuffet) => item.q_id === null);
                 const newTasks = notQdata.map((item: IQBuffet, index: number) => ({
@@ -348,6 +383,10 @@ function Buffets() {
                     newLeftItems[colname] = newTasksLeft;
                 }
                 setLeftItems(newLeftItems);
+                if (show && selectDataPayment) {
+                    const selected = data.find((item: IQBuffet) => item.id === selectDataPayment.id);
+                    setSelectDataPayment(selected);
+                }
                 Toast.fire({
                     icon: 'success',
                     title: 'Updated'
@@ -362,7 +401,8 @@ function Buffets() {
             console.error(error)
         }
     }
-    const [historys, setHistorys] = useState<History[]>([]);
+
+    const [historys, setHistorys] = useState<IHistory[]>([]);
     const getHistory = async () => {
         try {
             const response = await fetch(`/api/buffet/newbie/get_history`, {
@@ -373,7 +413,6 @@ function Buffets() {
             if (!response.ok) {
                 throw new Error('ไม่สามารถดึงข้อมูลได้');
             } else {
-                console.log(data)
                 setHistorys(data)
             }
         } catch (err) {
@@ -382,6 +421,7 @@ function Buffets() {
     }
     const [selectedOptions, setSelectedOptions] = useState(Array(numberOfProperties).fill(''));
     const [selectedOptionsCourt, setSelectedOptionsCourt] = useState(Array(numberOfProperties).fill(''));
+    const [selectedOptionsShuttleCock, setSelectedOptionsShuttleCock] = useState(Array(numberOfProperties).fill(''));
 
     const handleSelectChange = async (index: number, event: any) => {
         const options = [...selectedOptions]; // ค่าเดิม array ของ selectedOptions
@@ -398,6 +438,15 @@ function Buffets() {
         // upload ไปที่ database
         updateCurrent_cock(options, 2)
     };
+
+    const handleSelectChangeShuttleCock = async (index: number, value: string) => {
+        const options = [...selectedOptionsShuttleCock]; // ค่าเดิม array ของ selectedOptions
+        options[index] = value; // อัปเดตค่าใน index ที่ระบุ
+        setSelectedOptionsShuttleCock(options); // อัปเดตสถานะ selectedOptions
+        // upload ไปที่ database
+        updateCurrent_cock(options, 3)
+    };
+
 
     const updateCurrent_cock = async (options: any, id: number) => {
         try {
@@ -450,6 +499,12 @@ function Buffets() {
                     <option>8</option>
                 </select>
 
+                <AbbreviatedSelect
+                    options={shuttleCockTypes}
+                    value={selectedOptionsShuttleCock[i]}
+                    onChange={(newVal) => handleSelectChangeShuttleCock(i, newVal)}
+                />
+
                 <Button className='btn btn-warning ' style={{ fontSize: `${isMobile ? '' : '12px'}`, display: 'flex', justifyContent: 'end' }} onClick={() => clearArray(entries[i][1], i)} >{!isMobile ? 'F' : 'Finish'}</Button>
                 <select key={i + 100} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} style={{ width: '44px' }} value={selectedOptionsCourt[i]} onChange={(event) => handleSelectChangeCourt(i, event)}>
                     <option>-</option>
@@ -473,6 +528,7 @@ function Buffets() {
         const updatedLeftItems: Record<string, any> = { ...leftItems };
         const updatedOptions = [...selectedOptions];
         const updatedOptionsCourt = [...selectedOptionsCourt];
+        const updatedOptionsShuttleCock = [...selectedOptionsShuttleCock];
 
         for (let i = index; i < numberOfProperties - 1; i++) {
 
@@ -480,6 +536,7 @@ function Buffets() {
             const nextColName = `T${i + 1}`;
             updatedOptions[i] = selectedOptions[i + 1] || '';
             updatedOptionsCourt[i] = selectedOptionsCourt[i + 1] || '';
+            updatedOptionsShuttleCock[i] = selectedOptionsShuttleCock[i + 1] || '';
             updatedLeftItems[currentColName] = [...leftItems[nextColName]];
             updatedLeftItems[nextColName] = [];
         }
@@ -487,22 +544,22 @@ function Buffets() {
         setLeftItems(updatedLeftItems);
 
         const right: any = value
-        console.log(value, selectedOptions[index], selectedOptionsCourt[index])
-
 
         for (let i = 0; i < right.length; i++) {
             right[i].q_list = i + 1
             right[i].content = `${right[i].nickname} - ${right[i].couterPlay + 1} (${right[i].skillLevel})`
             right[i].couterPlay = right[i].couterPlay + 1
         }
+
         const newState: any = {
             ...rightItems,
             tasks: [...rightItems.tasks, ...right],
         };
         setRightItems(newState);
+        const selectedShuttleCock = selectedOptionsShuttleCock[index] || shuttleCockTypes[0].id;
 
         try {
-            const response = await fetch(`/api/admin/buffet/newbie/insert_history?shuttle_cock=${selectedOptions[index]}&court=${selectedOptionsCourt[index]}`, {
+            const response = await fetch(`/api/admin/buffet/newbie/insert_history?shuttle_cock=${selectedOptions[index]}&court=${selectedOptionsCourt[index]}&shuttlecock_type_id=${selectedShuttleCock}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -524,13 +581,15 @@ function Buffets() {
                 url = `/api/admin/buffet/newbie/updateQ_clear`
                 data = updatedLeftItems;
             } else if (i === 1) {
-                url = `/api/admin/buffet/newbie/updateQ?q_id=${null}&shuttle_cock=${selectedOptions[index]}&finish=true`
+                url = `/api/admin/buffet/newbie/updateQ?q_id=${null}&shuttle_cock=${selectedOptions[index]}&finish=true&shuttlecock_type_id=${selectedShuttleCock}`
                 data = right
 
                 setSelectedOptions(updatedOptions);
                 updateCurrent_cock(updatedOptions, 1)
                 setSelectedOptionsCourt(updatedOptionsCourt);
-                updateCurrent_cock(updatedOptionsCourt, 2)
+                updateCurrent_cock(updatedOptionsCourt, 2);
+                setSelectedOptionsShuttleCock(updatedOptionsShuttleCock);
+                updateCurrent_cock(updatedOptionsShuttleCock, 3)
             }
 
             try {
@@ -550,12 +609,12 @@ function Buffets() {
                     throw new Error('ไม่สามารถดึงข้อมูลได้');
                 } else {
 
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Updated '
-                    })
+                    // Toast.fire({
+                    //     icon: 'success',
+                    //     title: 'Updated '
+                    // })
 
-                    // fetchRegis();
+                    fetchRegis();
                 }
             } catch (err) {
                 console.error(err)
@@ -710,36 +769,47 @@ function Buffets() {
             }
         }
     };
-    const add_reduce = async (id: number, shuttle_cock: number) => {
-        try {
-            const response = await fetch('/api/admin/buffet/newbie/add_reduce', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ id, shuttle_cock })
-            });
 
-            if (!response.ok) {
-                throw new Error('Failed to update data');
+    const updateRef = useRef<(id: number, quantity: number, shuttlecock_type_id: number) => void>();
+
+    useEffect(() => {
+        updateRef.current = debounce(async (id, quantity, shuttlecock_type_id) => {
+            try {
+                const response = await fetch('/api/admin/buffet/newbie/add_reduce', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id, quantity, shuttlecock_type_id }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update data');
+                }
+                fetchRegis();
+            } catch (error) {
+                console.error('Error updating data:', error);
             }
-            fetchRegis();
-        } catch (error) {
-            console.error('Error updating data:', error);
-        }
-    }
+        }, 500); // รอ 500ms หลังจากการกดครั้งสุดท้าย
+    }, []);
+
+    const add_reduce = (id: number, quantity: number, shuttlecock_type_id: number) => {
+        updateRef.current?.(id, quantity, shuttlecock_type_id);
+    };
 
     const payMethod = async (id: any, method: string, paymethodShuttlecock: PaymethodShuttlecockEnum, pay_by: PayByEnum) => {
         Swal.fire({
             title: `รับชำระด้วย ${method}?`,
-            text: `ลูกค้าชำระค่าลูกแบดด้วย ${method} ทั้งหมด ${total_shuttle_cock_price} บาท`,
+            text: `ลูกค้าชำระค่าสินค้า/บริการด้วย ${method} ทั้งหมด ${selectDataPayment?.total_price} บาท`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Confirm "
+            confirmButtonText: "ยืนยัน",
+            cancelButtonText: "ยกเลิก"
         }).then(async (result) => {
             if (result.isConfirmed) {
+                const courtPrice = selectDataPayment?.total_price ?? 0;
                 try {
                     const response = await fetch('/api/admin/buffet/newbie/pay_shuttle_cock', {
                         method: 'PUT',
@@ -752,6 +822,7 @@ function Buffets() {
                     if (!response.ok) {
                         throw new Error('Failed to update data');
                     }
+                    setSelectDataPayment(null);
                     fetchRegis();
                     setShow(false);
                     setSearchQuery('');
@@ -814,14 +885,6 @@ function Buffets() {
         });
     }
 
-    const sumPrice = (item: IQBuffet) => {
-
-        const shoppingMoney = Number(item.pendingMoney ?? 0);
-        setTotal_shuttle_cock_price(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock) + shoppingMoney)
-        setCourtPrice(item.court_price + ((item?.shuttle_cock_price / 4) * item?.shuttle_cock));
-
-    }
-
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(event.target.value);
     };
@@ -838,7 +901,7 @@ function Buffets() {
         try {
             setSalesData([]);
             setIsSalesDataLoading(true);
-            const response = await fetch(`/api/get-by-customer?buffetId=${buffet_id}&buffetStatus=${buffetStatusEnum.BUFFET_NEWBIE}`);
+            const response = await fetch(`/api/get-by-customer?buffetId=${buffet_id}&buffetStatus=${buffetStatusEnum.BUFFET}`);
             const data = await response.json();
             if (response.status === 404) {
                 return;
@@ -865,6 +928,37 @@ function Buffets() {
         setShow(true);
     }
 
+    const getByID = (id?: number) => {
+    
+        const buffetId = id ? id : selectDataPayment?.id;  // กรณีไม่ส่ง id ให้ใช้ selectDataPayment?.id
+    
+        if (!buffetId) {
+            console.error('Buffet ID is missing.');
+            return;
+        }
+    
+        fetch(`/api/admin/buffet/newbie/get/get_by_id?id=${buffetId}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch buffet data');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data?.data) {
+                    setSelectDataPayment(data.data);  // ตั้งค่าผลลัพธ์จาก API
+                } else {
+                    console.error('No data found');
+                }
+                Swal.close();  // หยุดสถานะการโหลดเมื่อเสร็จสิ้น
+            })
+            .catch((error) => {
+                console.error('Error fetching buffet data:', error);
+                Swal.close();  // หยุดสถานะการโหลดหากเกิดข้อผิดพลาด
+            });
+    };
+    
+
     return (
         <>
             <Head>
@@ -874,7 +968,7 @@ function Buffets() {
                 <div className='container-fluid text-center' style={{ overflow: 'hidden' }}>
                     <div className="d-flex justify-content-between mb-1">
                         <div></div>
-                        <h4>จัดคิวตีบุฟเฟ่ต์ (มือใหม่)</h4>
+                        <h4>จัดคิวตีบุฟเฟ่ต์</h4>
                         <Button className='btn btn-sm' onClick={fetchRegis}>refresh</Button>
                     </div>
 
@@ -921,18 +1015,17 @@ function Buffets() {
                                                     <th scope="col">ลูก</th>
                                                     <th scope="col">สนาม</th>
                                                     <th scope="col">เวลา</th>
-
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {historys.map((history, index) => (
                                                     <tr key={index + 1}>
                                                         <th>{index + 1}</th>
-                                                        <td>{history.player1_nickname}</td>
-                                                        <td>{history.player2_nickname}</td>
-                                                        <td>{history.player3_nickname}</td>
-                                                        <td>{history.player4_nickname}</td>
-                                                        <td>{history.shuttle_cock}</td>
+                                                        <td>{history.player1_nickname ?? '-'}</td>
+                                                        <td>{history.player2_nickname ?? '-'}</td>
+                                                        <td>{history.player3_nickname ?? '-'}</td>
+                                                        <td>{history.player4_nickname ?? '-'}</td>
+                                                        <td>{history.shuttle_cock} ({history.shuttlecock_code})</td>
                                                         <td>{history.court}</td>
                                                         <td>{history.time}</td>
 
@@ -973,8 +1066,7 @@ function Buffets() {
             </div>
 
 
-            <div className='mt-2 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#7A7AF9", borderRadius: '10px', height: 'auto', display: 'flex', gap: "0.1rem", flexDirection: 'row', flexWrap: 'wrap' }}>
-
+            <div className='mt-3 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#7A7AF9", borderRadius: '10px', height: 'auto', display: 'flex', gap: "0.1rem", flexDirection: 'row', flexWrap: 'wrap' }}>
                 {filteredData.map((item, index) => (
                     <Flex
                         key={index}
@@ -988,56 +1080,105 @@ function Buffets() {
                         flexDirection={"column"}
                         zIndex={1}
                     >
-                        <span className="fs-6 text-black" style={{ padding: '3px' }}>
-                            <span className='mx-3'><Button className='btn btn-sm btn-light' onClick={() => { setShow(true); setSelectDataPayment(item); sumPrice(item) }} >{`${item.nickname}`}</Button></span>
-                            <Button className='btn-sm btn me-1 btn-danger px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock - 1) }} disabled={item.shuttle_cock == 0}>-</Button>
+                        <Button className='btn btn-sm btn-light px-3 py-2' onClick={() => { setShow(true); getByID(item.id) }}>
+                            <span className='mx-3'>{`${item.nickname}`}</span>
+                            {/* <Button className='btn-sm btn me-1 btn-danger px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock - 1) }} disabled={item.shuttle_cock == 0}>-</Button>
                             <span className='mx-2'>{item.shuttle_cock}</span>
-                            <Button className='btn btn-sm me-1 px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock + 1) }}>+</Button>
-                        </span>
+                            <Button className='btn btn-sm me-1 px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock + 1) }}>+</Button> */}
+                        </Button>
                     </Flex>
                 ))
-
                 }
             </div>
 
-            <Modal show={show} onHide={() => setShow(false)} centered >
+            <Modal show={show} onHide={() => {setShow(false); setSelectDataPayment(null)}} centered >
                 <Modal.Header closeButton>
-                    <Modal.Title>ชำระค่าลูกแบด {selectDataPayment?.isStudent === IsStudentEnum.Student ? "| นักเรียน" : selectDataPayment?.isStudent === IsStudentEnum.University ? "| นักศึกษา" : ""}</Modal.Title>
+                    <Modal.Title>ชำระค่าบริการ/สินค้า {selectDataPayment?.isStudent === IsStudentEnum.Student ? "| นักเรียน" : selectDataPayment?.isStudent === IsStudentEnum.University ? "| นักศึกษา" : ""}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className='w-100 m-auto'>
-                    <div className='detail'>
-                        <div className='d-flex justify-content-between'>
-                            <p>ชื่อลูกค้า</p>
-                            <p>{selectDataPayment?.nickname}</p>
-                        </div>
-                        <div className='d-flex justify-content-between'>
-                            <p>จำนวนลูก</p>
-                            <p>{selectDataPayment?.shuttle_cock} ลูก</p>
-                        </div>
-                        <div className='d-flex justify-content-between'>
-                            <p>ค่าสนาม </p>
-                            <p>{selectDataPayment?.court_price} บาท / คน</p>
-                        </div>
-                        <div className='d-flex justify-content-between'>
-                            <p>ค่าลูก</p>
-                            <p>{selectDataPayment?.shuttle_cock_price} บาท / ลูก</p>
-                        </div>
-                        <div className='d-flex justify-content-between'>
-                            <p>ราคาหาร 4</p>
-                            <p>{`${selectDataPayment?.shuttle_cock_price! / 4} บาท/คน/ลูก`}</p>
-                        </div>
-                        {selectDataPayment?.pendingMoney &&
-                            <div className='d-flex justify-content-between'>
-                                <p>สินค้าที่ซื้อ</p>
-                                {/* <p>{`${buffet_setting?.shuttle_cock_price} / 4  = ${buffet_setting?.shuttle_cock_price / 4}`} บาท /คน/ลูก</p> */}
-                                <a className={styles.a} onClick={() => getSalesData(selectDataPayment.id)}>{selectDataPayment?.pendingMoney} บาท</a>
-                            </div>}
-                        <div className='d-flex justify-content-between'>
-                            <p>จำนวนที่ต้องชำระ</p>
-                            <p> {`${selectDataPayment?.court_price} + (${selectDataPayment?.shuttle_cock} * ${selectDataPayment?.shuttle_cock_price! / 4}) ${selectDataPayment?.pendingMoney ? `+ ${selectDataPayment?.pendingMoney} ` : ''} = `}
-                                <span className='fw-bold fs-5 text-danger'>{total_shuttle_cock_price}</span> บาท</p>
-                        </div>
-                    </div>
+
+                        {!selectDataPayment ? (
+                            <div className="skeleton-loading">
+                                <div className="d-flex justify-content-between mb-2">
+                                    <div className="skeleton-line" style={{ width: "30%", height: "20px" }}></div>
+                                    <div className="skeleton-line" style={{ width: "40%", height: "20px" }}></div>
+                                </div>
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="d-flex justify-content-between align-items-center mb-2">
+                                        <div className="skeleton-line" style={{ width: "60%", height: "20px" }}></div>
+                                        <div className="skeleton-line" style={{ width: "20%", height: "20px" }}></div>
+                                    </div>
+                                ))}
+                                {[1, 2, 3].map((i) => (
+                                <div key={i + '2'} className="d-flex justify-content-between mb-2 mt-3">
+                                    <div className="skeleton-line" style={{ width: "40%", height: "20px" }}></div>
+                                    <div className="skeleton-line" style={{ width: "30%", height: "20px" }}></div>
+                                </div>
+                                 ))}
+                                <div className="d-flex justify-content-between mb-2">
+                                    <div className="skeleton-line" style={{ width: "40%", height: "20px" }}></div>
+                                    <div className="skeleton-line" style={{ width: "30%", height: "20px" }}></div>
+                                </div>
+                                <div className="d-flex justify-content-between">
+                                    <div className="skeleton-line" style={{ width: "40%", height: "24px" }}></div>
+                                    <div className="skeleton-line" style={{ width: "30%", height: "24px" }}></div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='detail'>
+                                <div className='d-flex justify-content-between'>
+                                    <p>ชื่อลูกค้า</p>
+                                    <p>{selectDataPayment?.nickname}</p>
+                                </div>
+                                {shuttleCockTypes.map((type) => {
+                                    const matched = selectDataPayment?.shuttlecock_details?.find(
+                                        (detail) => detail.shuttlecock_type_id === type.id
+                                    );
+                                    const quantity = matched?.quantity || 0;
+
+                                    return (
+                                        <div key={type.id} className="d-flex justify-content-between align-items-center">
+                                            <p className="mb-0">{type.label}</p>
+                                            <ShuttleCockControlNewBie
+                                                buffetId={selectDataPayment?.id!}
+                                                shuttlecockTypeId={type.id}
+                                                initialQty={quantity}
+                                                onUpdated={getByID}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                                <div className='d-flex justify-content-between mt-2'>
+                                    <p>รวมค่าลูก</p>
+                                    <div className='d-flex flex-column text-end'>
+                                        {shuttleCockTypes.map((type) => {
+                                            const matched = selectDataPayment?.shuttlecock_details?.find(
+                                                (detail) => detail.shuttlecock_type_id === type.id
+                                            );
+                                            const quantity = matched?.quantity || 0;
+
+                                            return (
+                                                <div key={type.id}>
+                                                    <p>{type.name} {quantity} ลูก = {(Number(type.price) / 4) * quantity} บาท</p>
+                                                </div>
+                                            );
+                                        })}</div>
+                                </div>
+                                <div className='d-flex justify-content-between'>
+                                    <p>ค่าสนาม </p>
+                                    <p>{selectDataPayment?.court_price} บาท</p>
+                                </div>
+                                {selectDataPayment?.pendingMoney &&
+                                    <div className='d-flex justify-content-between'>
+                                        <p>สินค้าที่ซื้อ</p>
+                                        <a className={styles.a} onClick={() => getSalesData(selectDataPayment.id)}>{selectDataPayment?.pendingMoney} บาท</a>
+                                    </div>}
+                                <div className='d-flex justify-content-between'>
+                                    <p>จำนวนที่ต้องชำระ</p>
+                                    <p> <span className='fw-bold fs-5 text-danger'>{selectDataPayment?.total_price} </span> บาท</p>
+                                </div>
+                            </div>
+                    )}
 
                 </Modal.Body>
                 <Modal.Footer className='d-flex justify-content-between'>

@@ -20,6 +20,8 @@ import { OptionType } from '@/components/admin/AbbreviatedSelect';
 import ShuttleCockControl from './ShuttleCockControl';
 import { IShuttlecockDetails } from '@/interface/buffet';
 import { ShuttleCockTypes } from '.';
+import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
+import { PayByEnum } from '@/enum/payByEnum';
 
 
 interface Buffet {
@@ -311,36 +313,7 @@ function BuffetReserved() {
                 }
 
             }
-
-
         });
-
-    }
-
-
-    const getFromSearch = async (searchTerm: string) => {
-        if (!searchTerm) {
-            loadData()
-        }
-        let url = `/api/admin/buffet/get/get?search=${searchTerm}`
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (response.ok) {
-                setBuffetData(data);
-            }
-        } catch {
-            console.log('error');
-        }
-    }
-    const calculate_price = async (id: number) => {
-        try {
-            const res = await fetch(`/api/admin/buffet/get/calculate_price?id=${id}`)
-            const data = await res.json()
-            setEditBuffet({ ...editBuffet!, price: parseInt(data[0].total_shuttle_cock) })
-        } catch (error) {
-
-        }
     }
 
     const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
@@ -407,6 +380,50 @@ function BuffetReserved() {
         },
     ];
 
+    const payMethod = async (id: any, method: string, paymethodShuttlecock: PaymethodShuttlecockEnum, pay_by: PayByEnum) => {
+        Swal.fire({
+            title: `รับชำระด้วย ${method}?`,
+            text: `ลูกค้าชำระค่าสินค้า/บริการด้วย ${method} ทั้งหมด ${editBuffet?.total_price} บาท`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "ยืนยัน",
+            cancelButtonText: "ยกเลิก"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const courtPrice = editBuffet?.total_price ?? 0;
+                try {
+                    const response = await fetch(`/api/admin/buffet/pay_shuttle_cock`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id, paymethodShuttlecock, courtPrice, pay_by })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to update data');
+                    }
+
+                    Swal.fire({
+                        title: "บันทึกสำเร็จ!",
+                        icon: "success"
+                    });
+                    loadData();
+                    setEditBuffet(null);
+                } catch (error) {
+                    console.error('Error updating data:', error);
+                    Swal.fire({
+                        title: "มีข้อผิดพลาด!",
+                        text: "กรุณาลองใหม่อีกครั้ง",
+                        icon: "error"
+                    });
+                }
+
+            }
+        });
+    }
 
     return (
         <>
@@ -582,13 +599,20 @@ function BuffetReserved() {
                         </div>
                     )}
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setEditBuffet(null)}>
-                        ปิด
-                    </Button>
-                    <Button variant="primary" onClick={() => saveEdit()}>
-                        บันทึก
-                    </Button>
+                <Modal.Footer className='d-flex justify-content-between'>
+                    <div>
+                        รับชำระ
+                        <Button className='btn btn-success' hidden onClick={() => payMethod(editBuffet?.id, "เงินสด", PaymethodShuttlecockEnum.CASH_ADMIN, PayByEnum.CASH)} >ผ่านเงินสด</Button>
+                        <Button className='mx-2' onClick={() => payMethod(editBuffet?.id, "โอนเงิน", PaymethodShuttlecockEnum.TRANSFER_ADMIN, PayByEnum.TRANSFER)} >ผ่านการโอน</Button>
+                    </div>
+                    <div >
+                        <Button variant="secondary me-2" onClick={() => setEditBuffet(null)}>
+                            ปิด
+                        </Button>
+                        <Button variant="primary" onClick={() => saveEdit()}>
+                            บันทึก
+                        </Button>
+                    </div>
                 </Modal.Footer>
             </Modal>
         </>

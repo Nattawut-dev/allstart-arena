@@ -9,7 +9,7 @@ interface IData {
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     const connection = await pool.getConnection()
     try {
-        const sql = 'SELECT selected_options FROM current_cock_newbie ';
+        const sql = 'SELECT selected_options FROM current_cock ';
         const [results] = await connection.query(sql) as RowDataPacket[];
         const formattedResults = results.map((result: IData) => ({
             ...result,

@@ -45,7 +45,7 @@ function Holiday() {
 
   const getHoliday = async () => {
     try {
-      const response = await fetch(`/api/admin/physical-therapy/holidays/get`);
+      const response = await fetch(`/api/admin/practice-court/holidays/get`);
       const data = await response.json();
       if (data.results.length >= 1) {
         setHolidays(data.results);
@@ -61,7 +61,7 @@ function Holiday() {
     const newStatus = currentStatus === 1 ? 0 : 1;
 
     try {
-      const response = await fetch('/api/admin/physical-therapy/holidays/statusUpdate', {
+      const response = await fetch('/api/admin/practice-court/holidays/statusUpdate', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ function Holiday() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await fetch(`/api/admin/physical-therapy/holidays/delete?id=${id}`, {
+          const response = await fetch(`/api/admin/practice-court/holidays/delete?id=${id}`, {
             method: 'DELETE',
           });
 
@@ -134,7 +134,7 @@ function Holiday() {
     }
     try {
 
-      const response = await fetch('/api/admin/physical-therapy/holidays/add', {
+      const response = await fetch('/api/admin/practice-court/holidays/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ function Holiday() {
 
   async function updateHoliday() {
     try {
-      const response = await fetch(`/api/admin/physical-therapy/holidays/update`, {
+      const response = await fetch(`/api/admin/practice-court/holidays/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -209,12 +209,12 @@ function Holiday() {
   return (
     <>
       <Head>
-        <title>Physical Therapy Holidays</title>
+        <title>Practice court Holidays</title>
       </Head>
       <div className={styles.container}>
 
         <div className={styles.box}>
-          <h5 className='fw-bold'>จัดการวันหยุด นัดทำกายภาพ</h5>
+          <h5 className='fw-bold'>จัดการวันหยุด จองสนามซ้อม</h5>
           <table className="table table-bordered">
             <thead className='table-primary'>
               <tr>

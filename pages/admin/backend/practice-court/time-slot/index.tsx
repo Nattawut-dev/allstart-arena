@@ -28,7 +28,7 @@ const TimeSlots = () => {
 
   const fetchTimeSlots = async () => {
     try {
-      const response = await fetch('/api/admin/physical-therapy/setting/timeSlots');
+      const response = await fetch('/api/admin/practice-court/setting/timeSlots');
 
       if (!response.ok) {
         throw new Error('Failed to fetch data');
@@ -64,7 +64,7 @@ const TimeSlots = () => {
     });
 
     if (result.isConfirmed) {
-      const response = await fetch('/api/admin/physical-therapy/setting/timeSlots', {
+      const response = await fetch('/api/admin/practice-court/setting/timeSlots', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ const TimeSlots = () => {
       });
 
       if (result2.isConfirmed) {
-        const response = await fetch(`/api/admin/physical-therapy/setting/timeSlots?id=${id}`, {
+        const response = await fetch(`/api/admin/practice-court/setting/timeSlots?id=${id}`, {
           method: 'DELETE',
         });
 
@@ -145,7 +145,7 @@ const TimeSlots = () => {
     });
 
     if (result.isConfirmed) {
-      const response = await fetch(`/api/admin/physical-therapy/setting/timeSlots`, {
+      const response = await fetch(`/api/admin/practice-court/setting/timeSlots`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +183,7 @@ const TimeSlots = () => {
   const toggleStatus = async (timeSlot: TimeSlot) => {
     const newStatus = timeSlot.status === 1 ? 0 : 1;
 
-    const response = await fetch(`/api/admin/physical-therapy/setting/timeSlots`, {
+    const response = await fetch(`/api/admin/practice-court/setting/timeSlots`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

@@ -1,13 +1,13 @@
-
+import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react'
 import { Button, Modal } from 'react-bootstrap';
+import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '@/styles/admin/reserved/new_reserved.module.css'
 import Swal from 'sweetalert2'
-import { useRouter } from 'next/router';
+import { utcToZonedTime } from 'date-fns-tz';
 import Head from 'next/head';
 import Image from 'next/image'
-
 
 interface Reserve {
     id: number;
@@ -37,23 +37,14 @@ interface TimeSlot {
     price: number;
 }
 
+
 function Holiday() {
     const [reserve, setreserve] = useState<Reserve[]>([])
     const [courts, setCourts] = useState<Court[]>([])
     const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-
     const [reservations1, setReservations1] = useState<Reserve>();
-
-    const [filter, setFilter] = useState<string>("transferred");
-
-    const [isreserve, setIsreserve] = useState(false);
-
-    const [status, setStatus] = useState(1);
-
     const [show, setShow] = useState(false);
-
-    const [selectedOption, setSelectedOption] = useState(0); // State to track the selected option
-
+    const [selectedOption, setSelectedOption] = useState(0);
     const [name, setName] = useState<string>('');
     const [phone, setPhone] = useState<string>('');
     const [selectedCourtID, setselectedCourtID] = useState<number>(0);
@@ -62,11 +53,11 @@ function Holiday() {
     const [endTime, setEndTime] = useState<string>('');
     const [price, setPrice] = useState<number>(0);
     const [reserve_date, setReserve_date] = useState<string>('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
+    const [selectedDate, setSelectedDate] = useState(dateInBangkok);
 
 
-
-    const [currentPage, setCurrentPage] = useState(0);
-    const [message, setMessage] = useState('');
 
     const handleOptionChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(event.target.value)
@@ -81,9 +72,10 @@ function Holiday() {
                 toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
         })
+
         if (event) {
             try {
-                const response = await fetch('/api/admin/physical-therapy/reserved/new/updateStatus', {
+                const response = await fetch('/api/admin/practice-court/reserved/new/updateStatus', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -105,7 +97,7 @@ function Holiday() {
                     icon: 'success',
                     title: 'แก้ไขสถานะเรียบร้อย'
                 })
-                getReserve(status, currentPage);
+                getReserve('');
             } catch (error: any) {
                 console.error(error.message);
                 // Handle any error or display an error message
@@ -120,54 +112,52 @@ function Holiday() {
             // โหลดข้อมูล time slot จากแหล่งข้อมูล
             const response = await fetch('/api/reserve/time-slots');
             const data = await response.json();
+
             // ตั้งค่า state สำหรับ time slots
             setTimeSlots(data.timeSlots);
+
             //   setPrice(data.timeSlots[timeID].price)
+
         } catch (error) {
             console.error('Error fetching time slots:', error);
         }
     };
-    const router = useRouter();
-    const { state } = router.query;
-    useEffect(() => {
-        setFilter(state as string);
-        setStatus(parseInt(state as string));
-        getReserve(parseInt(state as string), currentPage);
-        getCourt();
-        getTimeslot();
-    }, [currentPage, state]);
 
 
-    const getReserve = async (status: number, currentPage: number) => {
 
+    const getReserve = async (searchTerm: string) => {
+
+        let url = `/api/admin/practice-court/reserved/history?`
+        if (searchTerm != '') {
+            url += `search=${searchTerm}`
+        }
         try {
-            const response = await fetch(`/api/admin/physical-therapy/reserved/new/get?status=${status}&page=${currentPage}`);
-            setStatus(status);
+            console.log(usedateSearch)
+            const response = await fetch(url);
             const data = await response.json();
             if (response.ok) {
                 setreserve(data);
-                setIsreserve(true);
-            } else {
-                setIsreserve(false);
             }
         } catch {
             console.log('error');
         }
     };
+
     const getCourt = async () => {
         try {
             const courts = await fetch(`/api/reserve/courts`);
             const courts_data = await courts.json();
             setCourts(courts_data.courts);
         } catch {
-            alert("error")
+            console.log('error');
         }
 
     }
-
-
-    const [loading, setLoading] = useState(false);
-
+    useEffect(() => {
+        getReserve('');
+        getCourt();
+        getTimeslot();
+    }, []);
 
     const deletereserve = async (item: Reserve) => {
         Swal.fire({
@@ -181,7 +171,7 @@ function Holiday() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/admin/physical-therapy/reserved/delete?id=${item.id}`, {
+                    const response = await fetch(`/api/admin/practice-court/reserved/delete?id=${item.id}`, {
                         method: 'DELETE',
                     });
 
@@ -212,7 +202,7 @@ function Holiday() {
 
     async function updateReserve() {
         try {
-            const response = await fetch(`/api/admin/physical-therapy/reserved/new/update`, {
+            const response = await fetch(`/api/admin/practice-court/reserved/new/update`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -243,7 +233,7 @@ function Holiday() {
                 text: 'แก้ไขสำเร็จ',
             })
 
-            getReserve(status, currentPage);
+            getReserve('');
             setShow(false);
         } catch (error) {
             console.error('An error occurred while updating the data:', error);
@@ -370,70 +360,93 @@ function Holiday() {
         return totalPrice;
     };
 
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [usedateSearch, setUsedateSearch] = useState('');
+
+
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
+        getReserve(event.target.value);
+    };
+
+    const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setCurrentPage(1);
+        getReserve('');
+    };
+
+    const handleDateChange = (date: Date) => {
+        setSelectedDate(date);
+        setUsedateSearch(format(date, 'dd MMMM yyyy'))
+        setCurrentPage(1);
+        getReserve(format(date, 'dd MMMM yyyy'));
+    };
+    const [searchby, setSearchby] = useState(true);
+
+    const itemsPerPage = 30;
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+
+    const nextPage = () => {
+        setCurrentPage((prevPage) => prevPage + 1);
+    };
+
+    const prevPage = () => {
+        setCurrentPage((prevPage) => prevPage - 1);
+    };
+
     return (
         <>
             <Head>
-                <title>New reservations</title>
+                <title>History reserveations</title>
             </Head>
             <div className={styles.container}>
 
                 <div className={styles.box}>
-                    <div className={styles.footer1}>
-                        <h5 className={`fw-bold ${styles.btn1}`}>ตรวจสอบการโอนเงิน นัดทำกายภาพ</h5>
-                        <div className='d-flex justify-content-end mb-2'>
+                    <div>
+                        <h5 className={`fw-bold `}>ค้นหาการจอง·จองสนามซ้อม·ด้วย
+                            <Button className={`btn btn-sm  ms-2 border ${searchby ? '' : 'btn-light'}`} onClick={() => { setSearchby(true); getReserve('') }}>ชื่อ/เบอร์</Button>
+                            <Button className={`btn btn-sm mx-2 border ${!searchby ? '' : 'btn-light'}`} onClick={() => {
+                                setSearchby(false); getReserve(format(selectedDate, 'dd MMMM yyyy'));
+                            }}>วันที่จอง</Button>
+                        </h5>
+                        <div className='d-flex justify-content-center text-center'>
+                            {searchby &&
+                                <>
+                                    {/* <h5 className='mt-1 mx-1'>ชื่อ/เบอร์  </h5> */}
+                                    <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
+                                        <input
+                                            className={styles.searchInput}
+                                            type="text"
+                                            placeholder="ชื่อ/เบอร์/วันที่จอง"
+                                            value={searchTerm}
+                                            onChange={handleSearch}
+                                        />
+                                        <button className={styles.searchButton} type="submit">
+                                            Search
+                                        </button>
+                                    </form>
+                                </>
 
-                            <Button
-                                onClick={() => {
-                                    setCurrentPage(0);
-                                    setFilter('2');
-                                    router.replace(`/admin/backend/physical-therapy/new_reserved?state=2`)
-                                    // getReserve(2, currentPage);
-                                }}
-                                style={{
-                                    backgroundColor: filter === '2' ? 'blue' : 'white',
-                                    color: filter === '2' ? 'white' : 'black',
-                                }}
-                            >
-                                ตรวจสอบแล้ว
-                            </Button>
-                            <Button
-                                className=' d-flex  mx-2 '
-                                onClick={() => {
-                                    setCurrentPage(0);
-                                    setFilter('1');
-                                    router.replace(`/admin/backend/physical-therapy/new_reserved?state=1`)
-                                    // getReserve(status, currentPage);
-                                }}
-                                style={{
-                                    backgroundColor: filter === '1' ? 'green' : 'white',
-                                    color: filter === '1' ? 'white' : 'black',
-                                }}
-                            >
-                            <Image src='/new-icon.svg' alt='new-icon' width={20} height={20}/>การจองใหม่
-                                
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    setCurrentPage(0);
-                                    setFilter('0');
-                                    router.replace(`/admin/backend/physical-therapy/new_reserved?state=0`)
-
-                                    // getReserve(0, currentPage);
-                                }}
-                                style={{
-                                    backgroundColor: filter === '0' ? 'red' : 'white',
-                                    color: filter === '0' ? 'white' : 'black',
-                                }}
-                            >
-                                ยังไม่โอน
-                            </Button>
+                            }
+                            {!searchby &&
+                                <>
+                                    <h5 className='mt-1 mx-1'> วันที่  </h5>
+                                    <DatePicker
+                                        selected={selectedDate}
+                                        onChange={handleDateChange}
+                                        className={styles.DatePicker}
+                                    />
+                                </>
+                            }
                         </div>
                     </div>
 
 
-                    <table className={`${styles.table} table table-bordered table-striped  table-sm`}>
+                    <table className={`${styles.table} table table-bordered table-striped table-sm`}>
                         <thead className='table-primary'>
-                            <tr>
+                            <tr >
                                 <th scope="col" className={styles.hide_on_mobile}>#</th>
                                 <th scope="col">คอร์ท</th>
                                 <th scope="col">ชื่อ</th>
@@ -447,60 +460,70 @@ function Holiday() {
                             </tr>
                         </thead>
                         <tbody>
-                            {reserve.map((item, index) => {
-                                const findCourt = courts.find((c) => c.id === item.court_id);
-                                return (
-                                    <tr key={item.id}>
-                                        <td className={styles.hide_on_mobile}>{index + 1}</td>
-                                        <td>{findCourt?.title}</td>
-                                        <td>{item.name}</td>
-                                        <td className={styles.hide_on_mobile} >{item.phone !== "" ? item.phone : '-'}</td>
-                                        <td className={styles.hide_on_mobile}>{item.usedate}</td>
-                                        <td className={styles.hide_on_mobile}>{item.start_time} - {item.end_time}</td>
-                                        <td className={styles.hide_on_mobile}>{item.price}</td>
-                                        <td className={styles.hide_on_mobile} style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
-                                            {item.status === 1 ? 'กำลังตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
-                                        </td>
-                                        <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>สลิป/แก้ไข</Button></td>
+                            {reserve
+                                .slice(startIndex, startIndex + itemsPerPage)
+                                .map((item, index) => {
+                                    const findCourt = courts.find((c) => c.id === item.court_id);
+                                    return (
+                                        <tr key={item.id}>
+                                            <td className={styles.hide_on_mobile}>{index + 1}</td>
+                                            <td>{findCourt?.title}</td>
+                                            <td>{item.name}</td>
+                                            <td className={styles.hide_on_mobile} >{item.phone !== "" ? item.phone : '-'}</td>
+                                            <td className={styles.hide_on_mobile}>{item.usedate}</td>
+                                            <td className={styles.hide_on_mobile}>{item.start_time} - {item.end_time}</td>
+                                            <td className={styles.hide_on_mobile}>{item.price}</td>
+                                            <td className={styles.hide_on_mobile} style={{ backgroundColor: item.status === 1 ? '#FDCE4E' : item.status === 2 ? '#d1e7dd' : '#eccccf' }}>
+                                                {item.status === 1 ? 'กำลังตรวจสอบ' : item.status === 2 ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}
+                                            </td>
+                                            <td><Button className="btn-sm" onClick={() => { checkslip(item); setShow(true); }}>สลิป/แก้ไข</Button></td>
 
-                                        <td>
-                                            <Button
-                                                className="btn-sm btn-danger"
-                                                onClick={() => deletereserve(item)}
-                                            >
-                                                ลบ
-                                            </Button></td>
+                                            <td>
+                                                <Button
+                                                    className="btn-sm btn-danger"
+                                                    onClick={() => deletereserve(item)}
+                                                >
+                                                    ลบ
+                                                </Button></td>
 
-                                    </tr>
-                                );
-                            })}
-
+                                        </tr>
+                                    );
+                                })}
+                            {reserve.length <= 0 &&
+                                <tr>
+                                    <td colSpan={10}>ไม่พบการจอง</td>
+                                </tr>
+                            }
 
                         </tbody>
                     </table>
 
-                    {filter == "2" &&
-                        <div className="d-flex justify-content-end">
+                    <div className="d-flex justify-content-end">
+                        {currentPage > 1 && (
+
                             <Button
                                 className='mx-2'
-                                onClick={() => { setCurrentPage(currentPage - 1); }}
-                                disabled={currentPage === 0}
+                                onClick={() => { prevPage() }}
                             >
-                                ก่อนหน้า
-                            </Button>
+                                หน้าก่อนหน้า
+                            </Button>)}
+                        {reserve.length > startIndex + itemsPerPage && (
+
                             <Button
-                                onClick={() => { setCurrentPage(currentPage + 1); }}
+                                onClick={() => { nextPage() }}
                             >
-                                ถัดไป
-                            </Button>
-                        </div>
-                    }
+                                หน้าถัดไป
+                            </Button>)}
+
+
+                    </div>
 
 
 
-                </div>
 
-            </div>
+                </div >
+
+            </div >
             <Modal
 
                 show={show}
@@ -514,7 +537,7 @@ function Holiday() {
                 <Modal.Header closeButton >
                     <Modal.Title><h6>ข้อมูลการจอง จองใช้งานวันที่ {reservations1?.usedate}</h6></Modal.Title>
                 </Modal.Header>
-                <Modal.Body className={`${loading ? styles.load : ''}`}>
+                <Modal.Body>
                     <div>
                         <div className={styles.wrapper1}>
                             <div className={styles.img}>
@@ -573,15 +596,7 @@ function Holiday() {
                                         </select>
                                     </div>
 
-                                    {/* <input
-                                        type="text"
-                                        value={`${startTime} - ${endTime}`}
-                                        onChange={(e) => {
-                                            const [newStartTime, newEndTime] = e.target.value.split(' - ');
-                                            setStartTime(newStartTime);
-                                            setEndTime(newEndTime);
-                                        }}
-                                    /> */}
+
                                 </div>
                                 <div className={styles.wrapper}>
                                     <p>ราคา</p>
@@ -593,7 +608,6 @@ function Holiday() {
                                     />
                                 </div>
 
-                                {/* <div><h5> สถานะ </h5></div> */}
                                 <div className={styles.container_radio}>
                                     <div className={styles.wrapper_radio}>
                                         <label className={`${styles.option} ${selectedOption === 0 ? styles.checked : ''}`}>
@@ -667,9 +681,7 @@ function Holiday() {
 
                 </Modal.Footer>
             </Modal>
-
         </>
-
     )
 }
 

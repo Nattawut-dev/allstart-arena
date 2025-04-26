@@ -22,9 +22,9 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         try {
 
             const query = `UPDATE buffet SET  nickname = ?, phone = ?, shuttle_cock = ?, price = ? , usedate = ? ,pay_date = ?, isStudent = ? WHERE id = ?`;
-            const { id, nickname, phone, shuttle_cock, price, usedate, paymethod_shuttlecock, pay_date, isStudent } = req.body;
+            const { id, nickname, phone, shuttle_cock, usedate, paymethod_shuttlecock, pay_date, isStudent, shuttlecock_total_price, court_price } = req.body;
             // const payment_status = paymethod_shuttlecock != PaymethodShuttlecockEnum.NONE && paymethod_shuttlecock != PaymethodShuttlecockEnum.FINISH_PLAY ? buffetPaymentStatusEnum.PAID : buffetPaymentStatusEnum.PENDING;
-            const totalPrice = paymethod_shuttlecock != PaymethodShuttlecockEnum.NONE && paymethod_shuttlecock != PaymethodShuttlecockEnum.FINISH_PLAY ? price : null;
+            const totalPrice = paymethod_shuttlecock != PaymethodShuttlecockEnum.NONE && paymethod_shuttlecock != PaymethodShuttlecockEnum.FINISH_PLAY ? (Number(shuttlecock_total_price) + Number(court_price)) : null;
 
             // const pay_by = () => {
 

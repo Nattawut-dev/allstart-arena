@@ -49,9 +49,9 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
     try {
         const timeZone = 'Asia/Bangkok';
-        const courts = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/courts`);
+        const courts = await fetch(`${process.env.HOSTNAME}/api/practice-court/reserve/courts`);
         const courts_data = await courts.json();
-        const timeslots = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/time-slots`);
+        const timeslots = await fetch(`${process.env.HOSTNAME}/api/practice-court/reserve/time-slots`);
         const timeslots_data = await timeslots.json();
 
         return {
@@ -101,7 +101,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     const getReservations = async (usedate: string) => {
         setIsLoading(true);
         setReservations([]);
-        const response = await fetch(`/api/physical-therapy/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
+        const response = await fetch(`/api/practice-court/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
         const data = await response.json();
         setReservations(data);
         setIsLoading(false)
@@ -124,7 +124,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
        
         try {
             const selectDate = format(selectedDate, 'MM-dd-yyyy')
-            const response = await fetch(`/api/physical-therapy/reserve/holidays?date=${selectDate}`);
+            const response = await fetch(`/api/practice-court/reserve/holidays?date=${selectDate}`);
             const data = await response.json();
             if (data.results.length >= 1) {
                 setFoundHoliday(data.results);
@@ -143,7 +143,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
     const setbtn = (addDay: number) => {
         setSelectedDate(addDays(dateInBangkok, addDay))
-        router.push(`/physical-therapy/booking/${encodeURIComponent(addDay)}`)
+        router.push(`/practice-court/booking/${encodeURIComponent(addDay)}`)
     }
 
     const handleCourtReservation = async (
@@ -154,7 +154,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         price: number,
         usedate: string
     ) => {
-        const response = await fetch(`/api/physical-therapy/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
+        const response = await fetch(`/api/practice-court/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
         const data: Reservation = await response.json();
         const reservation = data.find(
             (reservation: Reservation) =>
@@ -309,7 +309,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                 }
             })
             try {
-                const response = await fetch('/api/physical-therapy/reserve/reservations', {
+                const response = await fetch('/api/practice-court/reserve/reservations', {
                     method: 'POST',
                     body: JSON.stringify({
                         name,
@@ -352,7 +352,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            router.push(`/physical-therapy/details/${parsedId}`)
+                            router.push(`/practice-court/details/${parsedId}`)
                         }
                     })
 
@@ -393,7 +393,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
         return (
             <div className={`${styles.container} `}>
                 <Head>
-                    <title>Reservation Physical Therapy </title>
+                    <title>Reservation Practice court </title>
                 </Head>
                 <div>
                     <div className={styles.tableWrapper}>
@@ -401,7 +401,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                             <thead>
                                 <tr >
                                     <td colSpan={courts.length + 1} className={styles.reserveDate}>
-                                        <span className='bg-white'> <span className='text-dark'> Physical Therapy Reservation for </span> {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
+                                        <span className='bg-white'> <span className='text-dark'> Practice court Reservation for </span> {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
                                     </td>
                                 </tr>
                                 <tr>
@@ -514,8 +514,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button form="myForm" type="submit">Submit</Button>
-                        <Button onClick={() => { setShow(false) }} className='btn-secondary'>Close</Button>
+                        <Button form="myForm" type="submit">ยืนยันการจอง</Button>
+                        <Button onClick={() => { setShow(false) }} className='btn-secondary'>ยกเลิก</Button>
                     </Modal.Footer>
                 </Modal>
             </div>

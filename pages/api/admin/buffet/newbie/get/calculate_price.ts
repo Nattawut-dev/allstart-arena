@@ -1,9 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
-import { IsStudentEnum  } from '@/enum/StudentPriceEnum';
-
-
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'GET') {
@@ -14,9 +11,9 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         }
         const connection = await pool.getConnection()
         try {
-            const {id} = req.query
+            const { id } = req.query
             const query = `SELECT 
-    ROUND (
+    ROUND(
        bs.court_price
         +
         (b.shuttle_cock * (bs.shuttle_cock_price / 4)),
@@ -31,11 +28,11 @@ WHERE
 `;
 
             // Execute the SQL query to fetch time slots
-            const [results] = await connection.query(query ,[id]);
+            const [results] = await connection.query(query, [id]);
             res.json(results);
         } catch (error) {
-            console.error('Error fetching holidays:', error);
-            res.status(500).json({ error: 'Error fetching holidays' });
+            console.error('Error fetching:', error);
+            res.status(500).json({ error: 'Error fetching' });
         } finally {
             connection.release(); // Release the connection back to the pool when done
         }

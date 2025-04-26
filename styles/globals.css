@@ -19,7 +19,7 @@ body{
   }
 }
 
-/* global.css หรือใน component ก็ได้ */
+/* global.css  */
 .skeleton-loading {
   animation: pulse 1.5s infinite;
 }

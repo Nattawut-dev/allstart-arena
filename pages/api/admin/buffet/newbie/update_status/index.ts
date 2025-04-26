@@ -1,12 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
+import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
 import { PayByEnum } from '@/enum/payByEnum';
-import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
-
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'PUT') {
@@ -18,7 +17,8 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         const connection = await pool.getConnection()
         try {
             const { id, status, customerPaymentStatus } = req.body
-            const query = 'UPDATE buffet_newbie SET paymentStatus = ? WHERE id = ?;';
+            const query = `UPDATE buffet_newbie SET paymentStatus = ? WHERE id = ?;`;
+
             const [results] = await connection.query(query, [status, id]);
 
             const saleDataQuery = `
@@ -31,13 +31,12 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             )
         `;
             const [salesData] = await connection.query<RowDataPacket[]>(saleDataQuery, [id]);
-            
-            const selectPayDateQuery = `(
-                SELECT STR_TO_DATE(b.pay_date, '%d %M %Y')
-                FROM buffet_newbie b 
-                WHERE b.id = ${id}
-            )`
 
+            const selectPayDateQuery = `(
+                        SELECT STR_TO_DATE(b.pay_date, '%d %M %Y')
+                        FROM buffet_newbie b 
+                        WHERE b.id = ${id}
+                    )`
             if (salesData && salesData[0].count !== 0) {
                 const query = `
                 UPDATE pos_sales 
@@ -52,16 +51,17 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                     AND pc.buffetStatus = ?
                 )
             `;
-            
-            await connection.execute<ResultSetHeader>(query, [
-                paymentStatusEnum.Paid,
-                PayByEnum.TRANSFER,
-                id,
-                buffetStatusEnum.BUFFET_NEWBIE
-            ]);
-            
+
+                await connection.execute<ResultSetHeader>(query, [
+                    paymentStatusEnum.Paid,
+                    PayByEnum.TRANSFER,
+                    id,
+                    buffetStatusEnum.BUFFET_NEWBIE
+                ]);
+
             }
 
+            // Using a derived table to avoid the MySQL error of referencing the same table in UPDATE and FROM
             await connection.query(`
                 UPDATE pos_customers
                 SET 
@@ -69,10 +69,13 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                     pay_by = ?,
                     pay_date = ${customerPaymentStatus === customerPaymentStatusEnum.PAID ? selectPayDateQuery : 'null'}
                 WHERE customerID = (
-                    SELECT pc.customerID 
-                    FROM pos_customers pc 
-                    WHERE pc.playerId = ? 
-                    AND pc.buffetStatus = ?
+                    SELECT customerID FROM (
+                        SELECT pc.customerID 
+                        FROM pos_customers pc 
+                        WHERE pc.playerId = ? 
+                        AND pc.buffetStatus = ?
+                        LIMIT 1
+                    ) AS temp
                 )
             `, [customerPaymentStatus, PayByEnum.TRANSFER, id, buffetStatusEnum.BUFFET_NEWBIE]);
 

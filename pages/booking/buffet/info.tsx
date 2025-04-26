@@ -415,12 +415,15 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
                                         </div>
                                     );
                                 })}
-                                <div className={styles.wrapper}>
-                                    <p>รวมค่าลูก</p>
-                                    <p>{buffetSelcted?.shuttlecock_details?.reduce((total, detail) => {
-                                        return total + (detail.price * detail.quantity) / 4;
-                                    }, 0) || 0} บาท</p>
-                                </div>
+                                {buffetSelcted?.shuttlecock_details && (
+                                    <div className={styles.wrapper}>
+                                        <p>รวมค่าลูก</p>
+                                        <p>{buffetSelcted?.shuttlecock_details?.reduce((total, detail) => {
+                                            return total + (detail.price * detail.quantity) / 4;
+                                        }, 0) || 0} บาท</p>
+                                    </div>
+                                )}
+
                                 <div className={styles.wrapper}>
                                     <p>ค่าสนาม</p>
                                     <p>{buffetSelcted?.court_price} บาท</p>

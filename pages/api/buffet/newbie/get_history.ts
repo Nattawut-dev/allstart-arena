@@ -19,22 +19,19 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 b4.nickname AS player4_nickname,
                 h.shuttle_cock,
                 h.court,
-                h.time
-
+                h.time,
+                s.code AS shuttlecock_code
             FROM 
                 history_buffet_newbie h
-            LEFT JOIN 
-                buffet_newbie b1 ON h.player1_id = b1.id
-            LEFT JOIN 
-                buffet_newbie b2 ON h.player2_id = b2.id
-            LEFT JOIN 
-                buffet_newbie b3 ON h.player3_id = b3.id
-            LEFT JOIN 
-                buffet_newbie b4 ON h.player4_id = b4.id
+            LEFT JOIN buffet_newbie b1 ON h.player1_id = b1.id
+            LEFT JOIN buffet_newbie b2 ON h.player2_id = b2.id
+            LEFT JOIN buffet_newbie b3 ON h.player3_id = b3.id
+            LEFT JOIN buffet_newbie b4 ON h.player4_id = b4.id
+            LEFT JOIN shuttlecock_types s ON h.shuttlecock_type_id = s.id
             WHERE 
                 h.usedate = ?
             ORDER BY 
-                h.id DESC; `;
+                h.id DESC;`;
             // Execute the SQL query to fetch time slots
             const [results] = await connection.query(queries, [usedate]);
 

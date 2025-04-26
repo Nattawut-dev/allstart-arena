@@ -7,7 +7,6 @@ import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
 import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
-import { PayByEnum } from '@/enum/payByEnum';
 
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {

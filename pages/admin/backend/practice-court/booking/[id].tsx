@@ -49,9 +49,9 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 
   try {
     const timeZone = 'Asia/Bangkok';
-    const courts = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/courts`);
+    const courts = await fetch(`${process.env.HOSTNAME}/api/practice-court/reserve/courts`);
     const courts_data = await courts.json();
-    const timeslots = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/time-slots`);
+    const timeslots = await fetch(`${process.env.HOSTNAME}/api/practice-court/reserve/time-slots`);
     const timeslots_data = await timeslots.json();
 
 
@@ -100,7 +100,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   }
 
   const getReservations = async (usedate: string) => {
-    const response = await fetch(`/api/admin/physical-therapy/reserved/get?usedate=${usedate}`);
+    const response = await fetch(`/api/admin/practice-court/reserved/get?usedate=${usedate}`);
     const data = await response.json();
     setReservations(data);
   };
@@ -144,7 +144,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
 
   const setbtn = (addDay: number) => {
     setSelectedDate(addDays(dateInBangkok, addDay))
-    router.push(`/admin/backend/physical-therapy/booking/${encodeURIComponent(addDay)}`)
+    router.push(`/admin/backend/practice-court/booking/${encodeURIComponent(addDay)}`)
   }
 
   const handleCourtReservation = async (
@@ -155,7 +155,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
     price: number,
     usedate: string
   ) => {
-    const response = await fetch(`/api/admin/physical-therapy/reserved/get?usedate=${usedate}&parsedId=${parsedId}`);
+    const response = await fetch(`/api/admin/practice-court/reserved/get?usedate=${usedate}&parsedId=${parsedId}`);
     const data: Reservation = await response.json();
     const reservation = data.find(
       (reservation: Reservation) =>
@@ -287,7 +287,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
       }
     })
     try {
-      const response = await fetch('/api/admin/physical-therapy/reserved/reservations', {
+      const response = await fetch('/api/admin/practice-court/reserved/reservations', {
         method: 'POST',
         body: JSON.stringify({
           name : name? name : 'admin',
@@ -339,7 +339,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
   return (
     <>
       <Head>
-        <title>Physical Therapy Booking </title>
+        <title>Practice court Booking </title>
       </Head>
 
       <div className={`${styles.container} `}>
@@ -357,7 +357,7 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
               <thead>
                 <tr >
                   <td colSpan={courts.length + 1} className={styles.reserveDate}>
-                   <span> <span className='text-dark'> Physical Therapy Reservation for </span> {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
+                   <span> <span className='text-dark'> Practice court Reservation for </span> {selectedDate && format(selectedDate, 'dd MMMM yyyy')}</span>
                   </td>
                 </tr>
 
@@ -498,8 +498,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button form="myForm" type="submit">Submit</Button>
-            <Button onClick={handleClose} className='btn-secondary'>Close</Button>
+            <Button form="myForm" type="submit">ยืนยันการจอง</Button>
+            <Button onClick={handleClose} className='btn-secondary'>ยกเลิก</Button>
           </Modal.Footer>
         </Modal>
 

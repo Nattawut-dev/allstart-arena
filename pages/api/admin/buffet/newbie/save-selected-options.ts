@@ -17,7 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             const { options } = req.body;
             const {id} = req.query
             // Insert selectedOptions data into the database
-            const sql = 'UPDATE current_cock_newbie SET  selected_options = ? WHERE id = ?';
+            const sql = 'UPDATE current_cock SET  selected_options = ? WHERE id = ?';
 
             await connection.query(sql, [JSON.stringify(options) , id])
             res.status(200).json('success')

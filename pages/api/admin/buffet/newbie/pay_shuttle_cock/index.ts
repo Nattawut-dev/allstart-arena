@@ -2,11 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
 import { format, utcToZonedTime } from 'date-fns-tz';
+import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
 import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
-
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'PUT') {
@@ -19,9 +19,11 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         try {
             const dateInBangkok = utcToZonedTime(new Date(), "Asia/Bangkok");
             const today = format(dateInBangkok, 'dd MMMM yyyy')
-            const query = 'UPDATE buffet_newbie SET paymethod_shuttlecock = ?,price = ? , pay_date= ? ,paymentStatus = 2 WHERE id = ?;';
-            const { id, paymethodShuttlecock ,courtPrice , pay_by} = req.body
-            const [results] = await connection.query(query, [paymethodShuttlecock, courtPrice , today, id]);
+            const query = `UPDATE buffet_newbie SET paymethod_shuttlecock = ?,price = ? , pay_date= ? ,paymentStatus = ${buffetPaymentStatusEnum.PAID} WHERE id = ?;`;
+            
+            const { id, paymethodShuttlecock, courtPrice, pay_by } = req.body
+            const [results] = await connection.query(query, [paymethodShuttlecock, courtPrice, today, id]);
+
             const saleDataQuery = `
             SELECT COUNT(*) as count 
             FROM pos_sales 
@@ -59,12 +61,10 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 courtPrice = ?,
                 pay_by = ?,
                 pay_date = NOW()
-                WHERE customerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = ? AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}')
+                WHERE customerID = (SELECT customerID FROM (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = ? AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}') AS temp)
             `, [customerPaymentStatusEnum.PAID, courtPrice, pay_by, id]);
 
 
-
-            
             res.json({ results });
         } catch (error) {
             console.error('Error fetching holidays:', error);

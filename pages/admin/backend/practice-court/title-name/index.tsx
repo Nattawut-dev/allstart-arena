@@ -11,7 +11,7 @@ const Home = () => {
 
   const fetchCourts = async () => {
     try {
-      const response = await fetch('/api/admin/physical-therapy/setting/courts');
+      const response = await fetch('/api/admin/practice-court/setting/courts');
 
       if (!response.ok) {
         throw new Error('Failed to fetch data');
@@ -48,7 +48,7 @@ const Home = () => {
     });
 
     if (result.isConfirmed) {
-      const response = await fetch('/api/admin/physical-therapy/setting/courts', {
+      const response = await fetch('/api/admin/practice-court/setting/courts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ const Home = () => {
       });
 
       if (result2.isConfirmed) {
-        const response = await fetch(`/api/admin/physical-therapy/setting/courts?id=${id}`, {
+        const response = await fetch(`/api/admin/practice-court/setting/courts?id=${id}`, {
           method: 'DELETE',
         });
 
@@ -124,7 +124,7 @@ const Home = () => {
     });
 
     if (result.isConfirmed) {
-      const response = await fetch(`/api/admin/physical-therapy/setting/courts`, {
+      const response = await fetch(`/api/admin/practice-court/setting/courts`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +159,7 @@ const Home = () => {
     // สลับสถานะเป็นตรงกันข้าม
     const newStatus = court.status === 1 ? 0 : 1;
 
-    const response = await fetch(`/api/admin/physical-therapy/setting/courts`, {
+    const response = await fetch(`/api/admin/practice-court/setting/courts`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

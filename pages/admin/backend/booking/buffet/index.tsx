@@ -256,7 +256,6 @@ function Buffets() {
     }
 
 
-    const [courtPrice, setCourtPrice] = useState(0);
 
     const elements = [];
     const numberOfProperties = Object.keys(leftItems).length;
@@ -802,7 +801,7 @@ function Buffets() {
     const payMethod = async (id: any, method: string, paymethodShuttlecock: PaymethodShuttlecockEnum, pay_by: PayByEnum) => {
         Swal.fire({
             title: `รับชำระด้วย ${method}?`,
-            text: `ลูกค้าชำระค่าลูกแบดด้วย ${method} ทั้งหมด ${selectDataPayment?.total_price} บาท`,
+            text: `ลูกค้าชำระค่าสินค้า/บริการด้วย ${method} ทั้งหมด ${selectDataPayment?.total_price} บาท`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -811,6 +810,7 @@ function Buffets() {
             cancelButtonText: "ยกเลิก"
         }).then(async (result) => {
             if (result.isConfirmed) {
+                const courtPrice = selectDataPayment?.total_price ?? 0;
                 try {
                     const response = await fetch('/api/admin/buffet/pay_shuttle_cock', {
                         method: 'PUT',
@@ -1094,7 +1094,7 @@ function Buffets() {
 
             <Modal show={show} onHide={() => {setShow(false); setSelectDataPayment(null)}} centered >
                 <Modal.Header closeButton>
-                    <Modal.Title>ชำระค่าลูกแบด {selectDataPayment?.isStudent === IsStudentEnum.Student ? "| นักเรียน" : selectDataPayment?.isStudent === IsStudentEnum.University ? "| นักศึกษา" : ""}</Modal.Title>
+                    <Modal.Title>ชำระค่าบริการ/สินค้า {selectDataPayment?.isStudent === IsStudentEnum.Student ? "| นักเรียน" : selectDataPayment?.isStudent === IsStudentEnum.University ? "| นักศึกษา" : ""}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className='w-100 m-auto'>
 

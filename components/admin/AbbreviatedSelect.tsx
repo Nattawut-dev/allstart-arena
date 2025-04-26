@@ -20,7 +20,7 @@ const AbbreviatedSelect: React.FC<AbbreviatedSelectProps> = ({
   options,
   value,
   onChange,
-  width = '45px',
+  width = '50px',
   disabled = false,
 }) => {
   const selectedOption = options.find((opt) => opt.id === Number(value)) || options[0];

@@ -85,20 +85,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             )}
           </li>
           <li
-            className={`${styles['menu-item']} ${router.pathname.startsWith('/admin/backend/physical-therapy/') ? styles.activeMenuItem : ''}`}
+            className={`${styles['menu-item']} ${router.pathname.startsWith('/admin/backend/practice-court/') ? styles.activeMenuItem : ''}`}
             onClick={() => setSelectedSubMenu2(!selectedSubMenu2)}
           >
             {selectedSubMenu2 === true ? (
-              <a>  <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>นัดทำกายภาพ</span> </a>
-            ) : <a><FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}></span>นัดทำกายภาพ</a>}
+              <a>  <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>จองสนามซ้อม</span> </a>
+            ) : <a><FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}></span>จองสนามซ้อม</a>}
             {(
               <ul className={`${styles['sub-menu']}  ${selectedSubMenu2 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>                
-                <Link href="/admin/backend/physical-therapy/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/booking/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>จองกายภาพ</span></div></li></Link>
-                <Link href="/admin/backend/physical-therapy/holidays" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/holidays' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>วันหยุด</span></div> </li></Link>
-                <Link href="/admin/backend/physical-therapy/new_reserved?state=1" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/new_reserved' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>การจองใหม่</span></div> </li></Link>
-                <Link href="/admin/backend/physical-therapy/bookinghistory" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/bookinghistory' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>ค้นหาการจอง</span></div></li></Link>
-                <Link href="/admin/backend/physical-therapy/title-name" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/title-name' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>หัวข้อ</span></div></li></Link>
-                <Link href="/admin/backend/physical-therapy/time-slot" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/physical-therapy/time-slot' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>เวลา</span></div></li></Link>
+                <Link href="/admin/backend/practice-court/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/practice-court/booking/[id]' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>จองสนามซ้อม</span></div></li></Link>
+                <Link href="/admin/backend/practice-court/holidays" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/practice-court/holidays' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>วันหยุด</span></div> </li></Link>
+                <Link href="/admin/backend/practice-court/new_reserved?state=1" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/practice-court/new_reserved' ? styles.activeSubMenu : ''}`}> <div><FaPencilAlt /> <span>การจองใหม่</span></div> </li></Link>
+                <Link href="/admin/backend/practice-court/bookinghistory" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/practice-court/bookinghistory' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>ค้นหาการจอง</span></div></li></Link>
+                <Link href="/admin/backend/practice-court/title-name" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/practice-court/title-name' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>หัวข้อ</span></div></li></Link>
+                <Link href="/admin/backend/practice-court/time-slot" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/admin/backend/practice-court/time-slot' ? styles.activeSubMenu : ''}`}> <div><FaHandPointRight /> <span>เวลา</span></div></li></Link>
 
               </ul>
             )}

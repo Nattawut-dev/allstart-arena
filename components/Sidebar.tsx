@@ -89,16 +89,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           </li>
           <li
 
-            className={`${styles['menu-item']} ${router.pathname === '/physical-therapy/booking/[id]' || router.pathname === '/physical-therapy/details/[id]' ? styles.activeMenuItem : ''}`}
+            className={`${styles['menu-item']} ${router.pathname === '/practice-court/booking/[id]' || router.pathname === '/practice-court/details/[id]' ? styles.activeMenuItem : ''}`}
             onClick={() => { setSelectedSubMenu4(!selectedSubMenu4); }}
           >
             {selectedSubMenu4 === true ? (
-              <a> <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>นัดทำกายภาพ</span></a>
-            ) : <a> <FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}>นัดทำกายภาพ</span></a>}
+              <a> <FaChevronCircleDown /> <span style={{ marginLeft: "10px" }}>จองสนามซ้อม</span></a>
+            ) : <a> <FaChevronCircleRight /> <span style={{ marginLeft: "10px" }}>จองสนามซ้อม</span></a>}
             {(
               <ul className={`${styles['sub-menu']}  ${selectedSubMenu4 ? styles.selectedSubMenu : ''}`} onClick={(e) => e.stopPropagation()}>
-                <Link href="/physical-therapy/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/physical-therapy/booking/[id]'  ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>นัดทำกายภาพ</span> </li></Link>
-                <Link href="/physical-therapy/details/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/physical-therapy/details/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarAlt className='mx-1' /> <span>ข้อมูลการจอง</span> </li></Link>
+                <Link href="/practice-court/booking/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/practice-court/booking/[id]'  ? styles.activeSubMenu : ''}`} ><FaCalendarPlus className='mx-1' /> <span>จองสนามซ้อม</span> </li></Link>
+                <Link href="/practice-court/details/0" className={styles.link} ><li onClick={handleMenuItemClick} className={`${styles['sub-menu-item']} ${router.pathname === '/practice-court/details/[id]' ? styles.activeSubMenu : ''}`} ><FaCalendarAlt className='mx-1' /> <span>ข้อมูลการจอง</span> </li></Link>
               </ul>
             )}
           </li>

@@ -4,9 +4,10 @@ import { getToken } from 'next-auth/jwt';
 import { format, utcToZonedTime } from 'date-fns-tz';
 import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
 import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
-import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
-import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
 import { PayByEnum } from '@/enum/payByEnum';
+import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
+import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
+import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
@@ -20,13 +21,13 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         const connection = await pool.getConnection()
         try {
 
-            const query = `UPDATE buffet_newbie SET  nickname = ?, phone = ?, shuttle_cock = ?, price = ? , usedate = ? , pay_date = ? , isStudent = ? WHERE id = ?`;
-            const { id, nickname, phone, shuttle_cock, price, usedate, paymethod_shuttlecock, pay_date, isStudent } = req.body;
+            const query = `UPDATE buffet_newbie SET  nickname = ?, phone = ?, shuttle_cock = ?, price = ? , usedate = ? ,pay_date = ?, isStudent = ? WHERE id = ?`;
+            const { id, nickname, phone, shuttle_cock, usedate, paymethod_shuttlecock, pay_date, isStudent, shuttlecock_total_price, court_price } = req.body;
             // const payment_status = paymethod_shuttlecock != PaymethodShuttlecockEnum.NONE && paymethod_shuttlecock != PaymethodShuttlecockEnum.FINISH_PLAY ? buffetPaymentStatusEnum.PAID : buffetPaymentStatusEnum.PENDING;
-            const totalPrice = paymethod_shuttlecock != PaymethodShuttlecockEnum.NONE && paymethod_shuttlecock != PaymethodShuttlecockEnum.FINISH_PLAY ? price : null;
+            const totalPrice = paymethod_shuttlecock != PaymethodShuttlecockEnum.NONE && paymethod_shuttlecock != PaymethodShuttlecockEnum.FINISH_PLAY ? (Number(shuttlecock_total_price) + Number(court_price)) : null;
 
             // const pay_by = () => {
-                
+
             //     switch (paymethod_shuttlecock) {
             //         case PaymethodShuttlecockEnum.NONE:
             //             return null
@@ -67,14 +68,13 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             //         pay_by = ?,
             //         courtPrice = ?
             //     WHERE customerID = (
-            //         SELECT pc.customerID 
-            //         FROM pos_customers pc 
-            //         WHERE pc.playerId = ? 
+            //         SELECT pc.customerID
+            //         FROM pos_customers pc
+            //         WHERE pc.playerId = ?
             //         AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}'
             //     )
             // `, [customerPaymentStatus(), pay_by(), price, id]);
-            
-            const payment_date = paymethod_shuttlecock != PaymethodShuttlecockEnum.NONE ? pay_date : null
+
 
             const [results] = await connection.query(query, [nickname, phone, shuttle_cock, totalPrice, usedate, pay_date, isStudent, id]);
             res.json({ results });

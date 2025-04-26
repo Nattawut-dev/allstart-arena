@@ -19,6 +19,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
             const destinationItems = req.body;
             const qIdParams: any[] = [];
             const targetID: any[] = [];
+            // ...
             const keys = Object.keys(destinationItems);
 
             let qIdQueries = 'UPDATE buffet_newbie SET q_id = CASE ';
@@ -35,11 +36,16 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 });
             });
 
+            if (targetID.length === 0) {
+                res.status(200).json({ message: 'No IDs to update' });
+                return;
+            }
+
             qIdQueries += 'ELSE q_id END WHERE id IN (?)';
             qIdParams.push(targetID);
 
-
             await connection.query(qIdQueries, qIdParams);
+
 
 
             res.json({ message: 'Update successful' });

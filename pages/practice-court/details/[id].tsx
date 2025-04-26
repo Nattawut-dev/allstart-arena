@@ -44,9 +44,9 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
     try {
         const timeZone = 'Asia/Bangkok';
-        const courts = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/courts`);
+        const courts = await fetch(`${process.env.HOSTNAME}/api/practice-court/reserve/courts`);
         const courts_data = await courts.json();
-        const timeslots = await fetch(`${process.env.HOSTNAME}/api/physical-therapy/reserve/time-slots`);
+        const timeslots = await fetch(`${process.env.HOSTNAME}/api/practice-court/reserve/time-slots`);
         const timeslots_data = await timeslots.json();
         return {
             props: {
@@ -88,7 +88,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
     const fetchReservations = async (usedate: string) => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/physical-therapy/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
+            const response = await fetch(`/api/practice-court/reserve/reservations?usedate=${usedate}&parsedId=${parsedId}`);
             const data = await response.json();
             if (response.ok) {
                 setReservations(data);
@@ -105,7 +105,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
         const usedate = format(selectedDate, 'dd MMMM yyyy');
         fetchReservations(usedate);
         setSelectedDate(addDays(dateInBangkok, id))
-        router.push(`/physical-therapy/details/${encodeURIComponent(id)}`)
+        router.push(`/practice-court/details/${encodeURIComponent(id)}`)
 
     }
 
@@ -165,7 +165,7 @@ function Schedule({ timeSlots, courts, timeZone }: Props,) {
 
 
             try {
-                const response = await fetch('/api/physical-therapy/ReservationSlip', {
+                const response = await fetch('/api/practice-court/ReservationSlip', {
                     method: 'POST',
                     body: formData,
                 });

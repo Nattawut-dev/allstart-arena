@@ -16,11 +16,11 @@ import CustomTable from '@/components/table/customTable';
 import useDebounce from '@/pages/hook/use-debounce';
 import { OptionType } from '@/components/admin/AbbreviatedSelect';
 import { IShuttlecockDetails } from '@/interface/buffet';
-import { ShuttleCockTypes } from '.';
-import ShuttleCockControlNewBie from './ShuttleCockControlNewBie';
+import ShuttleCockControlNewBie from '../booking/buffet/newbie/ShuttleCockControlNewBie';
+import { ShuttleCockTypes } from '../booking/buffet';
+import ShuttleCockControl from '../booking/buffet/ShuttleCockControl';
 import { PaymethodShuttlecockEnum } from '@/enum/paymethodShuttlecockEnum';
 import { PayByEnum } from '@/enum/payByEnum';
-
 
 interface Buffet {
     id: number;
@@ -47,7 +47,12 @@ interface Buffet {
     shuttlecock_total_price: number;
 }
 
-function BuffetReserved() {
+interface Props {
+    date: string;
+    mode: "normal" | "newbie"; // <<< เพิ่ม mode
+}
+
+function ListNotPayBuffetNewbie({ date, mode }: Props) {
     const [buffetData, setBuffetData] = useState<Buffet[]>([]);
     const [editBuffet, setEditBuffet] = useState<Buffet | null>(null);
     const [shuttleCockTypes, setShuttleCockTypes] = useState<OptionType[]>([]);
@@ -58,6 +63,7 @@ function BuffetReserved() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
+    let baseUrl = mode === "normal" ? "/api/admin/buffet" : "/api/admin/buffet/newbie";
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -70,13 +76,13 @@ function BuffetReserved() {
 
     const loadData = () => {
         setLoading(true);
-        setBuffetData([])
+        setBuffetData([]);
 
-        fetch(`/api/admin/buffet/newbie/get/getall?page=${currentPage}&limit=${itemsPerPage}&search=${debouncedSearchTerm}`)
+        fetch(`${baseUrl}/get/getNotpay_buffet?usedate=${date}&page=${currentPage}&limit=${itemsPerPage}&search=${debouncedSearchTerm}`)
             .then((response) => response.json())
             .then((data) => {
-                setBuffetData(data.data); // data.data เพราะเราส่ง { page, limit, data } จาก backend
-                setTotal_items(data.total_items)
+                setBuffetData(data.data);
+                setTotal_items(data.totalItems);
                 setLoading(false);
             })
             .catch((error) => {
@@ -90,9 +96,8 @@ function BuffetReserved() {
     }, [])
 
     const getByID = (id?: number) => {
-
-        const buffetId = id ? id : editBuffet?.id
-        fetch(`/api/admin/buffet/newbie/get/get_by_id?id=${buffetId}`)
+        const buffetId = id ? id : editBuffet?.id;
+        fetch(`${baseUrl}/get/get_by_id?id=${buffetId}`)
             .then((response) => response.json())
             .then((data) => {
                 setEditBuffet(data.data);
@@ -102,10 +107,9 @@ function BuffetReserved() {
             });
     }
 
-
     const getShuttleCockTypes = async () => {
         try {
-            const response = await fetch(`/api/admin/buffet/newbie/get_shuttlecock_types`);
+            const response = await fetch(`${baseUrl}/get_shuttlecock_types`);
             if (response.ok) {
                 const data = await response.json();
                 const formattedData = data.map((item: ShuttleCockTypes) => ({
@@ -151,7 +155,7 @@ function BuffetReserved() {
 
     const getDataPriceById = async (buffetId: number): Promise<Buffet | null> => {
         try {
-            const response = await fetch(`/api/admin/buffet/newbie/get/get_by_id?id=${buffetId}`);
+            const response = await fetch(`${baseUrl}/get/get_by_id?id=${buffetId}`);
             const data = await response.json();
             return data.data as Buffet;
         } catch (error) {
@@ -176,7 +180,7 @@ function BuffetReserved() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch('/api/admin/buffet/newbie/update_status', {
+                    const response = await fetch(`${baseUrl}/update_status`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -208,7 +212,7 @@ function BuffetReserved() {
 
             } else if (result.isDenied) {
                 try {
-                    const response = await fetch('/api/admin/buffet/newbie/update_status', {
+                    const response = await fetch(`${baseUrl}/update_status`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -243,7 +247,7 @@ function BuffetReserved() {
     }
     const saveEdit = () => {
 
-        fetch('/api/admin/buffet/newbie/updateData', {
+        fetch(`${baseUrl}/updateData`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -281,7 +285,7 @@ function BuffetReserved() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/admin/buffet/newbie/updateData?id=${id}`, {
+                    const response = await fetch(`${baseUrl}/updateData?id=${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json'
@@ -311,10 +315,53 @@ function BuffetReserved() {
                 }
 
             }
-
-
         });
 
+    }
+
+    const payMethod = async (id: any, method: string, paymethodShuttlecock: PaymethodShuttlecockEnum, pay_by: PayByEnum) => {
+        Swal.fire({
+            title: `รับชำระด้วย ${method}?`,
+            text: `ลูกค้าชำระค่าสินค้า/บริการด้วย ${method} ทั้งหมด ${editBuffet?.total_price} บาท`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "ยืนยัน",
+            cancelButtonText: "ยกเลิก"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const courtPrice = editBuffet?.total_price ?? 0;
+                try {
+                    const response = await fetch(`${baseUrl}/pay_shuttle_cock`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id, paymethodShuttlecock, courtPrice, pay_by })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to update data');
+                    }
+
+                    Swal.fire({
+                        title: "บันทึกสำเร็จ!",
+                        icon: "success"
+                    });
+                    loadData();
+                    setEditBuffet(null);
+                } catch (error) {
+                    console.error('Error updating data:', error);
+                    Swal.fire({
+                        title: "มีข้อผิดพลาด!",
+                        text: "กรุณาลองใหม่อีกครั้ง",
+                        icon: "error"
+                    });
+                }
+
+            }
+        });
     }
 
 
@@ -382,50 +429,6 @@ function BuffetReserved() {
         },
     ];
 
-    const payMethod = async (id: any, method: string, paymethodShuttlecock: PaymethodShuttlecockEnum, pay_by: PayByEnum) => {
-        Swal.fire({
-            title: `รับชำระด้วย ${method}?`,
-            text: `ลูกค้าชำระค่าสินค้า/บริการด้วย ${method} ทั้งหมด ${editBuffet?.total_price} บาท`,
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "ยืนยัน",
-            cancelButtonText: "ยกเลิก"
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const courtPrice = editBuffet?.total_price ?? 0;
-                try {
-                    const response = await fetch(`/api/admin/buffet/newbie/pay_shuttle_cock`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ id, paymethodShuttlecock, courtPrice, pay_by })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Failed to update data');
-                    }
-
-                    Swal.fire({
-                        title: "บันทึกสำเร็จ!",
-                        icon: "success"
-                    });
-                    loadData();
-                    setEditBuffet(null);
-                } catch (error) {
-                    console.error('Error updating data:', error);
-                    Swal.fire({
-                        title: "มีข้อผิดพลาด!",
-                        text: "กรุณาลองใหม่อีกครั้ง",
-                        icon: "error"
-                    });
-                }
-
-            }
-        });
-    }
 
     return (
         <>
@@ -433,7 +436,7 @@ function BuffetReserved() {
                 <title>Buffet Reserved</title>
             </Head>
             <div style={{ margin: 'auto', maxWidth: '1000px', overflow: 'auto' }}>
-                <h3>รายชื่อผู้จองตีบุฟเฟ่ต์</h3>
+                <h3>รายชื่อผู้ยังไม่ชำระเงิน วันที่ {date}</h3>
                 <form className={styles.searchForm}>
                     <input
                         className={styles.searchInput}
@@ -514,12 +517,22 @@ function BuffetReserved() {
                                         return (
                                             <div key={type.id} className="d-flex justify-content-between align-items-center">
                                                 <p className="mb-0">{type.label}</p>
-                                                <ShuttleCockControlNewBie
-                                                    buffetId={editBuffet?.id!}
-                                                    shuttlecockTypeId={type.id}
-                                                    initialQty={quantity}
-                                                    onUpdated={getByID}
-                                                />
+                                                {mode === "normal" ? (
+                                                    <ShuttleCockControl
+                                                        buffetId={editBuffet?.id!}
+                                                        shuttlecockTypeId={type.id}
+                                                        initialQty={quantity}
+                                                        onUpdated={getByID}
+                                                    />
+                                                ) : (
+                                                    <ShuttleCockControlNewBie
+                                                        buffetId={editBuffet?.id!}
+                                                        shuttlecockTypeId={type.id}
+                                                        initialQty={quantity}
+                                                        onUpdated={getByID}
+                                                    />
+                                                )}
+
                                             </div>
                                         );
                                     })}
@@ -549,8 +562,8 @@ function BuffetReserved() {
                                     <div className='d-flex'>
                                         <Form.Control className='w-100' type="number" readOnly value={editBuffet.total_price} onChange={(e) => setEditBuffet({ ...editBuffet, price: parseInt(e.target.value) })} />
                                         {/* <div className="input-group-append">
-                                        <button className="btn btn-outline-secondary" type="button" onClick={() => calculate_price(editBuffet.id)}>คำนวณ</button>
-                                    </div> */}
+                                           <button className="btn btn-outline-secondary" type="button" onClick={() => calculate_price(editBuffet.id)}>คำนวณ</button>
+                                       </div> */}
                                     </div>
                                 </Form.Group>
                                 <Form.Group controlId="formPrice">
@@ -608,18 +621,19 @@ function BuffetReserved() {
                         <Button className='mx-2' onClick={() => payMethod(editBuffet?.id, "โอนเงิน", PaymethodShuttlecockEnum.TRANSFER_ADMIN, PayByEnum.TRANSFER)} >ผ่านการโอน</Button>
                     </div>
                     <div >
-                        <Button variant="secondary me-2" onClick={() => setEditBuffet(null)}>
-                            ปิด
-                        </Button>
-                        <Button variant="primary" onClick={() => saveEdit()}>
-                            บันทึก
-                        </Button>
+                    <Button variant="secondary me-2" onClick={() => setEditBuffet(null)}>
+                        ปิด
+                    </Button>
+                    <Button variant="primary" onClick={() => saveEdit()}>
+                        บันทึก
+                    </Button>
                     </div>
                 </Modal.Footer>
             </Modal>
         </>
-    );
+
+    )
 }
 
-export default BuffetReserved;
+export default ListNotPayBuffetNewbie;
 

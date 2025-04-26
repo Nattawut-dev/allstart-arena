@@ -80,7 +80,7 @@ export default function Page({ buffetSetting, buffetStudentSetting, buffetUniver
 
   useEffect(() => {
     getShuttleCockTypes()
-  })
+  },[])
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();

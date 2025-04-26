@@ -499,8 +499,8 @@ function ReserveBadmintonCourt({ timeSlots, courts, timeZone }: Props,) {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button form="myForm" type="submit">Submit</Button>
-            <Button onClick={handleClose} className='btn-secondary'>Close</Button>
+            <Button form="myForm" type="submit">ยืนยันการจอง</Button>
+            <Button onClick={handleClose} className='btn-secondary'>ยกเลิก</Button>
           </Modal.Footer>
         </Modal>
 

@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { Button } from 'react-bootstrap';
+import { Button, Modal } from 'react-bootstrap';
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Flex } from '@chakra-ui/react';
 import Swal from 'sweetalert2';
 import Head from 'next/head';
 import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { IQBuffet } from '@/interface/buffet';
+import { IHistory, ShuttleCockTypes } from '@/pages/admin/backend/booking/buffet';
+import AbbreviatedSelect, { OptionType } from '@/components/admin/AbbreviatedSelect';
+import ShuttleCockControl from '@/pages/admin/backend/booking/buffet/ShuttleCockControl';
 
 
 interface ItemsType {
@@ -43,20 +46,6 @@ const initialLeftItems: ItemsType = {
     T27: [],
     T28: [],
     T29: [],
-
-
-}
-interface History {
-    id: number;
-    player1_nickname: string;
-    player2_nickname: string;
-    player3_nickname: string;
-    player4_nickname: string;
-    shuttle_cock: string;
-    court: string;
-    usedate: string;
-    time: string;
-
 }
 
 const initialRightItems = {
@@ -73,6 +62,9 @@ function Buffets() {
     const numberOfProperties = Object.keys(leftItems).length;
     const [selectedOptions, setSelectedOptions] = useState(Array(numberOfProperties).fill(''));
     const [selectedOptionsCourt, setSelectedOptionsCourt] = useState(Array(numberOfProperties).fill(''));
+    const [selectedOptionsShuttleCock, setSelectedOptionsShuttleCock] = useState(Array(numberOfProperties).fill(''));
+    const [regisDetail, setRegisDetail] = useState<IQBuffet | null>(null);
+
     const ColumsLeft = ({ tasks, index, isMobile }: any) => {
         return (
             <div style={{ width: '100%', overflow: 'auto' }} >
@@ -98,7 +90,6 @@ function Buffets() {
                                                 m={"0.2rem"}
                                                 p={"0"}
                                                 width={'150px'}
-
                                                 maxWidth={"100%"}
                                                 bg={task.isStudent === IsStudentEnum.Student ? "#BEF7C7" : task.isStudent === IsStudentEnum.University ? "#FFD7B5" : draggableSnapshot.isDragging ? "lightblue" : "white"}
                                                 rounded="3px"
@@ -122,7 +113,7 @@ function Buffets() {
                                                 {...draggableProvided.draggableProps}
                                                 ref={draggableProvided.innerRef}
                                             >
-                                                <span className="p-1 " style={{ fontSize: `${isMobile ? '' : '12px'}` }}>{task.content}</span>
+                                                <span className="p-1 text-center" style={{ fontSize: `${isMobile ? '' : '12px'}` }}>{task.content}</span>
                                             </Flex>
                                         )}
                                     </Draggable>
@@ -221,7 +212,31 @@ function Buffets() {
             </div>
         );
     };
-    const [historys, setHistorys] = useState<History[]>([]);
+
+    const [shuttleCockTypes, setShuttleCockTypes] = useState<OptionType[]>([]);
+
+    const getShuttleCockTypes = async () => {
+        try {
+            const response = await fetch(`/api/buffet/newbie/get_shuttlecock_types`);
+            if (response.ok) {
+                const data = await response.json();
+                const formattedData = data.map((item: ShuttleCockTypes) => ({
+                    id: item.id,
+                    label: `${item.name} - ${item.price}฿/ลูก (คนละ ${item.price / 4}฿)`,
+                    code: item.code,
+                    name: item.name,
+                    price: item.price,
+                }));
+                setShuttleCockTypes(formattedData);
+            } else {
+                console.error('Failed to fetch shuttlecock types.');
+            }
+        } catch (error) {
+            console.error('Error occurred while fetching shuttlecock types:', error);
+        }
+    }
+
+    const [historys, setHistorys] = useState<IHistory[]>([]);
     const getHistory = async () => {
         try {
             const response = await fetch(`/api/buffet/newbie/get_history`, {
@@ -239,7 +254,6 @@ function Buffets() {
         }
     }
     const fetchRegis = async () => {
-        getSelectedOptions()
         getHistory()
         try {
             const response = await fetch(`/api/buffet/newbie/getRegis`)
@@ -293,6 +307,7 @@ function Buffets() {
                 const data = await response.json();
                 setSelectedOptions(data[0].selected_options)
                 setSelectedOptionsCourt(data[1].selected_options)
+                setSelectedOptionsShuttleCock(data[2].selected_options)
             } else {
                 console.error('Failed to fetch selected options.');
             }
@@ -300,7 +315,23 @@ function Buffets() {
             console.error('Error occurred while fetching selected options:', error);
         }
     };
+    const getRegisById = async (id: number) => {
+
+        try {
+            const response = await fetch(`/api/buffet/newbie/get_regis_by_id?id=${id}`);
+            if (response.ok) {
+                const data = await response.json();
+                setRegisDetail(data);
+            } else {
+                console.error('Failed to fetch shuttlecock types.');
+            }
+        } catch (error) {
+            console.error('Error occurred while fetching shuttlecock types:', error);
+        }
+    }
+
     useEffect(() => {
+        getShuttleCockTypes();
         fetchRegis();
         getSelectedOptions();
         setIsMobile(window.innerWidth > 768);
@@ -351,7 +382,11 @@ function Buffets() {
                 <select key={i + 200} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} disabled style={{ maxWidth: '40px' }} value={selectedOptions[i]} >
                     <option>{selectedOptions[i]}</option>
                 </select>
-                <select key={i + 100} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} disabled style={{ width: '44px' }} value={selectedOptions[i]} >
+                <AbbreviatedSelect
+                    options={shuttleCockTypes}
+                    value={selectedOptionsShuttleCock[i]}
+                />
+                <select key={i + 100} className="form-control mx-1" id={`exampleFormControlSelect1-${i}`} disabled style={{ width: '44px' }} value={selectedOptionsCourt[i]} >
                     <option>{selectedOptionsCourt[i]}</option>
                 </select>
             </div>
@@ -374,7 +409,7 @@ function Buffets() {
                     <div className='container-fluid text-center' style={{ overflowX: 'hidden' }}>
                         <div className="d-flex justify-content-between mb-1">
                             <div></div>
-                            <h4>จัดคิวตีบุฟเฟ่ต์ (มือใหม่)</h4>
+                            <h4>จัดคิวตีบุฟเฟ่ต์</h4>
                             <Button className='btn btn-sm' onClick={fetchRegis}>refresh</Button>
                         </div>
 
@@ -394,7 +429,7 @@ function Buffets() {
                                 </div>
                                 {elements}
                             </div>
-                            <div className='col p-2 m' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px', height: 'fit-content', maxWidth: '700px' }}>
+                            <div className='col p-2' style={{ border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px', height: 'fit-content', maxWidth: '700px' }}>
                                 <h6 className='fw-bold bg-primary text-white rounded p-1' >รอจัดคิว </h6>
                                 {rightItems.tasks.length === 0 && (
                                     <div style={{ color: 'red', fontWeight: 'bold' }}>ไม่พบข้อมูล</div>
@@ -415,18 +450,17 @@ function Buffets() {
                                                 <th scope="col">ลูก</th>
                                                 <th scope="col">สนาม</th>
                                                 <th scope="col">เวลา</th>
-
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {historys.map((history, index) => (
-                                                <tr key={index + 1} className='text-nowrap'>
+                                                <tr key={index + 1}>
                                                     <th>{index + 1}</th>
-                                                    <td>{history.player1_nickname}</td>
-                                                    <td>{history.player2_nickname}</td>
-                                                    <td>{history.player3_nickname}</td>
-                                                    <td>{history.player4_nickname}</td>
-                                                    <td>{history.shuttle_cock}</td>
+                                                    <td>{history.player1_nickname ?? '-'}</td>
+                                                    <td>{history.player2_nickname ?? '-'}</td>
+                                                    <td>{history.player3_nickname ?? '-'}</td>
+                                                    <td>{history.player4_nickname ?? '-'}</td>
+                                                    <td>{history.shuttle_cock} ({history.shuttlecock_code})</td>
                                                     <td>{history.court}</td>
                                                     <td>{history.time}</td>
 
@@ -443,29 +477,80 @@ function Buffets() {
                 </DragDropContext >
             </div >
 
-            <div className='mt-2 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#CCE5F3", borderRadius: '10px', height: 'auto', display: 'grid', gridTemplateColumns: "repeat(auto-fill, minmax(160px , 1fr))", gap: "0.2rem", }}>
+            <div className='mt-3 p-2' style={{ width: '100%', border: "1px solid #5757FF", backgroundColor: "#7A7AF9", borderRadius: '10px', height: 'auto', display: 'flex', gap: "0.1rem", flexDirection: 'row', flexWrap: 'wrap' }}>
                 {data.map((item, index) => (
                     <Flex
                         key={index}
-                        m={"0.2rem"}
-                        width={"170px"}
-                        rounded="3px"
+                        m={"0.1rem"}
+                        maxWidth={"400px"}
+                        rounded="8px"
                         textAlign="center"
                         outline="0px solid transparent"
-                        bg={'rgb(13,110,253)'}
+                        bg={item.isStudent === IsStudentEnum.Student ? "#BEF7C7" : item.isStudent === IsStudentEnum.University ? "#FFD7B5" : '#FFFFFF'}
                         align="center"
                         flexDirection={"column"}
                         zIndex={1}
                     >
-                        <span className="fs-6 d-flex justify-content-between w-100 px-3" style={{ padding: '3px', color: '#FFFFFF' }}>
-                            <span className='me-1'>{item.nickname}:</span>
-                            <span className='me-1 px-2' style={{ backgroundColor: 'white', color: 'black', padding: '1px ', borderRadius: '4px' }}> {item.shuttle_cock} ลูก</span>
-                        </span>
+                        <Button
+                            className='btn btn-sm btn-light px-3 py-2'
+                            onClick={() => { getRegisById(item.id) }}>
+                            <span className='mx-3'>{`${item.nickname}`}</span>
+                        </Button>
                     </Flex>
                 ))
                 }
-
             </div>
+
+            <Modal show={regisDetail !== null} onHide={() => setRegisDetail(null)} centered >
+                <Modal.Header closeButton>
+                    <Modal.Title>แสดงจำนวนลูกแบด</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className='w-100 m-auto'>
+                    <div className='detail'>
+                        <div className='d-flex justify-content-between'>
+                            <p>ชื่อลูกค้า</p>
+                            <p>{regisDetail?.nickname}</p>
+                        </div>
+                        {shuttleCockTypes.map((type) => {
+                            const matched = regisDetail?.shuttlecock_details?.find(
+                                (detail) => detail.shuttlecock_type_id === type.id
+                            );
+                            const quantity = matched?.quantity || 0;
+
+                            return (
+                                <div key={type.id} className="d-flex justify-content-between align-items-center">
+                                    <p className="mb-0">{type.label}</p>
+                                    <ShuttleCockControl
+                                        buffetId={regisDetail?.id!}
+                                        shuttlecockTypeId={type.id}
+                                        initialQty={quantity}
+                                        readonly={true}
+                                    />
+                                </div>
+                            );
+                        })}
+
+                        <div className='d-flex justify-content-between mt-2'>
+                            <p>รวมค่าลูก</p>
+                            <div className='d-flex flex-column text-end'>
+                                {shuttleCockTypes.map((type) => {
+                                    const matched = regisDetail?.shuttlecock_details?.find(
+                                        (detail) => detail.shuttlecock_type_id === type.id
+                                    );
+                                    const quantity = matched?.quantity || 0;
+
+                                    return (
+                                        <div key={type.id}>
+                                            <p>{type.name} {quantity} ลูก = {(Number(type.price) / 4) * quantity} บาท</p>
+                                        </div>
+                                    );
+                                })}</div>
+                        </div>
+                    </div>
+
+                </Modal.Body>
+            </Modal>
+
         </>
     )
 }
