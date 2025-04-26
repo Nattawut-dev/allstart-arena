@@ -17,7 +17,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     b.paymentStatus, 
     b.regisDate, 
     b.isStudent, 
+    bs.court_price,
     (SELECT pc.playerId FROM pos_customers pc WHERE pc.customerID = b.id) AS playerId,
+
+    -- เงินที่ยังไม่จ่าย
     (SELECT 
         SUM(
             CASE 
@@ -27,12 +30,62 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             END
         ) 
      FROM pos_sales ps 
-     WHERE ps.CustomerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = b.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET}')
-    ) AS pendingMoney
+     WHERE ps.CustomerID = (
+        SELECT pc.customerID 
+        FROM pos_customers pc 
+        WHERE pc.playerId = b.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET}'
+     )
+    ) AS pendingMoney,
+
+    -- รายละเอียดลูกแบด
+    (SELECT JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'shuttlecock_type_id', bs.shuttlecock_type_id,
+            'shuttlecock_type', st.name,
+            'quantity', bs.quantity,
+            'price', st.price 
+        )
+    )
+    FROM buffet_shuttlecocks bs
+    JOIN shuttlecock_types st ON bs.shuttlecock_type_id = st.id
+    WHERE bs.buffet_id = b.id
+    ) AS shuttlecock_details,
+
+    -- รวม shuttlecock + court_price + รายจ่ายจาก pos_sales
+    (
+        COALESCE((
+            SELECT 
+                ( SUM(bs_inner.quantity * st.price) / 4) + bs.court_price
+            FROM buffet_shuttlecocks bs_inner
+            JOIN shuttlecock_types st ON bs_inner.shuttlecock_type_id = st.id
+            WHERE bs_inner.buffet_id = b.id
+        ), bs.court_price)
+        +
+        COALESCE((
+            SELECT 
+                SUM(
+                    CASE 
+                        WHEN ps.flag_delete = false THEN ps.TotalAmount
+                        ELSE 0 
+                    END
+                )
+            FROM pos_sales ps
+            WHERE ps.CustomerID = (
+                SELECT pc.customerID
+                FROM pos_customers pc
+                WHERE pc.playerId = b.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET}'
+                LIMIT 1
+            )
+        ), 0)
+    ) AS total_price
+
 FROM 
     buffet b 
+JOIN 
+    buffet_setting bs ON bs.isStudent = b.isStudent
 WHERE 
     b.id = ? ;`;
+;
 
         // Execute the SQL query to fetch time slots
         const [results] = await connection.query(query, [id]);

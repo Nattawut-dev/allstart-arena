@@ -15,6 +15,9 @@ export interface IBuffet {
     isStudent: IsStudentEnum;
     pendingMoney?: number;
     barcode: string;
+    total_price: number;
+    shuttlecock_details : IShuttlecockDetails[];
+    court_price: number;
 }
 
 export interface IQBuffet {
@@ -36,4 +39,14 @@ export interface IQBuffet {
     isStudent: IsStudentEnum;
     pendingMoney?: number;
     skillLevel: SkillLevelEnum;
+    shuttlecock_details: IShuttlecockDetails[];
+    total_shuttlecock_price: string;
+    total_price: number;
+}
+
+export interface IShuttlecockDetails {
+    shuttlecock_type_id: number;
+    quantity: number;
+    shuttlecock_type: string;
+    price : number;
 }

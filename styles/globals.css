@@ -3,3 +3,41 @@ body{
   padding: 0;
   margin: 0;
 }
+
+/* ส่วนนี้ใส่ในไฟล์ global css หรือ component css module ก็ได้ */
+
+.modal-scroll-body {
+  overflow-y: auto;
+  max-height: calc(100vh - 200px); /* Default for desktop */
+  padding-right: 8px;
+}
+
+/* สำหรับหน้าจอเล็ก เช่นมือถือ */
+@media (max-width: 576px) {
+  .modal-scroll-body {
+    max-height: calc(100vh - 150px);
+  }
+}
+
+/* global.css หรือใน component ก็ได้ */
+.skeleton-loading {
+  animation: pulse 1.5s infinite;
+}
+
+.skeleton-line {
+  background-color: #dee2e6;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+      opacity: 1;
+  }
+  50% {
+      opacity: 0.4;
+  }
+  100% {
+      opacity: 1;
+  }
+}

@@ -63,7 +63,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                 courtPrice = ?,
                 pay_by = ?,
                 pay_date = NOW()
-                WHERE customerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = ? AND pc.buffetStatus = '${buffetStatusEnum.BUFFET}')
+                WHERE customerID = (SELECT customerID FROM (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = ? AND pc.buffetStatus = '${buffetStatusEnum.BUFFET}') AS temp)
             `, [customerPaymentStatusEnum.PAID, courtPrice, pay_by, id]);
 
 

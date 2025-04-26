@@ -1,27 +1,33 @@
-// pages/api/admin/buffet_setting.ts
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
 
-export default async  function handler (req: NextApiRequest, res: NextApiResponse)  {
-    const token = await getToken({ req })
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const token = await getToken({ req });
     if (!token) {
         res.status(401).json({ message: 'Not authenticated' });
         return;
     }
-    const connection = await pool.getConnection(); // เชื่อมต่อกับฐานข้อมูล
+
+    const connection = await pool.getConnection();
     try {
         if (req.method === 'GET') {
-            const query = 'SELECT * FROM buffet_setting'; 
+            // ดึงข้อมูลจาก buffet_setting และ shuttlecock_prices
+            const query = `
+                SELECT b.id, b.court_price, b.isStudent, s.label, s.shot_code, s.price AS shuttle_cock_price
+                FROM buffet_setting b
+                LEFT JOIN shuttlecock_prices s ON s.id = 1 -- กำหนดให้เป็นราคาของลูก Silver หรืออื่น ๆ
+            `;
             const [results] = await connection.query(query);
             res.status(200).json(results);
         } else if (req.method === 'PUT') {
-            const { id, court_price, shuttle_cock_price } = req.body;
+            const { id, court_price, isStudent } = req.body;
 
-            const query = 'UPDATE buffet_setting SET court_price=?, shuttle_cock_price=? WHERE id=?';
-            const [result] = await connection.query(query, [court_price, shuttle_cock_price, id]);
-            res.status(200).json(result);
+            // อัปเดตข้อมูลใน buffet_setting
+            const updateQuery = 'UPDATE buffet_setting SET court_price=?, isStudent=? WHERE id=?';
+            await connection.query(updateQuery, [court_price, isStudent, id]);
+
+            res.status(200).json({ message: 'Data updated successfully' });
         } else {
             res.status(405).json({ error: 'Method not allowed' });
         }
@@ -29,7 +35,6 @@ export default async  function handler (req: NextApiRequest, res: NextApiRespons
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal server error' });
     } finally {
-        connection.release(); 
+        connection.release();
     }
-
 };

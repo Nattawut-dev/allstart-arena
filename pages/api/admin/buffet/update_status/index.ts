@@ -63,6 +63,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
 
             }
 
+            // Using a derived table to avoid the MySQL error of referencing the same table in UPDATE and FROM
             await connection.query(`
                 UPDATE pos_customers
                 SET 
@@ -70,10 +71,13 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
                     pay_by = ?,
                     pay_date = ${customerPaymentStatus === customerPaymentStatusEnum.PAID ? selectPayDateQuery : 'null'}
                 WHERE customerID = (
-                    SELECT pc.customerID 
-                    FROM pos_customers pc 
-                    WHERE pc.playerId = ? 
-                    AND pc.buffetStatus = ?
+                    SELECT customerID FROM (
+                        SELECT pc.customerID 
+                        FROM pos_customers pc 
+                        WHERE pc.playerId = ? 
+                        AND pc.buffetStatus = ?
+                        LIMIT 1
+                    ) AS temp
                 )
             `, [customerPaymentStatus, PayByEnum.TRANSFER, id, buffetStatusEnum.BUFFET]);
 

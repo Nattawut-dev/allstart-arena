@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { getToken } from 'next-auth/jwt';
-import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
+import { RowDataPacket } from 'mysql2';
 
 export default async function insertData(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {
@@ -16,48 +16,41 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
 
     const connection = await pool.getConnection();
     try {
-        // Query buffet data and calculate total_shuttle_cock in one go
+        const { page = 1, limit = 15, search = '' } = req.query;
+        const offset = (Number(page) - 1) * Number(limit);
+        
+
         const query = `
-SELECT 
-    b.*, 
-    ROUND(
-        bs.court_price
-        +
-        (b.shuttle_cock * (bs.shuttle_cock_price / 4)),
-        2
-    ) AS total_shuttle_cock,
-    COALESCE(SUM(pos_sales.TotalAmount), 0) AS shoppingMoney,
-    ROUND(
-        ROUND(
-            bs.court_price
-            +
-            (b.shuttle_cock * (bs.shuttle_cock_price / 4)),
-            2
-        ) + COALESCE(SUM(pos_sales.TotalAmount), 0),
-        2
-    ) AS totalPrice
-FROM 
-    buffet b
-JOIN 
-    buffet_setting bs ON bs.isStudent = b.isStudent
-LEFT JOIN 
-    pos_sales ON pos_sales.CustomerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = b.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET}' LIMIT 1)
-GROUP BY
-    b.id, bs.court_price, bs.shuttle_cock_price, b.shuttle_cock
-ORDER BY 
-    b.id DESC
-LIMIT 300;
+        SELECT SQL_CALC_FOUND_ROWS
+            b.*
+        FROM buffet b
+        JOIN buffet_setting bs ON bs.isStudent = b.isStudent
+        LEFT JOIN pos_sales ON pos_sales.CustomerID = (
+            SELECT pc.customerID
+            FROM pos_customers pc
+            WHERE pc.playerId = b.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET}'
+            LIMIT 1
+        )
+        WHERE (b.nickname LIKE ? OR b.phone LIKE ? OR usedate LIKE ?)
+        GROUP BY b.id, bs.court_price, bs.shuttle_cock_price, b.shuttle_cock
+        ORDER BY b.id DESC
+        LIMIT ? OFFSET ?
         `;
 
-        // Execute the query
-        const [results] = await connection.query(query);
+        const [results] = await connection.query(query, [`%${search}%`, `%${search}%`, `%${search}%`,Number(limit), offset]);
 
-        // Return the results
-        res.json(results);
+        // ดึงจำนวนทั้งหมดเพื่อใช้กับ pagination
+        const [[{ total_items }]] = await connection.query<RowDataPacket[]>('SELECT FOUND_ROWS() as total_items');
+        
+        res.json({
+            data: results,
+            total_items,
+        });
+        
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).json({ error: 'Error fetching data' });
     } finally {
-        connection.release(); // Release the connection back to the pool when done
+        connection.release();
     }
 }

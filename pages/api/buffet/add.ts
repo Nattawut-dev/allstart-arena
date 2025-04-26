@@ -143,10 +143,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                             courtPrice = ?,
                             pay_by = ?
                             WHERE CustomerID = (
-                              SELECT pc.customerID 
-                              FROM pos_customers pc 
-                              WHERE pc.playerId = ? 
-                              AND buffetStatus = '${buffetStatusEnum.BUFFET}'
+                              SELECT customerID 
+                              FROM (SELECT customerID FROM pos_customers WHERE playerId = ? AND buffetStatus = '${buffetStatusEnum.BUFFET}') AS temp
                             )
                           `, [result.secure_url, totalShuttleCock, PayByEnum.TRANSFER, id]);
 

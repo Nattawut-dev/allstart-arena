@@ -1,21 +1,21 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { format, addDays } from 'date-fns';
+import React, { use, useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import Image from 'next/image';
-import { Button, Modal, Spinner } from 'react-bootstrap';
+import { Button, Modal } from 'react-bootstrap';
 import Swal from 'sweetalert2'
 import Head from 'next/head';
 import styles from '@/styles/infoBuffet.module.css'
 import { utcToZonedTime } from 'date-fns-tz';
 import { GetServerSideProps } from 'next';
-import {IsStudentEnum } from '@/enum/StudentPriceEnum';
+import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { ISales } from '@/interface/sales';
-import { paymentStatusEnum } from '@/enum/paymentStatusEnum';
-import { PaymentTypeEnum } from '@/enum/stateCashierEnum';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 import { IBuffet } from '@/interface/buffet';
 import { IBuffet_setting } from '@/interface/buffetSetting';
 import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
 import SaleDetailModal from '@/components/modal/saleDetailModal';
+import CustomTable from '@/components/table/customTable';
+import useDebounce from '@/pages/hook/use-debounce';
 
 interface Props {
     buffetSetting: IBuffet_setting;
@@ -59,13 +59,40 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
     const [salesData, setSalesData] = useState<ISales[]>([]);
     const [isSalesDataLoading, setIsSalesDataLoading] = useState(true);
     const [showSaleDetailModal, setShowSaleDetailModal] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState({
+        itemsPerPage: 15,
+        currentPage: 1,
+        totalPages: 0,
+        totalItems: 0,
+    });
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     const fetchbuffet = async () => {
+        setLoading(true);
+        setBuffets([]);
         try {
-            const res = await fetch(`/api/buffet/get`)
-            const data = await res.json()
+            const params = new URLSearchParams();
+            params.append('page', pagination.currentPage.toString());
+            params.append('limit', pagination.itemsPerPage.toString());
+            if (debouncedSearchTerm) {
+                params.append('search', debouncedSearchTerm);
+            }
+
+            const res = await fetch(`/api/buffet/get?${params.toString()}`);
+            const resData = await res.json()
             if (res.ok) {
-                setBuffets(data)
+                const { data, currentPage, totalPages, totalItems } = resData;
+                setBuffets(data);
+                setPagination({
+                    itemsPerPage: 15,
+                    currentPage,
+                    totalPages,
+                    totalItems
+                })
+                setLoading(false);
             } else {
                 Swal.fire({
                     title: 'เกิดข้อผิดพลาด',
@@ -77,9 +104,10 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
         }
 
     }
+
     useEffect(() => {
         fetchbuffet();
-    }, [])
+    }, [pagination.currentPage, pagination.itemsPerPage, debouncedSearchTerm]);
 
     const showSlipImg = () => {
         Swal.fire({
@@ -172,7 +200,6 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
             }
         })
     }
-    const [summaryContent, setSummaryContent] = useState<React.ReactNode | null>(null);
 
     const calculateSummary = async (buffet_id: number) => {
         try {
@@ -187,37 +214,21 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
                         const calculatePricePerOne = buffetStudentSetting?.shuttle_cock_price / 4
                         const calculatedPrice = buffetStudentSetting.court_price + (buffet?.shuttle_cock * calculatePricePerOne) + shoppingMoney;
                         setPrice(calculatedPrice);
-                        setSummaryContent(
-                            <div>
-                                {`${buffetStudentSetting.court_price} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne}) ${buffet?.pendingMoney ? `+ ${buffet?.pendingMoney}` : ''}`} บาท
-                            </div>
-                        );
                     } else if (buffet.isStudent === IsStudentEnum.University) {
                         const calculatePricePerOne = buffetUniversitySetting?.shuttle_cock_price / 4
                         const calculatedPrice = buffetUniversitySetting.court_price + (buffet?.shuttle_cock * calculatePricePerOne) + shoppingMoney;
                         setPrice(calculatedPrice);
-                        setSummaryContent(
-                            <div>
-                                {`${buffetUniversitySetting.court_price} +  (${buffet?.shuttle_cock} * ${calculatePricePerOne})  ${buffet?.pendingMoney ? `+ ${buffet?.pendingMoney}` : ''}`} บาท
-                            </div>
-                        );
                     } else {
                         const calculatePricePerOne = buffetSetting?.shuttle_cock_price / 4
                         const calculatedPrice = buffetSetting.court_price + (buffet?.shuttle_cock * calculatePricePerOne) + shoppingMoney;
                         setPrice(calculatedPrice);
-                        setSummaryContent(
-                            <div>
-                                {`${buffetSetting.court_price} + (${buffet?.shuttle_cock} * ${calculatePricePerOne}) ${buffet?.pendingMoney ? `+ ${buffet?.pendingMoney}` : ''}`} บาท
-                            </div>
-                        );
                     }
                     setShow(true);
                 } else {
-                    setSummaryContent(
-                        <div style={{ color: 'red' }}>
-                            มีข้อผิดพลาด
-                        </div>
-                    );
+                    Swal.fire({
+                        title: 'ไม่พบข้อมูล',
+                        icon: 'error',
+                    });
                 }
             } else {
                 Swal.fire({
@@ -262,6 +273,50 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
         setShowSaleDetailModal(false);
         setShow(true);
     }
+
+    const column = [
+        {
+            label: 'รหัสลูกค้า',
+            key: 'barcode',
+        },
+        {
+            label: 'ชื่อเล่น',
+            key: 'nickname',
+        },
+        {
+            label: 'สถานะ',
+            key: 'paymentStatus',
+            formatter: (cell: any, row: IBuffet) => (
+                <div className='text-center' style={{
+                    backgroundColor: row.paymentStatus === buffetPaymentStatusEnum.PENDING ? '#eccccf' :
+                        row.paymentStatus === buffetPaymentStatusEnum.CHECKING ? '#FDCE4E' :
+                            row.paymentStatus === buffetPaymentStatusEnum.PAID ? '#d1e7dd' : '#eccccf',
+                    borderRadius: '8px'
+                }}>
+                    {row.paymentStatus === buffetPaymentStatusEnum.PENDING ? 'ยังไม่ชำระ' :
+                        row.paymentStatus === buffetPaymentStatusEnum.CHECKING ? 'รอตรวจสอบ' :
+                            row.paymentStatus === buffetPaymentStatusEnum.PAID ? 'ชำระแล้ว' : 'สลิปไม่ถูกต้อง'}
+                </div>
+            )
+        },
+        {
+            label: 'ชำระเงิน',
+            key: 'actions',
+            formatter: (cell: any, row: IBuffet) => (
+                <Button className='btn btn-sm' onClick={() => calculateSummary(row.id)}>
+                    ชำระเงิน
+                </Button>
+            )
+        }
+    ]
+
+    const handlePageChange = (newPage: number) => {
+        setPagination({
+            ...pagination,
+            currentPage: newPage
+        });
+    };
+
     // -------------------------------------------------------------------------------------------------------------------
     return (
         <>
@@ -272,42 +327,36 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
 
                 <h5 className={styles.title}>ข้อมูลการจองตีบุ๊ฟเฟต์ วันที่ <span style={{ color: 'red' }}>{format(dateInBangkok, 'dd MMMM yyyy')}</span></h5>
                 <div className={`${styles['table-container']}`}>
-                    <span>ทั้งหมด {buffets.length} รายการ</span>
-                    <table className={`table  table-bordered table-striped table-striped`}>
-                        <thead className={'table-primary'} style={{ backgroundColor: 'red' }}>
-                            <tr>
-                                <th>#</th>
-                                <th>รหัสลูกค้า</th>
-                                <th>ชื่อเล่น</th>
-                                <th>จำนวนลูก</th>
-                                <th>สถานะ</th>
-                                <th>ชำระเงิน</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {buffets
-                                .map((buffet, index) => {
-                                    return (
-                                        <tr key={buffet.id}>
-                                            <td>{index + 1}</td>
-                                            <td>{buffet.barcode}</td>
-                                            <td>{buffet.nickname}</td>
-                                            <td>{buffet.shuttle_cock}</td>
-                                            <td className='' style={{ backgroundColor: buffet.paymentStatus === buffetPaymentStatusEnum.PENDING ? '#eccccf' : buffet.paymentStatus === buffetPaymentStatusEnum.CHECKING ? '#FDCE4E' : buffet.paymentStatus === buffetPaymentStatusEnum.PAID ? '#d1e7dd' : '#eccccf' }}>
-                                                {buffet.paymentStatus === buffetPaymentStatusEnum.PENDING ? 'ยังไม่ชำระ' : buffet.paymentStatus === buffetPaymentStatusEnum.CHECKING ? 'รอตรวจสอบ' : buffet.paymentStatus === buffetPaymentStatusEnum.PAID ? 'ชำระแล้ว' : 'สลิปไม่ถูกต้อง'}
-                                            </td>
-                                            <td><Button className='btn btn-sm' onClick={() => { calculateSummary(buffet.id); }}>ชำระเงิน</Button></td>
-                                        </tr>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '4px 0'
+                    }}>
+                        <span className="">แสดง {buffets.length} จาก {pagination.totalItems} รายการ</span>
+                        <div className="d-flex align-items-center">
+                            <label className="me-2 d-flex align-items-center">
+                                <span className="me-2">ค้นหา:</span>
+                                <input
+                                    type="text"
+                                    className="form-control form-control-sm"
+                                    placeholder='ชื่อเล่น/รหัสลูกค้า'
+                                    style={{ width: '150px' }}
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
 
-                                    );
-                                })}
-                            {buffets.length === 0 &&
-                                <tr>
-                                    <td colSpan={6}>ยังไม่มีการจอง</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                                />
+                            </label>
+                        </div>
+                    </div>
+                    <CustomTable data={buffets}
+                        columns={column}
+                        isLoading={loading}
+                        currentPage={pagination.currentPage}
+                        totalPages={pagination.totalPages}
+                        itemsPerPage={pagination.itemsPerPage}
+                        onPageChange={handlePageChange}
+                        isShowPagination />
                 </div>
 
             </div>
@@ -318,9 +367,10 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
                 backdrop="static"
                 keyboard={false}
                 centered
-                size='lg'
-                dialogClassName={styles.Modal1}
-            // scrollable={true}
+                size='xl'
+                // dialogClassName={styles.Modal1}
+                scrollable={true}
+                fullscreen="sm-down"
             >
                 <Modal.Header closeButton >
                     <Modal.Title>ข้อมูลการจองตีก๊วน / ชำระเงิน  {buffetSelcted?.isStudent === IsStudentEnum.Student ? <h6>นักเรียน</h6> : buffetSelcted?.isStudent === IsStudentEnum.University ? <h6>นักศึกษา</h6> : ''}</Modal.Title>
@@ -357,21 +407,23 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
                                     <p>วันที่เล่น</p>
                                     <p>{buffetSelcted?.usedate}</p>
                                 </div>
+                                {buffetSelcted?.shuttlecock_details?.map((detail) => {
+                                    return (
+                                        <div key={detail.shuttlecock_type_id} className={styles.wrapper}>
+                                            <p className="mb-0">ลูก {detail.shuttlecock_type} (คนละ {detail.price / 4}฿)</p>
+                                            <p>{detail.quantity} ลูก</p>
+                                        </div>
+                                    );
+                                })}
                                 <div className={styles.wrapper}>
-                                    <p>จำนวนลูก</p>
-                                    <p>{buffetSelcted?.shuttle_cock} ลูก</p>
+                                    <p>รวมค่าลูก</p>
+                                    <p>{buffetSelcted?.shuttlecock_details?.reduce((total, detail) => {
+                                        return total + (detail.price * detail.quantity) / 4;
+                                    }, 0) || 0} บาท</p>
                                 </div>
-
                                 <div className={styles.wrapper}>
                                     <p>ค่าสนาม</p>
-                                    {/* <p>{buffetSetting?.court_price} บาท / คน</p> */}
-                                    <p>{buffetSelcted?.isStudent === IsStudentEnum.Student ? buffetStudentSetting.court_price : buffetSelcted?.isStudent === IsStudentEnum.University ? buffetUniversitySetting.court_price : buffetSetting?.court_price} บาท / คน</p>
-
-                                </div>
-                                <div className={styles.wrapper}>
-                                    <p>ราคาลูก</p>
-                                    {/* <p>{`${buffetSetting?.shuttle_cock_price} / 4  = ${buffetSetting?.shuttle_cock_price / 4}`} บาท /คน/ลูก</p> */}
-                                    <p>{buffetSelcted?.isStudent === IsStudentEnum.Student ? buffetStudentSetting.shuttle_cock_price : buffetSelcted?.isStudent === IsStudentEnum.University ? buffetUniversitySetting.shuttle_cock_price : buffetSetting?.shuttle_cock_price} บาท</p>
+                                    <p>{buffetSelcted?.court_price} บาท</p>
                                 </div>
                                 {buffetSelcted?.pendingMoney &&
                                     <div className={styles.wrapper}>
@@ -379,14 +431,8 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
                                         {/* <p>{`${buffetSetting?.shuttle_cock_price} / 4  = ${buffetSetting?.shuttle_cock_price / 4}`} บาท /คน/ลูก</p> */}
                                         <a className={styles.a} onClick={() => getSalesData(buffetSelcted.id)}>{buffetSelcted?.pendingMoney} บาท</a>
                                     </div>}
-
-
-                                <div className={styles.wrapper}>
-                                    <p>ราคารวม</p>
-                                    <p>{summaryContent}</p>
-                                </div>
                                 <h4 style={{ textAlign: "center" }}>
-                                    ทั้งหมด <span style={{ color: 'red' }}>{price}</span> บาท
+                                    ทั้งหมด <span style={{ color: 'red' }}>{buffetSelcted?.total_price}</span> บาท
                                 </h4>
                                 <span style={{ color: 'red', textAlign: "center" }}>หากโอนแล้วกรุณาแนบสลิปเมนูข้างล่าง</span>
                                 <span style={{ color: 'red', textAlign: "center" }}>**โปรดชำระหลังเล่นเสร็จแล้วเท่านั้น**</span>
@@ -425,14 +471,14 @@ function Infobuffet({ buffetSetting, buffetStudentSetting, buffetUniversitySetti
                 </Modal.Footer>
             </Modal>
 
-            <SaleDetailModal 
-            show={showSaleDetailModal} 
-            onHide={handleCloseDetailModal} 
-            isSalesDataLoading={isSalesDataLoading} 
-            salesData={salesData} 
+            <SaleDetailModal
+                show={showSaleDetailModal}
+                onHide={handleCloseDetailModal}
+                isSalesDataLoading={isSalesDataLoading}
+                salesData={salesData}
             />
-            
-      
+
+
         </>
 
     );

@@ -1,0 +1,22 @@
+.textheader {
+    font-size: 12px;
+}
+
+.noHover {
+    background-color: #4A90E2;
+}
+
+.noHover:hover {
+    background-color: #4A90E2 !important;
+    /* ยังคงสีเดิมเมื่อมี hover */
+}
+
+.tableFooter {
+    display: flex;
+    width: 100%;
+}
+
+.tableFooter td {
+    padding: 10px;
+    text-align: center;
+}

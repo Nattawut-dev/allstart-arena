@@ -11,25 +11,13 @@ const getDateInBangkok = () => {
 };
 
 const buildQuery = () => `
-    SELECT 
+ SELECT 
         buffet.*, 
         CASE 
             WHEN current_buffet_q.id IS NULL THEN NULL
             ELSE current_buffet_q.T_value
-        END AS T_value,
-        buffet_setting.shuttle_cock_price,
-        buffet_setting.court_price,
-        (SELECT 
-            SUM(
-                CASE 
-                    WHEN ps.flag_delete = false 
-                    THEN ps.TotalAmount 
-                    ELSE 0 
-                END
-            ) 
-         FROM pos_sales ps 
-         WHERE ps.CustomerID = (SELECT pc.customerID FROM pos_customers pc WHERE pc.playerId = buffet.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET}')
-        ) AS pendingMoney
+        END AS T_value
+
     FROM 
         buffet
     LEFT JOIN 
@@ -40,7 +28,10 @@ const buildQuery = () => `
         buffet.usedate = ?
         AND buffet.paymethod_shuttlecock = '${PaymethodShuttlecockEnum.NONE}' 
         AND paymentStatus = 0;
+;
 `;
+
+
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'GET') {

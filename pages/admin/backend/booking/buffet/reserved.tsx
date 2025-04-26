@@ -13,6 +13,13 @@ import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
 import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
 import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
+import CustomTable from '@/components/table/customTable';
+import { set } from 'lodash';
+import useDebounce from '@/pages/hook/use-debounce';
+import { OptionType } from '@/components/admin/AbbreviatedSelect';
+import ShuttleCockControl from './ShuttleCockControl';
+import { IShuttlecockDetails } from '@/interface/buffet';
+import { ShuttleCockTypes } from '.';
 
 
 interface Buffet {
@@ -33,34 +40,101 @@ interface Buffet {
     isStudent: IsStudentEnum;
     total_shuttle_cock?: number;
     shoppingMoney?: string;
-    totalPrice?: string;
+    total_price?: string;
+    total_items: number;
+    court_price: number;
+    shuttlecock_details: IShuttlecockDetails[];
+    shuttlecock_total_price: number;
 }
 
 function BuffetReserved() {
     const [buffetData, setBuffetData] = useState<Buffet[]>([]);
     const [editBuffet, setEditBuffet] = useState<Buffet | null>(null);
+    const [shuttleCockTypes, setShuttleCockTypes] = useState<OptionType[]>([]);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(15);
+    const [total_items, setTotal_items] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
+        // getFromSearch(event.target.value);
+    };
+
     useEffect(() => {
         loadData();
-    }, []);
+    }, [currentPage, debouncedSearchTerm]); // โหลดใหม่เมื่อ currentPage เปลี่ยน
 
     const loadData = () => {
-        fetch('/api/admin/buffet/get/getall')
+        setLoading(true);
+        setBuffetData([])
+
+        fetch(`/api/admin/buffet/get/getall?page=${currentPage}&limit=${itemsPerPage}&search=${debouncedSearchTerm}`)
             .then((response) => response.json())
             .then((data) => {
-                setBuffetData(data);
+                setBuffetData(data.data); // data.data เพราะเราส่ง { page, limit, data } จาก backend
+                setTotal_items(data.total_items)
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error('Error fetching buffet data:', error);
+                setLoading(false);
+            });
+    };
+
+    useEffect(() => {
+        getShuttleCockTypes()
+    }, [])
+
+    const getByID = (id?: number) => {
+
+        const buffetId = id ? id : editBuffet?.id
+        fetch(`/api/admin/buffet/get/get_by_id?id=${buffetId}`)
+            .then((response) => response.json())
+            .then((data) => {
+                setEditBuffet(data.data);
             })
             .catch((error) => {
                 console.error('Error fetching buffet data:', error);
             });
     }
 
+
+    const getShuttleCockTypes = async () => {
+        try {
+            const response = await fetch(`/api/admin/buffet/get_shuttlecock_types`);
+            if (response.ok) {
+                const data = await response.json();
+                const formattedData = data.map((item: ShuttleCockTypes) => ({
+                    id: item.id,
+                    label: `${item.name} - ${item.price}฿/ลูก (คนละ ${item.price / 4}฿)`,
+                    code: item.code,
+                    name: item.name,
+                    price: item.price,
+                }));
+                setShuttleCockTypes(formattedData);
+            } else {
+                console.error('Failed to fetch shuttlecock types.');
+            }
+        } catch (error) {
+            console.error('Error occurred while fetching shuttlecock types:', error);
+        }
+    }
+
+
+    const totalPages = Math.ceil(total_items / itemsPerPage);
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
+
     const status = (status: number) => {
-        return <td className='' style={{ backgroundColor: status === 0 ? '#eccccf' : status === 1 ? '#FDCE4E' : status === 2 ? '#d1e7dd' : '#eccccf' }}>
+        return <div className='text-center' style={{ borderRadius: '8px', backgroundColor: status === 0 ? '#eccccf' : status === 1 ? '#FDCE4E' : status === 2 ? '#d1e7dd' : '#eccccf' }}>
             {status === 0 ? 'ยังไม่ชำระ' : status === 1 ? 'รอตรวจสอบ' : status === 2 ? 'ชำระแล้ว' : 'สลิปไม่ถูกต้อง'}
-        </td>
+        </div>
     }
 
     const Toast = Swal.mixin({
@@ -74,15 +148,25 @@ function BuffetReserved() {
             toast.onmouseleave = Swal.resumeTimer;
         }
     });
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = buffetData.slice(indexOfFirstItem, indexOfLastItem);
 
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+    const getDataPriceById = async (buffetId: number): Promise<Buffet | null> => {
+        try {
+            const response = await fetch(`/api/admin/buffet/get/get_by_id?id=${buffetId}`);
+            const data = await response.json();
+            return data.data as Buffet;
+        } catch (error) {
+            console.error('Error fetching buffet data:', error);
+            return null;
+        }
+    }
 
-    const slipCheck = (id: number, slip_url: string, price: number) => {
+    const slipCheck = async (id: number, slip_url: string) => {
+        const buffetData = await getDataPriceById(id);
+        if (!buffetData) {
+            return;
+        }
         Swal.fire({
-            title: `ยอดชำระ ${price} บาท `,
+            title: `ยอดชำระ ${buffetData.total_price} บาท `,
             showDenyButton: true,
             showCancelButton: true,
             imageUrl: `${slip_url}`,
@@ -232,12 +316,8 @@ function BuffetReserved() {
         });
 
     }
-    const [searchTerm, setSearchTerm] = useState('');
 
-    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(event.target.value);
-        getFromSearch(event.target.value);
-    };
+
     const getFromSearch = async (searchTerm: string) => {
         if (!searchTerm) {
             loadData()
@@ -278,6 +358,56 @@ function BuffetReserved() {
             } as Buffet);
         }
     };
+
+    const columns = [
+        {
+            label: 'ชื่อเล่น',
+            key: 'nickname',
+        },
+        {
+            label: 'โทรศัพท์',
+            key: 'phone',
+        },
+        {
+            label: 'วันที่เล่น',
+            key: 'usedate',
+            formatter: (cell: any, row: any) => new Date(row.usedate).toLocaleDateString('th-TH')
+        },
+        {
+            label: 'สถานะ',
+            key: 'paymentStatus',
+            formatter: (cell: any, row: any) => status(row.paymentStatus)
+        },
+        {
+            label: 'Actions',
+            key: 'actions',
+            formatter: (cell: any, row: Buffet) => (
+                <div className='d-flex justify-content-around'>
+                    <Button
+                        className='btn btn-sm'
+                        onClick={() => slipCheck(row.id, row.paymentSlip)}
+                        disabled={!row.paymentSlip}
+                    >
+                        เช็คสลิป
+                    </Button>
+                    <Button
+                        className='btn btn-warning btn-sm'
+                        onClick={() => getByID(row.id)}
+                    >
+                        แก้ไข
+                    </Button>
+                    <Button
+                        className='btn btn-danger btn-sm'
+                        onClick={() => Delete(row.id, row.name, row.nickname)}
+                    >
+                        ลบ
+                    </Button>
+                </div>
+            )
+        },
+    ];
+
+
     return (
         <>
             <Head>
@@ -297,156 +427,167 @@ function BuffetReserved() {
                         Search
                     </button>
                 </form>
-                <Table striped bordered size='sm' style={{ fontSize: '15px', padding: '0', margin: '0', textAlign: 'center' }}>
-                    <thead className='table-primary'>
-                        <tr>
-                            <th>#</th>
-                            <th>ชื่อเล่น</th>
-                            <th>โทรศัพท์</th>
-                            <th>วันที่เล่น</th>
-                            <th>สถานะ</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentItems.map((buffet, index) => (
-                            <tr key={index + indexOfFirstItem + 1}>
-                                <td>{index + indexOfFirstItem + 1}</td>
-                                <td>{buffet.nickname}</td>
-                                <td>{buffet.phone}</td>
-                                <td>{buffet.usedate}</td>
-                                {status(buffet.paymentStatus)}
-                                {/* {shuttle_cock_status(buffet.paymethod_shuttlecock)} */}
-                                <td className='d-flex justify-content-around'>
-                                    <Button className='btn btn-sm' onClick={() => slipCheck(buffet.id, buffet.paymentSlip, Number(buffet.totalPrice))} disabled={!buffet.paymentSlip}>Slip Check </Button>
-                                    <Button className='btn btn-warning btn-sm' onClick={() => setEditBuffet(buffet)}>Edit</Button>
-                                    <Button className='btn btn-danger btn-sm' onClick={() => Delete(buffet.id, buffet.name, buffet.nickname)}>Delete </Button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-                <ul className='pagination'>
-                    {Array.from({ length: Math.ceil(buffetData.length / itemsPerPage) }, (_, i) => (
-                        <li key={i} className='page-item'>
-                            <button onClick={() => paginate(i + 1)} className='page-link' style={{ backgroundColor: (i + 1) == currentPage ? '#0d6efd' : '', color: (i + 1) == currentPage ? 'white' : '' }}>
-                                {i + 1}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                <CustomTable
+                    data={buffetData}
+                    columns={columns}
+                    isLoading={loading}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                    isShowPagination
+                />
+
             </div>
-            <Modal show={editBuffet !== null} onHide={() => setEditBuffet(null)} centered keyboard={false}>
+            <Modal
+                show={editBuffet !== null}
+                onHide={() => setEditBuffet(null)}
+                centered
+                keyboard={false}
+                fullscreen="sm-down"
+            >
                 <Modal.Header closeButton>
-                    <Modal.Title>Edit Buffet</Modal.Title>
+                    <Modal.Title>แก้ไขข้อมูล</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body className='modal-scroll-body' >
                     {editBuffet && (
+                        <div >
+                            <Form>
+                                <Form.Group controlId="formNickname">
+                                    <Form.Label>ชื่อเล่น</Form.Label>
+                                    <Form.Control type="text" value={editBuffet.nickname} onChange={(e) => setEditBuffet({ ...editBuffet, nickname: e.target.value })} />
+                                </Form.Group>
+                                <Form.Group controlId="formPhone">
+                                    <Form.Label>เบอร์</Form.Label>
+                                    <Form.Control type="string" maxLength={10} value={editBuffet.phone} onChange={(e) => setEditBuffet({ ...editBuffet, phone: e.target.value })} />
+                                </Form.Group>
+                                <div className={`${styles.checkbox_wrapper} d-flex mt-3`}>
+                                    <input
+                                        type="checkbox"
+                                        id="cbtest-19-1"
+                                        value={IsStudentEnum.Student}
+                                        onChange={handleCheckboxChange}
+                                        checked={editBuffet.isStudent == IsStudentEnum.Student}
+                                    />
+                                    <label htmlFor="cbtest-19-1" className={styles.check_box}></label>
+                                    <p className="mx-2" style={{ padding: '0' }}>นักเรียน </p>
+                                </div>
+                                <div className={`${styles.checkbox_wrapper} d-flex`}>
+                                    <input
+                                        type="checkbox"
+                                        id="cbtest-19-2"
+                                        value={IsStudentEnum.University}
+                                        onChange={handleCheckboxChange}
+                                        checked={editBuffet.isStudent === IsStudentEnum.University}
+                                    />
+                                    <label htmlFor="cbtest-19-2" className={styles.check_box}></label>
+                                    <p className="mx-2" style={{ padding: '0' }}>นักศึกษา</p>
+                                </div>
 
-                        <Form>
+                                <div style={{ backgroundColor: '#e5fffb', padding: '10px', borderRadius: '8px' }}>
+                                    <p className='text-center' style={{ backgroundColor: "#4ef3fc", borderRadius: '8px' }}>ส่วนจำนวนลูกกดเปลี่ยนแล้วมีผลทันที</p>
+                                    {shuttleCockTypes.map((type) => {
+                                        const matched = editBuffet?.shuttlecock_details?.find(
+                                            (detail) => detail.shuttlecock_type_id === type.id
+                                        );
+                                        const quantity = matched?.quantity || 0;
 
-                            <Form.Group controlId="formNickname">
-                                <Form.Label>ชื่อเล่น</Form.Label>
-                                <Form.Control type="text" value={editBuffet.nickname} onChange={(e) => setEditBuffet({ ...editBuffet, nickname: e.target.value })} />
-                            </Form.Group>
-                            <Form.Group controlId="formPhone">
-                                <Form.Label>เบอร์</Form.Label>
-                                <Form.Control type="string" maxLength={10} value={editBuffet.phone} onChange={(e) => setEditBuffet({ ...editBuffet, phone: e.target.value })} />
-                            </Form.Group>
-                            <div className={`${styles.checkbox_wrapper} d-flex mt-3`}>
-                                <input
-                                    type="checkbox"
-                                    id="cbtest-19-1"
-                                    value={IsStudentEnum.Student}
-                                    onChange={handleCheckboxChange}
-                                    checked={editBuffet.isStudent == IsStudentEnum.Student}
-                                />
-                                <label htmlFor="cbtest-19-1" className={styles.check_box}></label>
-                                <p className="mx-2" style={{ padding: '0' }}>นักเรียน </p>
-                            </div>
-                            <div className={`${styles.checkbox_wrapper} d-flex`}>
-                                <input
-                                    type="checkbox"
-                                    id="cbtest-19-2"
-                                    value={IsStudentEnum.University}
-                                    onChange={handleCheckboxChange}
-                                    checked={editBuffet.isStudent === IsStudentEnum.University}
-                                />
-                                <label htmlFor="cbtest-19-2" className={styles.check_box}></label>
-                                <p className="mx-2" style={{ padding: '0' }}>นักศึกษา</p>
-                            </div>
-                            <Form.Group controlId="formShuttleCock">
-                                <Form.Label>จำนวนลูก</Form.Label>
-                                <Form.Control type="number" value={editBuffet.shuttle_cock} onChange={(e) => setEditBuffet({ ...editBuffet, shuttle_cock: parseInt(e.target.value) })} />
-                            </Form.Group>
-                            <Form.Group controlId="formPrice">
-                                <Form.Label>ยอดรวม สนาม + ลูก </Form.Label>
-                                <div className='d-flex'>
-                                    <Form.Control className='w-100' type="number" readOnly value={editBuffet.price ?? editBuffet.total_shuttle_cock} onChange={(e) => setEditBuffet({ ...editBuffet, price: parseInt(e.target.value) })} />
-                                    <div className="input-group-append">
-                                        <button className="btn btn-outline-secondary" type="button" onClick={() => calculate_price(editBuffet.id)}>คำนวณ</button>
+                                        return (
+                                            <div key={type.id} className="d-flex justify-content-between align-items-center">
+                                                <p className="mb-0">{type.label}</p>
+                                                <ShuttleCockControl
+                                                    buffetId={editBuffet?.id!}
+                                                    shuttlecockTypeId={type.id}
+                                                    initialQty={quantity}
+                                                    onUpdated={getByID}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <Form.Group controlId="formPrice" className='mt-2'>
+                                    <Form.Label>รวมค่าลูก (หาร 4 แล้ว) </Form.Label>
+                                    <div className='d-flex'>
+                                        <Form.Control className='w-100' readOnly type="number" value={editBuffet.shuttlecock_total_price} />
                                     </div>
-                                </div>
-                            </Form.Group>
-                            <Form.Group controlId="formPrice">
-                                <Form.Label>ยอดซื้อของ </Form.Label>
-                                <div className='d-flex'>
-                                    <Form.Control className='w-100' readOnly type="number" value={editBuffet.shoppingMoney} />
-                                </div>
-                            </Form.Group>
-                            <Form.Group controlId="formPrice">
-                                <Form.Label>
-                                    สถานะชำระเงิน
-                                    {/* <span className='text-danger'>*เว้นว่างถ้าลูกค้าชำระเอง</span> */}
-                                </Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    value={editBuffet.paymethod_shuttlecock}
-                                    
-                                    onChange={(e) => setEditBuffet({ ...editBuffet, paymethod_shuttlecock: e.target.value })}
-                                    disabled
-                                >
-                                    <option value={0}>ยังไม่ชำระ</option>
-                                    <option value={1}>โอนผ่านแอดมิน</option>
-                                    {/* <option value={2}>เงินสดผ่านแอดมิน</option> */}
-                                    <option value={3}>โอนด้วยตนเอง</option>
-                                    <option value={4}>เล่นเสร็จยังไม่ชำระ</option>
-                                    <option value={5}>ชำระแล้วผ่าน POS</option>
+                                </Form.Group>
 
-                                </Form.Control>
-                            </Form.Group>
-                            <Form.Group controlId="formUsedate" style={{ width: '100%' }}>
-                                <Form.Label>วันที่เล่น</Form.Label>
-                                <div style={{ width: '100%' }}>
-                                    <DatePicker
-                                        className='w-100'
-                                        selected={editBuffet.usedate ? new Date(editBuffet.usedate) : null}
-                                        onChange={(date) => date && setEditBuffet({ ...editBuffet, usedate: format(date, 'dd MMMM yyyy') })}
-                                        dateFormat="dd MMMM yyyy"
-                                    />
-                                </div>
-                            </Form.Group>
-                            <Form.Group controlId="formUsedate" style={{ width: '100%' }}>
-                                <Form.Label>วันที่ชำระเงิน **วันที่นำยอดไปรวมในหน้าสรุปยอด</Form.Label>
-                                <div style={{ width: '100%' }}>
-                                    <DatePicker
-                                        className='w-100'
-                                        selected={editBuffet.pay_date ? new Date(editBuffet.pay_date) : null}
-                                        onChange={(date) => date && setEditBuffet({ ...editBuffet, pay_date: format(date, 'dd MMMM yyyy') })}
-                                        dateFormat="dd MMMM yyyy"
-                                    />
-                                    <Button className='mx-3' onClick={() => setEditBuffet({ ...editBuffet, pay_date: format(dateInBangkok, 'dd MMMM yyyy') })}> วันนี้</Button>
-                                </div>
-                            </Form.Group>
-                        </Form>
+                                <Form.Group controlId="formPrice">
+                                    <Form.Label>ค่าสนาม </Form.Label>
+                                    <div className='d-flex'>
+                                        <Form.Control className='w-100' readOnly type="number" value={editBuffet.court_price} />
+                                    </div>
+                                </Form.Group>
+
+                                <Form.Group controlId="formPrice">
+                                    <Form.Label>ยอดซื้อของ </Form.Label>
+                                    <div className='d-flex'>
+                                        <Form.Control className='w-100' readOnly type="number" value={editBuffet.shoppingMoney} />
+                                    </div>
+                                </Form.Group>
+                                <Form.Group controlId="formPrice">
+                                    <Form.Label>ยอดรวม สนาม + ลูก + ซื้อของ </Form.Label>
+                                    <div className='d-flex'>
+                                        <Form.Control className='w-100' type="number" readOnly value={editBuffet.total_price} onChange={(e) => setEditBuffet({ ...editBuffet, price: parseInt(e.target.value) })} />
+                                        {/* <div className="input-group-append">
+                                        <button className="btn btn-outline-secondary" type="button" onClick={() => calculate_price(editBuffet.id)}>คำนวณ</button>
+                                    </div> */}
+                                    </div>
+                                </Form.Group>
+                                <Form.Group controlId="formPrice">
+                                    <Form.Label>
+                                        สถานะชำระเงิน
+                                        {/* <span className='text-danger'>*เว้นว่างถ้าลูกค้าชำระเอง</span> */}
+                                    </Form.Label>
+                                    <Form.Control
+                                        as="select"
+                                        value={editBuffet.paymethod_shuttlecock}
+
+                                        onChange={(e) => setEditBuffet({ ...editBuffet, paymethod_shuttlecock: e.target.value })}
+                                        disabled
+                                    >
+                                        <option value={0}>ยังไม่ชำระ</option>
+                                        <option value={1}>โอนผ่านแอดมิน</option>
+                                        {/* <option value={2}>เงินสดผ่านแอดมิน</option> */}
+                                        <option value={3}>โอนด้วยตนเอง</option>
+                                        <option value={4}>เล่นเสร็จยังไม่ชำระ</option>
+                                        <option value={5}>ชำระแล้วผ่าน POS</option>
+
+                                    </Form.Control>
+                                </Form.Group>
+                                <Form.Group controlId="formUsedate" style={{ width: '100%' }}>
+                                    <Form.Label>วันที่เล่น</Form.Label>
+                                    <div style={{ width: '100%' }}>
+                                        <DatePicker
+                                            className='w-100'
+                                            selected={editBuffet.usedate ? new Date(editBuffet.usedate) : null}
+                                            onChange={(date) => date && setEditBuffet({ ...editBuffet, usedate: format(date, 'dd MMMM yyyy') })}
+                                            dateFormat="dd MMMM yyyy"
+                                        />
+                                    </div>
+                                </Form.Group>
+                                <Form.Group controlId="formUsedate" style={{ width: '100%' }}>
+                                    <Form.Label>วันที่ชำระเงิน **วันที่นำยอดไปรวมในหน้าสรุปยอด</Form.Label>
+                                    <div style={{ width: '100%' }}>
+                                        <DatePicker
+                                            className='w-100'
+                                            selected={editBuffet.pay_date ? new Date(editBuffet.pay_date) : null}
+                                            onChange={(date) => date && setEditBuffet({ ...editBuffet, pay_date: format(date, 'dd MMMM yyyy') })}
+                                            dateFormat="dd MMMM yyyy"
+                                        />
+                                        <Button className='mx-3' onClick={() => setEditBuffet({ ...editBuffet, pay_date: format(dateInBangkok, 'dd MMMM yyyy') })}> วันนี้</Button>
+                                    </div>
+                                </Form.Group>
+                            </Form>
+                        </div>
                     )}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setEditBuffet(null)}>
-                        Close
+                        ปิด
                     </Button>
                     <Button variant="primary" onClick={() => saveEdit()}>
-                        Save Changes
+                        บันทึก
                     </Button>
                 </Modal.Footer>
             </Modal>
