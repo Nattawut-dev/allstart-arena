@@ -1080,7 +1080,7 @@ function Buffets() {
                         flexDirection={"column"}
                         zIndex={1}
                     >
-                        <Button className='btn btn-sm btn-light px-3 py-2' onClick={() => { setShow(true); getByID(item.id) }}>
+                        <Button className='btn btn-sm btn-light px-3 py-2' style={{backgroundColor : item.isStudent === IsStudentEnum.Student ? "#BEF7C7" : item.isStudent === IsStudentEnum.University ? "#FFD7B5" : '#FFFFFF'}} onClick={() => { setShow(true); getByID(item.id) }}>
                             <span className='mx-3'>{`${item.nickname}`}</span>
                             {/* <Button className='btn-sm btn me-1 btn-danger px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock - 1) }} disabled={item.shuttle_cock == 0}>-</Button>
                             <span className='mx-2'>{item.shuttle_cock}</span>

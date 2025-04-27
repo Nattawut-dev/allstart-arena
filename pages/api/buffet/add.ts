@@ -100,10 +100,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         SELECT 
                           bs.shuttle_cock_price, 
                           bs.court_price, 
-                          ROUND(
-                              (bs.court_price + (b.shuttle_cock * (bs.shuttle_cock_price / 4))),
-                              2
-                          ) AS total_shuttle_cock
+                        (COALESCE((
+                                    SELECT 
+                                        ( SUM(bs_inner.quantity * st.price) / 4) + bs.court_price
+                                    FROM buffet_shuttlecocks bs_inner
+                                    JOIN shuttlecock_types st ON bs_inner.shuttlecock_type_id = st.id
+                                    WHERE bs_inner.buffet_id = b.id
+                                ), bs.court_price)
+                            ) AS totalCourtPrice
+
                         FROM 
                           buffet_setting bs
                         JOIN 
@@ -121,7 +126,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                             return res.status(400).json({ error: "No buffet settings found for the given buffet." });
                         }
 
-                        const totalShuttleCock = buffetUpdateResult[0].total_shuttle_cock;
+                        const totalShuttleCock = buffetUpdateResult[0].totalCourtPrice;
 
                         const buffetUpdate = `
                         UPDATE buffet
