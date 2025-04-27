@@ -517,6 +517,7 @@ function BuffetReserved() {
                                                     shuttlecockTypeId={type.id}
                                                     initialQty={quantity}
                                                     onUpdated={getByID}
+                                                    
                                                 />
                                             </div>
                                         );

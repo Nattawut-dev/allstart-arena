@@ -10,10 +10,12 @@ interface SumData {
     sum_buffet: number;
     sum_buffet_cash: number;
     sum_buffet_tranfer: number;
+    sum_buffet_pos: number;
     sum_buffet_notPay: number;
     sum_buffet_newbie: number;
     sum_buffet_newbie_cash: number;
     sum_buffet_newbie_tranfer: number;
+    sum_buffet_newbie_pos : number;
     sum_buffet_newbie_notPay: number;
     total_sum: number;
 }
@@ -54,8 +56,6 @@ export default function DailySum() {
 
     const renderTableRows = (data: SumData[]) => {
         return data.map((item, index) => {
-            const buffetSum = Math.ceil(item.sum_buffet_cash + item.sum_buffet_tranfer) || 0;
-            const buffetNewbieSum = Math.ceil(item.sum_buffet_newbie_cash + item.sum_buffet_newbie_tranfer) || 0;
 
             return (
                 <>
@@ -67,11 +67,11 @@ export default function DailySum() {
 
                         <td>เงินสด</td>
                         <td className="table-primary">{item.sum_buffet_cash}</td>
-                        <td rowSpan={4} className="table-info">{buffetSum}</td>
+                        <td rowSpan={4} className="table-info">{item.sum_buffet}</td>
 
                         <td>เงินสด</td>
                         <td className="table-primary">{item.sum_buffet_newbie_cash}</td>
-                        <td rowSpan={4} className="table-info">{buffetNewbieSum}</td>
+                        <td rowSpan={4} className="table-info">{item.sum_buffet_newbie}</td>
 
                         <td rowSpan={4}>{item.total_sum}</td>
                     </tr>
@@ -85,6 +85,15 @@ export default function DailySum() {
                         <td className="table-success">{item.sum_buffet_newbie_tranfer}</td>
                     </tr>
 
+
+                    <tr key={`${index}-transfer`}>
+                        <td>จ่ายผ่าน Pos</td>
+                        <td className="table-success">{item.sum_buffet_pos}</td>
+
+                        <td>จ่ายผ่าน Pos</td>
+                        <td className="table-success">{item.sum_buffet_newbie_pos}</td>
+                    </tr>
+                    
                     {/* Row 3 */}
                     <tr key={`${index}-notpay`}>
                         <td>ยังไม่จ่าย</td>

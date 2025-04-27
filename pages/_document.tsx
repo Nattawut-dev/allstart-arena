@@ -2,9 +2,35 @@ import { Html, Head, Main, NextScript } from 'next/document'
 
 export default function Document() {
   return (
-    <Html lang="en">
-      <Head />
-      <link rel="icon" href="/logo.jpg" />
+    <Html lang="th">
+      <Head>
+        {/* Title & Meta Description */}
+        <title>จองสนามแบดมินตัน เชียงราย | All Stars Arena</title>
+        <meta name="description" content="จองสนามแบดมินตันที่ดีที่สุดในเชียงราย สมัครแข่งแบด ตีแบดบุฟเฟ่ต์ ครบจบในที่เดียว All Stars Arena เชียงราย" />
+        
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content="จองสนามแบดมินตัน เชียงราย | All Stars Arena" />
+        <meta property="og:description" content="จองสนามแบดมินตันที่ดีที่สุดในเชียงราย สมัครแข่งแบด ตีแบดบุฟเฟ่ต์ ครบจบในที่เดียว All Stars Arena เชียงราย" />
+        <meta property="og:image" content="https://www.allstarsarena.com/logo.jpg" />
+        <meta property="og:url" content="https://www.allstarsarena.com" />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="จองสนามแบดมินตัน เชียงราย | All Stars Arena" />
+        <meta name="twitter:description" content="จองสนามแบดมินตันที่ดีที่สุดในเชียงราย สมัครแข่งแบด ตีแบดบุฟเฟ่ต์ ครบจบในที่เดียว All Stars Arena เชียงราย" />
+        <meta name="twitter:image" content="https://www.allstarsarena.com/logo.jpg" />
+        <meta name="twitter:url" content="https://www.allstarsarena.com" />
+        
+        {/* Favicon */}
+        <link rel="icon" href="/logo.jpg" />
+
+        {/* Sitemap */}
+        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+        {/* Robots Meta Tags */}
+        <meta name="robots" content="index, follow" />
+      </Head>
 
       <body>
         <Main />
