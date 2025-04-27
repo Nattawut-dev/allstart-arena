@@ -1,5 +1,5 @@
 import { Toast } from '@/components/toast';
-import useDebounce from '@/pages/hook/use-debounce';
+import useDebounce from '@/hook/use-debounce';
 import { useEffect, useState } from 'react';
 
 interface ShuttleCockControlProps {

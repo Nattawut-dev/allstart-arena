@@ -24,15 +24,7 @@ export default async function insertData(req: NextApiRequest, res: NextApiRespon
         SELECT SQL_CALC_FOUND_ROWS
             b.*
         FROM buffet_newbie b
-        JOIN buffet_setting_newbie bs ON bs.isStudent = b.isStudent
-        LEFT JOIN pos_sales ON pos_sales.CustomerID = (
-            SELECT pc.customerID
-            FROM pos_customers pc
-            WHERE pc.playerId = b.id AND pc.buffetStatus = '${buffetStatusEnum.BUFFET_NEWBIE}'
-            LIMIT 1
-        )
         WHERE (b.nickname LIKE ? OR b.phone LIKE ? OR usedate LIKE ?)
-        GROUP BY b.id, bs.court_price, bs.shuttle_cock_price, b.shuttle_cock
         ORDER BY b.id DESC
         LIMIT ? OFFSET ?
         `;

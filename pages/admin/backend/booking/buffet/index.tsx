@@ -1169,10 +1169,10 @@ function Buffets() {
                                     <p>ค่าสนาม </p>
                                     <p>{selectDataPayment?.court_price} บาท</p>
                                 </div>
-                                {selectDataPayment?.pendingMoney &&
+                                {selectDataPayment?.shoppingMoney &&
                                     <div className='d-flex justify-content-between'>
                                         <p>สินค้าที่ซื้อ</p>
-                                        <a className={styles.a} onClick={() => getSalesData(selectDataPayment.id)}>{selectDataPayment?.pendingMoney} บาท</a>
+                                        <a className={styles.a} onClick={() => getSalesData(selectDataPayment.id)}>{selectDataPayment?.shoppingMoney} บาท</a>
                                     </div>}
                                 <div className='d-flex justify-content-between'>
                                     <p>จำนวนที่ต้องชำระ</p>

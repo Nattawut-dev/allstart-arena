@@ -42,6 +42,7 @@ export interface IQBuffet {
     shuttlecock_details: IShuttlecockDetails[];
     total_shuttlecock_price: string;
     total_price: number;
+    shoppingMoney:number;
 }
 
 export interface IShuttlecockDetails {

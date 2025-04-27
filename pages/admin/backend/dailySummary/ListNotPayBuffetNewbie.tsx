@@ -13,7 +13,7 @@ import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
 import { customerPaymentStatusEnum } from '@/enum/customerPaymentStatusEnum';
 import CustomTable from '@/components/table/customTable';
-import useDebounce from '@/pages/hook/use-debounce';
+import useDebounce from '@/hook/use-debounce';
 import { OptionType } from '@/components/admin/AbbreviatedSelect';
 import { IShuttlecockDetails } from '@/interface/buffet';
 import ShuttleCockControlNewBie from '../booking/buffet/newbie/ShuttleCockControlNewBie';

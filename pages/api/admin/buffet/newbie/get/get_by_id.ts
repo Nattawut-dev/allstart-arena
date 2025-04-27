@@ -89,8 +89,19 @@ export default async function getBuffetById(req: NextApiRequest, res: NextApiRes
             return res.status(404).json({ message: 'buffet_newbie not found' });
         }
 
-        res.json({ data: results[0] });
+        // ต้อง parse shuttlecock_details ถ้า database ส่งมาเป็น string
+        const result = results[0];
+        if (typeof result.shuttlecock_details === 'string') {
+            try {
+                result.shuttlecock_details = JSON.parse(result.shuttlecock_details);
+            } catch (err) {
+                console.error('Failed to parse shuttlecock_details:', err);
+                result.shuttlecock_details = [];
+            }
+        }
 
+        res.json({ data: result });
+        
     } catch (error) {
         console.error('Error fetching buffet_newbie by ID:', error);
         res.status(500).json({ error: 'Error fetching buffet_newbie by ID' });

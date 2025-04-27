@@ -5,9 +5,9 @@ export default function Document() {
     <Html lang="th">
       <Head>
         {/* Title & Meta Description */}
-        <title>จองสนามแบดมินตัน เชียงราย | All Stars Arena</title>
         <meta name="description" content="จองสนามแบดมินตันที่ดีที่สุดในเชียงราย สมัครแข่งแบด ตีแบดบุฟเฟ่ต์ ครบจบในที่เดียว All Stars Arena เชียงราย" />
-        
+        <meta name="keywords" content="จองสนามแบดมินตัน เชียงราย, สนามแบด เชียงราย, ออลสตา เชียงราย, ออลสตาแบดมินตัน, สนามแบดมินตัน เชียงราย, ตีแบด เชียงราย, สมัครแข่งแบด เชียงราย, บุฟเฟ่ต์แบดมินตัน เชียงราย, All Stars Arena, allstars arena เชียงราย" />
+
         {/* Open Graph Meta Tags */}
         <meta property="og:title" content="จองสนามแบดมินตัน เชียงราย | All Stars Arena" />
         <meta property="og:description" content="จองสนามแบดมินตันที่ดีที่สุดในเชียงราย สมัครแข่งแบด ตีแบดบุฟเฟ่ต์ ครบจบในที่เดียว All Stars Arena เชียงราย" />

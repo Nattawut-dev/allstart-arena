@@ -15,7 +15,7 @@ import { IBuffet_setting } from '@/interface/buffetSetting';
 import { buffetPaymentStatusEnum } from '@/enum/buffetPaymentStatusEnum';
 import SaleDetailModal from '@/components/modal/saleDetailModal';
 import CustomTable from '@/components/table/customTable';
-import useDebounce from '@/pages/hook/use-debounce';
+import useDebounce from '@/hook/use-debounce';
 
 interface Props {
     buffetSetting: IBuffet_setting;

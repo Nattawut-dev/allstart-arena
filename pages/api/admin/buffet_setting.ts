@@ -14,9 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (req.method === 'GET') {
             // ดึงข้อมูลจาก buffet_setting และ shuttlecock_prices
             const query = `
-                SELECT b.id, b.court_price, b.isStudent, s.label, s.shot_code, s.price AS shuttle_cock_price
+                SELECT b.id, b.court_price, b.isStudent
                 FROM buffet_setting b
-                LEFT JOIN shuttlecock_prices s ON s.id = 1 -- กำหนดให้เป็นราคาของลูก Silver หรืออื่น ๆ
             `;
             const [results] = await connection.query(query);
             res.status(200).json(results);

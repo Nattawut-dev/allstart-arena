@@ -11,7 +11,7 @@ import { IsStudentEnum } from '@/enum/StudentPriceEnum';
 import { IBuffet_setting } from '@/interface/buffetSetting';
 import { skillLevelsOptions } from '@/constant/options/skillValueOptions';
 import { SkillLevelEnum } from '@/enum/skillLevelEnum';
-import useDebounce from '@/pages/hook/use-debounce';
+import useDebounce from '@/hook/use-debounce';
 import { OptionType } from '@/components/admin/AbbreviatedSelect';
 import { ShuttleCockTypes } from '@/pages/admin/backend/booking/buffet';
 

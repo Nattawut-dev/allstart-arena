@@ -1,12 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/db/db';
 import { buffetStatusEnum } from '@/enum/buffetStatusEnum';
+import { RowDataPacket } from 'mysql2';
 
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     const connection = await pool.getConnection()
     try {
-        const {id} = req.query
+        const { id } = req.query
         const query = `SELECT 
     b.id, 
     b.nickname, 
@@ -84,11 +85,21 @@ JOIN
     buffet_setting_newbie bs ON bs.isStudent = b.isStudent
 WHERE 
     b.id = ? ;`;
-;
+        ;
 
         // Execute the SQL query to fetch time slots
-        const [results] = await connection.query(query, [id]);
-        
+        const [results] = await connection.query<RowDataPacket[]>(query, [id]);
+
+        // ต้อง parse shuttlecock_details ถ้า database ส่งมาเป็น string
+        const result = results[0];
+        if (typeof result.shuttlecock_details === 'string') {
+            try {
+                result.shuttlecock_details = JSON.parse(result.shuttlecock_details);
+            } catch (err) {
+                console.error('Failed to parse shuttlecock_details:', err);
+                result.shuttlecock_details = [];
+            }
+        }
         res.json(results);
     } catch (error) {
         console.error('Error fetching :', error);
