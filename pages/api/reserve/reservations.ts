@@ -29,18 +29,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const { name, phone, court_id, time_slot_id, startvalue, endvalue, usedate, price } = req.body;
         const insertQuery = `
-       INSERT INTO reserve (name, phone, court_id, time_slot_id, start_time, end_time, usedate, price)
-       SELECT ?, ?, ?, ?, ?, ?, ?, ?
-       WHERE NOT EXISTS (
-       SELECT *
-       FROM reserve
-       WHERE court_id = ? AND usedate = ? AND (
-      (CAST(start_time AS TIME) >= CAST(? AS TIME) AND CAST(end_time AS TIME) <= CAST(? AS TIME))
-    )
-  )
-`;
-        const params = [name, phone, court_id, time_slot_id, startvalue, endvalue, usedate, price, court_id, usedate, startvalue, endvalue
+        INSERT INTO reserve (name, phone, court_id, time_slot_id, start_time, end_time, usedate, price)
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM reserve
+          WHERE court_id = ? AND usedate = ?
+            AND NOT (
+              CAST(? AS TIME) >= CAST(end_time AS TIME) OR
+              CAST(? AS TIME) <= CAST(start_time AS TIME)
+            )
+        );
+        `;
+        
+        const params = [
+          name, phone, court_id, time_slot_id, startvalue, endvalue, usedate, price,
+          court_id, usedate, startvalue, endvalue
         ];
+        
         const [result] = await connection.query(insertQuery, params);
 
         if ((result as any).affectedRows === 1) {
