@@ -1,38 +1,190 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# All Stars Arena - Developer README
 
-## Getting Started
+A Next.js + TypeScript web application for court reservations, buffet bookings, tournaments, and guest registration.
 
-First, run the development server:
+This document explains the project structure, setup, and where to find important code areas for contributors.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Quick Links (files & components)
+- App entry & pages:
+  - Home: [`pages/index.tsx`](pages/index.tsx) — symbol: [`Rules`](pages/index.tsx)
+  - Booking (practice court): [`pages/booking/Reserve/[id].tsx`](pages/booking/Reserve/[id].tsx)
+  - Buffet:
+    - Booking page: [`pages/booking/buffet/index.tsx`](pages/booking/buffet/index.tsx)
+    - Buffet info: [`pages/booking/buffet/info.tsx`](pages/booking/buffet/info.tsx)
+    - Newbie variant: [`pages/booking/buffet/newbie/index.tsx`](pages/booking/buffet/newbie/index.tsx) and [`pages/booking/buffet/newbie/info.tsx`](pages/booking/buffet/newbie/info.tsx)
+    - Queue UI: [`pages/booking/buffet/newbie/queue/index.tsx`](pages/booking/buffet/newbie/queue/index.tsx)
+    - Admin buffet queue: [`pages/admin/backend/booking/buffet/index.tsx`](pages/admin/backend/booking/buffet/index.tsx) — component: [`Buffets`](pages/admin/backend/booking/buffet/index.tsx)
+- Admin UI:
+  - Admin home: [`pages/admin/backend/index.tsx`](pages/admin/backend/index.tsx)
+  - Tournament: [`pages/admin/backend/tournament/`](pages/admin/backend/tournament/)
+  - Daily summary: [`pages/admin/backend/dailySummary/index.tsx`](pages/admin/backend/dailySummary/index.tsx)
+- Shared components & layout:
+  - User sidebar: [`components/Sidebar.tsx`](components/Sidebar.tsx) — component: [`Sidebar`](components/Sidebar.tsx)
+  - Admin sidebar: [`components/AdminSidebar.tsx`](components/AdminSidebar.tsx) — component: [`AdminSidebar`](components/AdminSidebar.tsx)
+  - Layouts: [`components/Layout.tsx`](components/Layout.tsx), [`components/AdminLayout.tsx`](components/AdminLayout.tsx)
+  - Shuttle control: [`pages/admin/backend/booking/buffet/ShuttleCockControl.tsx`](pages/admin/backend/booking/buffet/ShuttleCockControl.tsx) — component: [`ShuttleCockControl`](pages/admin/backend/booking/buffet/ShuttleCockControl.tsx)
+  - Abbreviated select: [`components/admin/AbbreviatedSelect.tsx`](components/admin/AbbreviatedSelect.tsx)
+- API endpoints:
+  - Example: Admin setting (protected): [`pages/api/admin/setting/hand_level.ts`](pages/api/admin/setting/hand_level.ts)
+  - Buffet newbie APIs: get/regis/getone: [`pages/api/buffet/newbie/get.ts`](pages/api/buffet/newbie/get.ts), [`pages/api/buffet/newbie/getone.ts`](pages/api/buffet/newbie/getone.ts), [`pages/api/buffet/newbie/getRegis.ts`](pages/api/buffet/newbie/getRegis.ts)
+  - Guest registration: [`pages/api/guest-register/index.ts`](pages/api/guest-register/index.ts)
+  - Edit rules (protected): [`pages/api/admin/editRules/index.ts`](pages/api/admin/editRules/index.ts)
+  - Add/reduce shuttlecock usage: [`pages/api/admin/buffet/newbie/add_reduce/index.ts`](pages/api/admin/buffet/newbie/add_reduce/index.ts)
+- Database pool: [`db/db.ts`](db/db.ts) — MySQL connection pool used throughout the API (via `mysql2`)
+- Styles:
+  - CSS module examples: [`pages/guest-register/guest-register.module.css`](pages/guest-register/guest-register.module.css), [`styles/admin/buffet.module.css`](styles/admin/buffet.module.css)
+- Environment & config:
+  - [`package.json`](package.json) (scripts, dependencies)
+  - `.env` (project env variables, not committed)
+  - [`next.config.js`](next.config.js)
+- Docker:
+  - [`Dockerfile`](Dockerfile)
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+---
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Stack
+- Next.js + TypeScript
+- React + React Hooks
+- MySQL (via `mysql2`)
+- next-auth for token-based API access (use of `getToken` in API)
+- Chakra UI (`@chakra-ui/react`) for some UI elements
+- React Bootstrap for modal and table UI
+- Cloudinary for image handling
+- react-beautiful-dnd for drag & drop UI
+- SweetAlert2 for user prompts
+- ESLint and TypeScript for linting / typing
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Getting started (local development)
 
-## Learn More
+Prerequisites:
+- Node >= 22.x (see `package.json` "engines")
+- MySQL database
 
-To learn more about Next.js, take a look at the following resources:
+Quick start:
+1. Clone repo and cd into project root.
+2. Install dependencies:
+   - npm: `npm install`
+3. Add environment variables in `.env` (see file or example variables):
+   - DB connection: host, user, password, database
+   - CLOUDINARY_URL/API, JWT_SECRET (NextAuth), NEXT_PUBLIC_* as needed
+4. Run in development:
+   - `npm run dev`
+   - Open http://localhost:3000
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Build & start:
+- Build: `npm run build`
+- Start: `npm run start`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Notes:
+- There is also a `server` script (`npm run server`) that runs `node server` (confirm intention / file).
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project structure (high level)
+- pages/ — Routes and API handlers:
+  - `pages/api/*` — API endpoints (use `getToken` in protected endpoints)
+  - `pages/booking/*` — Public booking UI for courts and buffet bookings
+  - `pages/admin/backend/*` — Admin UIs (booking, settings, tournaments)
+  - `pages/guest-register/*` — Guest registration UI and API
+- components/ — Reusable UI components & layout
+- db/ — MySQL pool and database utilities (e.g., `db/db.ts`)
+- enum/ — Reusable enums (e.g., `buffetStatusEnum`, `paymentStatusEnum`)
+- styles/ — CSS Modules style files
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+---
+
+## How to add API routes & pages
+- API: add files under `pages/api` and export default handler with `NextApiRequest`/`NextApiResponse`. Use `getToken` for protected routes:
+  - Example: [`pages/api/admin/setting/hand_level.ts`](pages/api/admin/setting/hand_level.ts)
+- Pages: add React components under `pages/`. Use server-side or client-side code as required. For server-side requests, use `getServerSideProps` or `getInitialProps`.
+
+---
+
+## Authentication & Authorization
+- Admin API endpoints check JWT via `getToken` from `next-auth/jwt`:
+  - See [`pages/api/admin/setting/hand_level.ts`](pages/api/admin/setting/hand_level.ts) and [`pages/api/admin/editRules/index.ts`](pages/api/admin/editRules/index.ts) for examples of checks.
+- Ensure you maintain token validation in other admin-only APIs.
+
+---
+
+## Database & data handling tips
+- Database pool is in [`db/db.ts`](db/db.ts)
+- Many API endpoints use prepared SQL and MySQL parameterization.
+- Some responses store JSON in DB columns (e.g., `shuttlecock_details`) — ensure you JSON.parse safely:
+  - Example handling: [`pages/api/buffet/newbie/getone.ts`](pages/api/buffet/newbie/getone.ts) (parsing string to JSON)
+
+---
+
+## UI & Behavior notes
+- Drag and drop: buffet queue & drag logic implemented using `react-beautiful-dnd`:
+  - Admin queue: [`pages/admin/backend/booking/buffet/index.tsx`](pages/admin/backend/booking/buffet/index.tsx) — `Buffets()` component
+  - Newbie queue: [`pages/booking/buffet/newbie/queue/index.tsx`](pages/booking/buffet/newbie/queue/index.tsx)
+- SweetAlert2 is used for confirmations and loading prompts across multiple pages:
+  - Example: [`pages/booking/buffet/index.tsx`](pages/booking/buffet/index.tsx)
+- File uploads and images:
+  - Upload UI & preview in: [`pages/booking/buffet/info.tsx`](pages/booking/buffet/info.tsx), [`pages/booking/buffet/newbie/info.tsx`](pages/booking/buffet/newbie/info.tsx)
+  - Cloudinary + server side upload logic appears in APIs; search for `cloudinary` usage.
+
+---
+
+## Common tasks & examples
+- Fetch shuttlecock types:
+  - Called from UI: `getShuttleCockTypes` in [`pages/booking/buffet/index.tsx`](pages/booking/buffet/index.tsx) and [`pages/booking/buffet/newbie/index.tsx`](pages/booking/buffet/newbie/index.tsx)
+  - Endpoint: `/api/buffet/get_shuttlecock_types`
+- Update counts (debounced) in the admin UI:
+  - Pattern using `debounce` and `fetch` in [`pages/admin/backend/booking/buffet/newbie/index.tsx`](pages/admin/backend/booking/buffet/newbie/index.tsx)
+
+---
+
+## Coding style / conventions
+- TypeScript + React Functional components
+- CSS Modules used for page styles (e.g., [`pages/guest-register/guest-register.module.css`](pages/guest-register/guest-register.module.css))
+- Use `async/await` patterns for API and DB calls
+- For UI/UX consistency, use SweetAlert2 prompts in user flows
+- Use `getToken` checks for admin API routes.
+
+---
+
+## Tests & linting
+- ESLint is included (see `package.json`).
+- No test framework detected. Recommend adding Jest + React Testing Library for component and API tests.
+
+---
+
+## Docker & Deployment
+- Dockerfile present. Project can be built and deployed to Vercel/ Docker-based environments.
+- For Vercel deploys, the Next.js production build should be used.
+
+---
+
+## Troubleshooting & tips
+- Node version mismatch — `package.json` requires Node 22.x.
+- DB connection errors likely due to `.env` misconfiguration — check `db/db.ts`.
+- File upload and Cloudinary: ensure credentials in `.env` and correct form data.
+- If `shuttlecock_details` show as a string, ensure it’s JSON parsed safely (see [`pages/api/buffet/newbie/getone.ts`](pages/api/buffet/newbie/getone.ts)).
+
+---
+
+## Suggested improvements & next steps
+- Add tests for API routes & UI components.
+- Add central API client utility to avoid repeated `fetch` patterns.
+- Extract repeated forms and modals into reusable components.
+- Improve types and shared interfaces under `interface/`.
+- Add CI for linting and tests.
+
+---
+
+## How to contribute
+1. Fork and branch from `main`.
+2. Run `npm run dev` and build locally, ensure database and `.env` set.
+3. Follow existing patterns for naming, API routes, and token checks.
+4. Ensure code has appropriate TypeScript types and pass ESLint.
+5. Submit PR with brief description and testing steps.
+
+---
+
+If you need extended details on any part of the app (a certain page, API endpoint, or DB table), see the files and symbols linked above — e.g., start with main page [`pages/index.tsx`](pages/index.tsx), the API examples in [`pages/api/admin/setting/hand_level.ts`](pages/api/admin/setting/hand_level.ts), and buffet flows under [`pages/booking/buffet`](pages/booking/buffet).
