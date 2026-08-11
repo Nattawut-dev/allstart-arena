@@ -244,9 +244,15 @@ function Holiday() {
 
 
         if (item) {
-            const date = new Date(item.reserved_date)
+            // DB เก็บเป็น Bangkok time (UTC+7) แบบไม่มี timezone suffix
+            // ต้อง append '+07:00' ก่อน parse ไม่งั้น Vercel (UTC) จะบวกอีก 7 ชั่วโมง
+            const rawDate = item.reserved_date.includes('+') || item.reserved_date.endsWith('Z')
+                ? item.reserved_date
+                : item.reserved_date + '+07:00'
+            const date = new Date(rawDate)
 
             const formattedDate = date.toLocaleString('th-TH', {
+                timeZone: 'Asia/Bangkok',
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',
