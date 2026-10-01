@@ -519,6 +519,8 @@ function Buffets() {
                     <option>9</option>
                     <option>10</option>
                     <option>11</option>
+                    <option>12</option>
+                    <option>13</option>
                 </select>
             </div>
         );
@@ -929,14 +931,14 @@ function Buffets() {
     }
 
     const getByID = (id?: number) => {
-    
+
         const buffetId = id ? id : selectDataPayment?.id;  // กรณีไม่ส่ง id ให้ใช้ selectDataPayment?.id
-    
+
         if (!buffetId) {
             console.error('Buffet ID is missing.');
             return;
         }
-    
+
         fetch(`/api/admin/buffet/newbie/get/get_by_id?id=${buffetId}`)
             .then((response) => {
                 if (!response.ok) {
@@ -957,7 +959,7 @@ function Buffets() {
                 Swal.close();  // หยุดสถานะการโหลดหากเกิดข้อผิดพลาด
             });
     };
-    
+
 
     return (
         <>
@@ -1080,7 +1082,7 @@ function Buffets() {
                         flexDirection={"column"}
                         zIndex={1}
                     >
-                        <Button className='btn btn-sm btn-light px-3 py-2' style={{backgroundColor : item.isStudent === IsStudentEnum.Student ? "#BEF7C7" : item.isStudent === IsStudentEnum.University ? "#FFD7B5" : '#FFFFFF'}} onClick={() => { setShow(true); getByID(item.id) }}>
+                        <Button className='btn btn-sm btn-light px-3 py-2' style={{ backgroundColor: item.isStudent === IsStudentEnum.Student ? "#BEF7C7" : item.isStudent === IsStudentEnum.University ? "#FFD7B5" : '#FFFFFF' }} onClick={() => { setShow(true); getByID(item.id) }}>
                             <span className='mx-3'>{`${item.nickname}`}</span>
                             {/* <Button className='btn-sm btn me-1 btn-danger px-2' onClick={() => { add_reduce(item.id, item.shuttle_cock - 1) }} disabled={item.shuttle_cock == 0}>-</Button>
                             <span className='mx-2'>{item.shuttle_cock}</span>
@@ -1091,93 +1093,93 @@ function Buffets() {
                 }
             </div>
 
-            <Modal show={show} onHide={() => {setShow(false); setSelectDataPayment(null)}} centered >
+            <Modal show={show} onHide={() => { setShow(false); setSelectDataPayment(null) }} centered >
                 <Modal.Header closeButton>
                     <Modal.Title>ชำระค่าบริการ/สินค้า {selectDataPayment?.isStudent === IsStudentEnum.Student ? "| นักเรียน" : selectDataPayment?.isStudent === IsStudentEnum.University ? "| นักศึกษา" : ""}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className='w-100 m-auto'>
 
-                        {!selectDataPayment ? (
-                            <div className="skeleton-loading">
-                                <div className="d-flex justify-content-between mb-2">
-                                    <div className="skeleton-line" style={{ width: "30%", height: "20px" }}></div>
-                                    <div className="skeleton-line" style={{ width: "40%", height: "20px" }}></div>
+                    {!selectDataPayment ? (
+                        <div className="skeleton-loading">
+                            <div className="d-flex justify-content-between mb-2">
+                                <div className="skeleton-line" style={{ width: "30%", height: "20px" }}></div>
+                                <div className="skeleton-line" style={{ width: "40%", height: "20px" }}></div>
+                            </div>
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="d-flex justify-content-between align-items-center mb-2">
+                                    <div className="skeleton-line" style={{ width: "60%", height: "20px" }}></div>
+                                    <div className="skeleton-line" style={{ width: "20%", height: "20px" }}></div>
                                 </div>
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="d-flex justify-content-between align-items-center mb-2">
-                                        <div className="skeleton-line" style={{ width: "60%", height: "20px" }}></div>
-                                        <div className="skeleton-line" style={{ width: "20%", height: "20px" }}></div>
-                                    </div>
-                                ))}
-                                {[1, 2, 3].map((i) => (
+                            ))}
+                            {[1, 2, 3].map((i) => (
                                 <div key={i + '2'} className="d-flex justify-content-between mb-2 mt-3">
                                     <div className="skeleton-line" style={{ width: "40%", height: "20px" }}></div>
                                     <div className="skeleton-line" style={{ width: "30%", height: "20px" }}></div>
                                 </div>
-                                 ))}
-                                <div className="d-flex justify-content-between mb-2">
-                                    <div className="skeleton-line" style={{ width: "40%", height: "20px" }}></div>
-                                    <div className="skeleton-line" style={{ width: "30%", height: "20px" }}></div>
-                                </div>
-                                <div className="d-flex justify-content-between">
-                                    <div className="skeleton-line" style={{ width: "40%", height: "24px" }}></div>
-                                    <div className="skeleton-line" style={{ width: "30%", height: "24px" }}></div>
-                                </div>
+                            ))}
+                            <div className="d-flex justify-content-between mb-2">
+                                <div className="skeleton-line" style={{ width: "40%", height: "20px" }}></div>
+                                <div className="skeleton-line" style={{ width: "30%", height: "20px" }}></div>
                             </div>
-                        ) : (
-                            <div className='detail'>
-                                <div className='d-flex justify-content-between'>
-                                    <p>ชื่อลูกค้า</p>
-                                    <p>{selectDataPayment?.nickname}</p>
-                                </div>
-                                {shuttleCockTypes.map((type) => {
-                                    const matched = selectDataPayment?.shuttlecock_details?.find(
-                                        (detail) => detail.shuttlecock_type_id === type.id
-                                    );
-                                    const quantity = matched?.quantity || 0;
-
-                                    return (
-                                        <div key={type.id} className="d-flex justify-content-between align-items-center">
-                                            <p className="mb-0">{type.label}</p>
-                                            <ShuttleCockControlNewBie
-                                                buffetId={selectDataPayment?.id!}
-                                                shuttlecockTypeId={type.id}
-                                                initialQty={quantity}
-                                                onUpdated={getByID}
-                                            />
-                                        </div>
-                                    );
-                                })}
-                                <div className='d-flex justify-content-between mt-2'>
-                                    <p>รวมค่าลูก</p>
-                                    <div className='d-flex flex-column text-end'>
-                                        {shuttleCockTypes.map((type) => {
-                                            const matched = selectDataPayment?.shuttlecock_details?.find(
-                                                (detail) => detail.shuttlecock_type_id === type.id
-                                            );
-                                            const quantity = matched?.quantity || 0;
-
-                                            return (
-                                                <div key={type.id}>
-                                                    <p>{type.name} {quantity} ลูก = {(Number(type.price) / 4) * quantity} บาท</p>
-                                                </div>
-                                            );
-                                        })}</div>
-                                </div>
-                                <div className='d-flex justify-content-between'>
-                                    <p>ค่าสนาม </p>
-                                    <p>{selectDataPayment?.court_price} บาท</p>
-                                </div>
-                                {selectDataPayment?.shoppingMoney &&
-                                    <div className='d-flex justify-content-between'>
-                                        <p>สินค้าที่ซื้อ</p>
-                                        <a className={styles.a} onClick={() => getSalesData(selectDataPayment.id)}>{selectDataPayment?.shoppingMoney} บาท</a>
-                                    </div>}
-                                <div className='d-flex justify-content-between'>
-                                    <p>จำนวนที่ต้องชำระ</p>
-                                    <p> <span className='fw-bold fs-5 text-danger'>{selectDataPayment?.total_price} </span> บาท</p>
-                                </div>
+                            <div className="d-flex justify-content-between">
+                                <div className="skeleton-line" style={{ width: "40%", height: "24px" }}></div>
+                                <div className="skeleton-line" style={{ width: "30%", height: "24px" }}></div>
                             </div>
+                        </div>
+                    ) : (
+                        <div className='detail'>
+                            <div className='d-flex justify-content-between'>
+                                <p>ชื่อลูกค้า</p>
+                                <p>{selectDataPayment?.nickname}</p>
+                            </div>
+                            {shuttleCockTypes.map((type) => {
+                                const matched = selectDataPayment?.shuttlecock_details?.find(
+                                    (detail) => detail.shuttlecock_type_id === type.id
+                                );
+                                const quantity = matched?.quantity || 0;
+
+                                return (
+                                    <div key={type.id} className="d-flex justify-content-between align-items-center">
+                                        <p className="mb-0">{type.label}</p>
+                                        <ShuttleCockControlNewBie
+                                            buffetId={selectDataPayment?.id!}
+                                            shuttlecockTypeId={type.id}
+                                            initialQty={quantity}
+                                            onUpdated={getByID}
+                                        />
+                                    </div>
+                                );
+                            })}
+                            <div className='d-flex justify-content-between mt-2'>
+                                <p>รวมค่าลูก</p>
+                                <div className='d-flex flex-column text-end'>
+                                    {shuttleCockTypes.map((type) => {
+                                        const matched = selectDataPayment?.shuttlecock_details?.find(
+                                            (detail) => detail.shuttlecock_type_id === type.id
+                                        );
+                                        const quantity = matched?.quantity || 0;
+
+                                        return (
+                                            <div key={type.id}>
+                                                <p>{type.name} {quantity} ลูก = {(Number(type.price) / 4) * quantity} บาท</p>
+                                            </div>
+                                        );
+                                    })}</div>
+                            </div>
+                            <div className='d-flex justify-content-between'>
+                                <p>ค่าสนาม </p>
+                                <p>{selectDataPayment?.court_price} บาท</p>
+                            </div>
+                            {selectDataPayment?.shoppingMoney &&
+                                <div className='d-flex justify-content-between'>
+                                    <p>สินค้าที่ซื้อ</p>
+                                    <a className={styles.a} onClick={() => getSalesData(selectDataPayment.id)}>{selectDataPayment?.shoppingMoney} บาท</a>
+                                </div>}
+                            <div className='d-flex justify-content-between'>
+                                <p>จำนวนที่ต้องชำระ</p>
+                                <p> <span className='fw-bold fs-5 text-danger'>{selectDataPayment?.total_price} </span> บาท</p>
+                            </div>
+                        </div>
                     )}
 
                 </Modal.Body>
